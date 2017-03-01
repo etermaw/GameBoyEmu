@@ -52,7 +52,7 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, 0);
 	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
 
-	cart.load_cartrige("test.txt");
+	cart.load_cartrige("gb_test_01.txt");
 
 	mmu.register_chunk(0, 0x7FFF, cart.get_memory_interface());
 	mmu.register_chunk(0x8000, 0x9FFF, &gpu); //vram
@@ -70,12 +70,12 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 	cpu.attach_memory(&mmu);
 	cpu.fill_tabs();
 
-	u32 cycles = 0;
+	//u32 cycles = 0;
 	bool spin = true;
 
 	while (spin)
 	{
-		while (cycles < 70224)
+		while (!gpu.is_entering_vblank()) 
 		{
 			u32 sync_cycles = 0;
 
@@ -93,11 +93,10 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 			if (timer.step(sync_cycles))
 				ints.raise(INT_TIMER);
 
-			cycles += sync_cycles;
+			//cycles += sync_cycles;
 		}
 
-		cycles -= 70224;
-		//ints.raise(INT_VBLANK);
+		//cycles -= 70224; 
 
 		auto ptr = gpu.get_frame_buffer();
 		void* pixels = nullptr;

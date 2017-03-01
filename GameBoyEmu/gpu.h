@@ -18,6 +18,8 @@ class Gpu final : public IMemory
 		u8 oam[0xA0];
 		u8 regs[12];
 
+		bool entering_vblank;
+
 		void vb_mode(Interrupts& interrupts);
 		void hb_mode(Interrupts& interrupts);
 		void oam_mode(Interrupts& interrupts);
@@ -38,6 +40,8 @@ class Gpu final : public IMemory
 
 		u8 read_byte(u16 adress) override;
 		void write_byte(u16 adress, u8 value) override;
+
+		bool is_entering_vblank();
 		
 		u32 step(u32 clock_cycles, Interrupts& interrupts);
 		const u32* get_frame_buffer() const { return screen_buffer.get(); }

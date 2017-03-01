@@ -27,7 +27,7 @@ u32 get_dmg_color(u32 num)
 }
 
 Gpu::Gpu() : screen_buffer(std::make_unique<u32[]>(144 * 160)), regs(), 
-			 cycles(0), dma_cycles(0), enable_delay(0)
+			 cycles(0), dma_cycles(0), enable_delay(0), entering_vblank()
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -57,24 +57,24 @@ void Gpu::vb_mode(Interrupts& interrupts)
 
 void Gpu::hb_mode(Interrupts& interrupts)
 {
-	if (regs[IO_LY] != 144)
+	if (cycles >= 204)
 	{
-		if (cycles >= 204)
-		{
-			cycles -= 204;
-			regs[IO_LY]++;
+		cycles -= 204;
+		regs[IO_LY]++;
+
+		if (regs[IO_LY] != 144)
 			regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
+
+		else
+		{
+			interrupts.raise(INT_VBLANK);
+
+			if (check_bit(regs[IO_LCD_STATUS], LS_VBLANK))
+				interrupts.raise(INT_LCD);
+
+			regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x1; //go to mode 1
+			entering_vblank = true;
 		}
-	}
-
-	else
-	{
-		interrupts.raise(INT_VBLANK);
-
-		if (check_bit(regs[IO_LCD_STATUS], LS_VBLANK))
-			interrupts.raise(INT_LCD);
-
-		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x1; //go to mode 1
 	}
 }
 
@@ -142,7 +142,7 @@ void Gpu::write_byte(u16 adress, u8 value)
 		}
 
 		//bits 0-2 in lcd_status are read only, so we need to mask them out!
-		else if (adress == 0xFF41) 
+		else if (adress == 0xFF41)
 			regs[IO_LCD_STATUS] = (value & 0xF8) | (regs[IO_LCD_STATUS] & 0x3);
 
 		else if (adress == 0xFF44)
@@ -154,6 +154,17 @@ void Gpu::write_byte(u16 adress, u8 value)
 		else
 			regs[adress - 0xFF40] = value;
 	}
+
+	else
+		int a = 0;
+}
+
+bool Gpu::is_entering_vblank()
+{
+	bool tmp = entering_vblank;
+	entering_vblank = false;
+
+	return tmp;
 }
 
 void Gpu::dma_copy(u8 adress)
@@ -234,7 +245,7 @@ void Gpu::turn_off_lcd()
 	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 160 * 140);
 	regs[IO_LY] = 0;
 	regs[IO_LYC] = 0;
-	regs[IO_LCD_STATUS] &= 0xFC;
+	regs[IO_LCD_STATUS] &= 0xFD;
 	cycles = 0;
 }
 
