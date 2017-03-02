@@ -217,31 +217,36 @@ u32 CPUCore::ldi_hl_a(u8 opcode)
 
 u32 CPUCore::daa(u8 opcode)
 {
-	u32 tmp = reg_8[A];
-
 	if (check_bit(reg_8[F], F_N))
 	{
 		if (check_bit(reg_8[F], F_H))
-			tmp = (tmp - 0x06) & 0xFF;
+			reg_8[A] += 0xFA;
 
 		if (check_bit(reg_8[F], F_C))
-			tmp -= 0x60;
+			reg_8[A] += 0xA0;
 	}
 	
 	else
 	{
+		u32 tmp = reg_8[A];
+
 		if (check_bit(reg_8[F], F_H) || (tmp & 0xF) > 0x09)
 			tmp += 0x6;
 
 		if (check_bit(reg_8[F], F_C) || tmp > 0x9F)
+		{
 			tmp += 0x60;
+			reg_8[F] = set_bit(reg_8[F], F_C);
+		}
+
+		else
+			reg_8[F] = clear_bit(reg_8[F], F_C);
+
+		reg_8[A] = tmp & 0xFF;
 	}
 
-	reg_8[A] = tmp & 0xFF;
-
 	reg_8[F] = clear_bit(reg_8[F], F_H);
-	reg_8[F] = change_bit(reg_8[F], tmp > 0xFF, F_C);
-	reg_8[F] = change_bit(reg_8[F], (tmp & 0xFF) == 0, F_Z);
+	reg_8[F] = change_bit(reg_8[F], reg_8[A] == 0, F_Z);
 
 	return 4;
 }
