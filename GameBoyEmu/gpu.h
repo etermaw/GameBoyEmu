@@ -9,7 +9,7 @@ class Gpu final : public IMemory
 		std::function<u8*(u16)> memory_callback;
 		std::unique_ptr<u32[]> screen_buffer;
 
-		std::unique_ptr<u8[]> vram;//[2]; 
+		std::unique_ptr<u8[]> vram; 
 		
 		u32 cycles;
 		i32 dma_cycles;

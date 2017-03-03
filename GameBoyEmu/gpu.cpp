@@ -103,7 +103,7 @@ void Gpu::transfer_mode(Interrupts& interrupts)
 
 u8 Gpu::read_byte(u16 adress)
 {
-	//if gpu is in mode 3 ignore read
+	//if gpu is in mode 3 ignore read (return 0xFF instead)
 	if (adress >= 0x8000 && adress < 0xA000)
 		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? vram[adress - 0x8000] : 0xFF;
 
@@ -192,8 +192,8 @@ void Gpu::draw_background_row()
 	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
 	const u32 buffer_offset = line * 160;
 	
-	const u8* tile_nums = &vram[offset];
-	const u8* tile_data = &vram[data_offset];
+	const u8* tile_nums = &vram[offset]; 
+	const u8* tile_data = &vram[data_offset]; //index_corrector * 16 == data_offset
 
 	const u32 line_offset = (((line + sy) / 8) % 32) * 32;
 	const u32 tile_line = (line + sy) % 8;
@@ -223,6 +223,43 @@ void Gpu::draw_sprite_row()
 
 void Gpu::draw_window_row() 
 {
+	if (regs[IO_LY] < regs[IO_WY] || regs[IO_WX7] > 166) 
+		return;
+
+	const u32 line = regs[IO_LY];
+	const u32 wy = regs[IO_WY];
+	const i32 wx = regs[IO_WX7] - 7;
+	
+	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_BG_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
+	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
+	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
+	const u32 buffer_offset = line * 160;
+
+	const u8* tile_nums = &vram[offset];
+	const u8* tile_data = &vram[data_offset]; //data_offset == index_corrector * 16
+	//or just add it to index and don`t mask with 0xFF, should be the same
+
+	const u32 window_line = line - wy;
+	const u32 tile_line = window_line % 8;
+	const u32 line_off = (window_line / 8) * 32;
+
+	const u32 start_offset = -std::min(wx, 0);
+
+	for (u32 i = std::max(0, wx); i < 160;) 
+	{
+		u32 tile_num = (tile_nums[line_off + (i + start_offset) / 8] + index_corrector) & 0xFF;
+		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
+		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
+
+		for (u32 j = (start_offset + i) % 8; j < 8 && i < 160; ++j, ++i)
+		{
+			u32 id = 7 - j;
+			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
+			u32 shade_num = (regs[IO_BGP] >> (color_id * 2)) & 0x3;
+
+			screen_buffer[buffer_offset + i] = get_dmg_color(shade_num);
+		}
+	}
 }
 
 void Gpu::draw_line()
@@ -245,7 +282,7 @@ void Gpu::turn_off_lcd()
 	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 160 * 140);
 	regs[IO_LY] = 0;
 	regs[IO_LYC] = 0;
-	regs[IO_LCD_STATUS] &= 0xFD;
+	regs[IO_LCD_STATUS] &= 0xFD; //mode 1
 	cycles = 0;
 }
 
