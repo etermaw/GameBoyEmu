@@ -200,8 +200,8 @@ void Gpu::draw_background_row()
 
 	for (u32 i = 0; i < 160;) 
 	{
-		auto tile_num = tile_nums[line_offset + (((sx + i) / 8) % 32)] + index_corrector;
-		tile_num &= 0xFF; //it should work as singed/unsigned u8
+		//it should work as singed/unsigned u8
+		auto tile_num = (tile_nums[line_offset + (((sx + i) / 8) % 32)] + index_corrector) & 0xFF;
 
 		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2]; 
 		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
@@ -217,8 +217,94 @@ void Gpu::draw_background_row()
 	}
 }
 
+
+// priorities for GBC:  BG0 < OBJL < BGL < OBJH < BGH
 void Gpu::draw_sprite_row()
 {	
+	const u8* tile_data = &vram[0]; //0x8000
+	const bool sprite_size = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE);
+	const u32 line = regs[IO_LY];
+	const u32 height = sprite_size ? 16 : 8;
+	const u32 line_offset = line * 160;
+
+	i32 count = 0;
+
+	for (u32 i = 0; i < 40 && count < 10; ++i)
+	{
+		i32 y = sorted_oam[i].y - 16;
+
+		if (y >= line && ((y + height) <= line))
+			to_draw[count++] = sorted_oam[i];
+	}
+	
+	for (i32 i = count - 1; i >= 0; --i)
+	{
+		i32 sx = to_draw[i].x - 8;
+		i32 sy = to_draw[i].y - 16;
+		u32 tile_num = to_draw[i].tile_num;
+		u32 atr = to_draw[i].atr;
+
+		u32 tile_line = line - sy; //what if tile_line < 0?
+		u32 palette_num = IO_OBP_0 + check_bit(atr, 4); //0 - OBP[0], 1 - OBP[1]
+
+		//color 0 for both palettes - background and sprite
+		const u32 sprite_alpha_color = get_dmg_color(regs[palette_num] & 0x3);
+		const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3);
+
+		if (check_bit(atr, 6)) //Y flip
+			tile_line = height - tile_line;
+				
+		if (sprite_size)
+			tile_num = tile_line < 8 ? (tile_num & 0xFE) : (tile_num | 0x1);
+		
+		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
+		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
+
+		if (check_bit(atr, 5)) //X flip
+		{
+			tile_low = flip_bits(tile_low);
+			tile_high = flip_bits(tile_high);
+		}
+
+		if (check_bit(atr, 7)) //BG has priority
+		{
+			for (u32 j = 0; j < 8; ++j) //j = std::max(0, sx); j < std::min(sx + 8, 160)
+			{
+				//check if x + j is on screen
+
+				u32 id = 7 - j; //7 - (j - std::min(sx + 8, 160))
+				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
+				u32 color = get_dmg_color(regs[palette_num] >> (color_id * 2)) & 0x3;
+
+				if (color == sprite_alpha_color) //or just color_id == 0?
+					continue;
+
+				if (screen_buffer[line_offset + sx + j] == bg_alpha_color)
+					screen_buffer[line_offset + sx + j] = color;
+			}
+		}
+
+		else //sprite has priority
+		{
+			for (u32 j = 0; j < 8; ++j) //j = std::max(0, sx); j < std::min(sx + 8, 160)
+			{
+				//check if x + j is on screen
+
+				u32 id = 7 - j;
+				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
+				u32 color = get_dmg_color(regs[palette_num] >> (color_id * 2)) & 0x3;
+
+				if (color != sprite_alpha_color) //or just color_id == 0?
+					screen_buffer[line_offset + sx + j] = color;
+			}
+		}
+	}
+
+	//select 10 sprites (asc order by x, then by number in oam)
+	//draw them starting from last one (DMG mode, in CGB priority is always assigned by OAM index)
+	//check priority bit, BGP[0] will be always covered by OBJ pixel!!!!
+	//propably we will need some sort of priority map/texture, to ensure ordering with background
+	//bit array for just 1 line should be enough (160 bits = 5 * u32)
 }
 
 void Gpu::draw_window_row() 
@@ -237,7 +323,6 @@ void Gpu::draw_window_row()
 
 	const u8* tile_nums = &vram[offset];
 	const u8* tile_data = &vram[data_offset]; //data_offset == index_corrector * 16
-	//or just add it to index and don`t mask with 0xFF, should be the same
 
 	const u32 window_line = line - wy;
 	const u32 tile_line = window_line % 8;
@@ -288,7 +373,7 @@ void Gpu::turn_off_lcd()
 
 void Gpu::turn_on_lcd()
 {
-	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
+	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER)) //useless conditional?
 		enable_delay = 244;
 }
 

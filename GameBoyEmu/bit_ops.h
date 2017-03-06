@@ -54,6 +54,7 @@ template<class I>
 inline I ror(I num, u32 shift)
 {
 	static_assert(std::is_integral<I>::value && std::is_unsigned<I>::value, "Ror is only for unsigned ints!");
+	//add static_assert to ensure that passed value is 8,16,32,64 bit
 
 	//return (num >> shift) | (num << (sizeof(I) * CHAR_BIT - shift));
 
@@ -77,6 +78,7 @@ template<class I>
 inline I rol(I num, u32 shift)
 {
 	static_assert(std::is_integral<I>::value && std::is_unsigned<I>::value, "Rol is only for unsigned ints!");
+	//add static_assert to ensure that passed value is 8,16,32,64 bit
 
 	//return (num << shift) | ();
 
