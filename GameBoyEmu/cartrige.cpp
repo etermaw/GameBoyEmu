@@ -95,12 +95,12 @@ void Cartrige::load_ram()
 	}
 }
 
-void Cartrige::load_cartrige(const std::string& name)
+bool Cartrige::load_cartrige(const std::string& name)
 {
 	std::ifstream cart_file(name, std::ios::binary | std::ios::ate);
 
 	if (!cart_file.is_open())
-		return;
+		return false;
 
 	size_t size = cart_file.tellg();
 	cart_file.seekg(0, std::ios_base::beg);
@@ -110,8 +110,9 @@ void Cartrige::load_cartrige(const std::string& name)
 
 	file_name = name;
 	load_ram();
-
 	dispatch();
+
+	return true;
 }
 
 IMemory* Cartrige::get_memory_interface() const

@@ -22,6 +22,6 @@ class Cartrige
 	public:
 		~Cartrige();
 
-		void load_cartrige(const std::string& name);
+		bool load_cartrige(const std::string& name);
 		IMemory* get_memory_interface() const;
 };

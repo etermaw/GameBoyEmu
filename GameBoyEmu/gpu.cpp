@@ -26,8 +26,7 @@ u32 get_dmg_color(u32 num)
 	return color_tab[num]; //0xFFFFFFFF - (0x00555555 * num);
 }
 
-Gpu::Gpu() : screen_buffer(std::make_unique<u32[]>(144 * 160)), regs(), 
-			 cycles(0), dma_cycles(0), enable_delay(0), entering_vblank()
+Gpu::Gpu() : regs(), cycles(0), dma_cycles(0), enable_delay(0), entering_vblank()
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -35,6 +34,10 @@ Gpu::Gpu() : screen_buffer(std::make_unique<u32[]>(144 * 160)), regs(),
 	regs[IO_OBP_1] = 0xFF;
 
 	vram = std::make_unique<u8[]>(0x2000);
+	screen_buffer = std::make_unique<u32[]>(144 * 160);
+
+	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
+	std::memset(oam, 0xFF, sizeof(u8) * 0xA0);
 }
 
 void Gpu::vb_mode(Interrupts& interrupts)
@@ -146,7 +149,7 @@ void Gpu::write_byte(u16 adress, u8 value)
 			regs[IO_LCD_STATUS] = (value & 0xF8) | (regs[IO_LCD_STATUS] & 0x3);
 
 		else if (adress == 0xFF44)
-			regs[IO_LY] = 0;
+			regs[IO_LY] = 0; //TODO: check LY==LYC
 
 		else if (adress == 0xFF46)
 			dma_copy(value);
@@ -170,13 +173,18 @@ bool Gpu::is_entering_vblank()
 void Gpu::dma_copy(u8 adress)
 {
 	const u16 real_adress = adress * 0x100;
-	const u8* src = memory_callback(real_adress);
 
-	std::memcpy(oam, src, sizeof(u8) * 0xA0);
+	//TODO: make it cycle accurant? (split it into per cycle read-write)
+	if (real_adress >= 0x8000 && real_adress < 0xA000)
+		std::memcpy(oam, &vram[real_adress - 0x8000], sizeof(u8) * 0xA0);
+
+	else if(real_adress >= 0xC000 && real_adress < 0xF000)
+		std::memcpy(oam, &ram_ptr[real_adress - 0xC000], sizeof(u8) * 0xA0);
 
 	dma_cycles = 672; //~160 us, should be correct
 	//however, other spec says that it takes 160 * 4 + 4 cycles (644)
 	//aaaand when dma is launched, cpu can only access HRAM!
+	//rumors says that OAM is blocked, but rest can be accessed (with bus conflicts)
 	//but, cpu also can be interrupted
 	//and when cpu is in double-speed mode, oam dma is 2x faster
 }
@@ -217,6 +225,18 @@ void Gpu::draw_background_row()
 	}
 }
 
+struct oam_entry
+{
+	u8 x;
+	u8 y;
+	u8 tile_num;
+	u8 atr;
+
+	bool operator< (const oam_entry& other) const
+	{
+		return x < other.x;
+	}
+};
 
 // priorities for GBC:  BG0 < OBJL < BGL < OBJH < BGH
 void Gpu::draw_sprite_row()
@@ -226,16 +246,29 @@ void Gpu::draw_sprite_row()
 	const u32 line = regs[IO_LY];
 	const u32 height = sprite_size ? 16 : 8;
 	const u32 line_offset = line * 160;
+	const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3);
 
 	i32 count = 0;
+	oam_entry to_draw[10];
 
+	std::memset(to_draw, 0xFF, sizeof(oam_entry) * 10);
+
+	//in DMG sort sprites by (x,OAM id), then take first 10 which fits
+	//in CBG, just take first 10 fitting line
 	for (u32 i = 0; i < 40 && count < 10; ++i)
 	{
-		i32 y = sorted_oam[i].y - 16;
+		i32 y = oam[i*4] - 16; //full sort if oam-dma launched, if single x is modded, just resort it
 
-		if (y >= line && ((y + height) <= line))
-			to_draw[count++] = sorted_oam[i];
+		if (y <= line && ((y + height) > line)) //should be ok now
+		{
+			to_draw[count].y = oam[i * 4];
+			to_draw[count].x = oam[i * 4 + 1];
+			to_draw[count].tile_num = oam[i * 4 + 2];
+			to_draw[count++].atr = oam[i * 4 + 3];
+		}
 	}
+
+	std::stable_sort(std::begin(to_draw), std::end(to_draw));
 	
 	for (i32 i = count - 1; i >= 0; --i)
 	{
@@ -244,15 +277,11 @@ void Gpu::draw_sprite_row()
 		u32 tile_num = to_draw[i].tile_num;
 		u32 atr = to_draw[i].atr;
 
-		u32 tile_line = line - sy; //what if tile_line < 0?
-		u32 palette_num = IO_OBP_0 + check_bit(atr, 4); //0 - OBP[0], 1 - OBP[1]
-
-		//color 0 for both palettes - background and sprite
-		const u32 sprite_alpha_color = get_dmg_color(regs[palette_num] & 0x3);
-		const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3);
+		u32 tile_line = line - sy;
+		const u32 palette_num = IO_OBP_0 + check_bit(atr, 4); //0 - OBP[0], 1 - OBP[1]
 
 		if (check_bit(atr, 6)) //Y flip
-			tile_line = height - tile_line;
+			tile_line = height - tile_line - 1; //should be correct now
 				
 		if (sprite_size)
 			tile_num = tile_line < 8 ? (tile_num & 0xFE) : (tile_num | 0x1);
@@ -266,36 +295,33 @@ void Gpu::draw_sprite_row()
 			tile_high = flip_bits(tile_high);
 		}
 
+		const u32 begin = std::max(0, sx);
+		const u32 end = std::min(sx + 8, 160);
+
+		//what if BG+window is turned off? (for now we assume that it`s only enabled)
 		if (check_bit(atr, 7)) //BG has priority
 		{
-			for (u32 j = 0; j < 8; ++j) //j = std::max(0, sx); j < std::min(sx + 8, 160)
+			for (u32 j = begin; j < end; ++j) 
 			{
-				//check if x + j is on screen
-
-				u32 id = 7 - j; //7 - (j - std::min(sx + 8, 160))
+				u32 id = end - j - 1; //should be ok
 				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
-				u32 color = get_dmg_color(regs[palette_num] >> (color_id * 2)) & 0x3;
+				u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
 
-				if (color == sprite_alpha_color) //or just color_id == 0?
-					continue;
-
-				if (screen_buffer[line_offset + sx + j] == bg_alpha_color)
-					screen_buffer[line_offset + sx + j] = color;
+				if (color_id != 0 && screen_buffer[line_offset + j] == bg_alpha_color)
+					screen_buffer[line_offset + j] = color;
 			}
 		}
 
 		else //sprite has priority
 		{
-			for (u32 j = 0; j < 8; ++j) //j = std::max(0, sx); j < std::min(sx + 8, 160)
+			for (u32 j = begin; j < end; ++j)
 			{
-				//check if x + j is on screen
-
-				u32 id = 7 - j;
+				u32 id = end - j - 1; //should be ok
 				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
-				u32 color = get_dmg_color(regs[palette_num] >> (color_id * 2)) & 0x3;
+				u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
 
-				if (color != sprite_alpha_color) //or just color_id == 0?
-					screen_buffer[line_offset + sx + j] = color;
+				if (color_id != 0)
+					screen_buffer[line_offset + j] = color;
 			}
 		}
 	}
@@ -303,8 +329,6 @@ void Gpu::draw_sprite_row()
 	//select 10 sprites (asc order by x, then by number in oam)
 	//draw them starting from last one (DMG mode, in CGB priority is always assigned by OAM index)
 	//check priority bit, BGP[0] will be always covered by OBJ pixel!!!!
-	//propably we will need some sort of priority map/texture, to ensure ordering with background
-	//bit array for just 1 line should be enough (160 bits = 5 * u32)
 }
 
 void Gpu::draw_window_row() 
@@ -369,6 +393,8 @@ void Gpu::turn_off_lcd()
 	regs[IO_LYC] = 0;
 	regs[IO_LCD_STATUS] &= 0xFD; //mode 1
 	cycles = 0;
+
+	entering_vblank = true;
 }
 
 void Gpu::turn_on_lcd()

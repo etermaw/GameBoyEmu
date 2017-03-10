@@ -7,10 +7,10 @@ u8 Joypad::read_byte(u16 adress)
 	u8 ret = 0xFF;
 	
 	if (dir_keys)
-		ret = combine_bits(keys[0], keys[1], keys[2], keys[3], !dir_keys, dir_keys);
+		ret = combine_bits(!sel_keys, !dir_keys, keys[3], keys[2], keys[1], keys[0]);
 
-	else
-		ret = combine_bits(keys[4], keys[5], keys[6], keys[7], !dir_keys, dir_keys);
+	else if (sel_keys)
+		ret = combine_bits(!sel_keys, !dir_keys, keys[7], keys[6], keys[5], keys[4]);
 
 	return ret; 
 }
@@ -18,6 +18,7 @@ u8 Joypad::read_byte(u16 adress)
 void Joypad::write_byte(u16 adress, u8 value)
 {
 	dir_keys = ((value & 0x30) == 0x20);//if bit 4 is zero, then we select direction keys
+	sel_keys = ((value & 0x30) == 0x10);//if bit 5 is zero, then we select special keys
 }
 
 void Joypad::push_key(KEYS keycode)

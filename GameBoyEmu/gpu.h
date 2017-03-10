@@ -36,6 +36,8 @@ class Gpu final : public IMemory
 		void turn_on_lcd();
 
 	public:
+		const u8* ram_ptr;
+
 		Gpu();
 
 		u8 read_byte(u16 adress) override;

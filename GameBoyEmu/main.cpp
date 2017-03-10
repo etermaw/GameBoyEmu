@@ -38,33 +38,51 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 	CPU_Debugger<CPU> cpu;//CPU cpu;
 	Ram ram;
 	Cartrige cart;
-	TestReader tr;
-
+	TestReader tr; //testing
+	Joypad joypad;
 	Gpu gpu;
 
 	SDL_Window* window = SDL_CreateWindow("Test",
-											SDL_WINDOWPOS_CENTERED,
-											SDL_WINDOWPOS_CENTERED,
+											SDL_WINDOWPOS_UNDEFINED,
+											SDL_WINDOWPOS_UNDEFINED,
 											160 * 2,
 											144 * 2,
 											0);
 
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, 0);
 	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
+	SDL_Event ev;
 
-	cart.load_cartrige("test.txt");
+	std::string file_name;
+
+	while (true)
+	{
+		std::cout << "Insert cartrige path:\n";
+		std::cin >> file_name;
+
+		if (cart.load_cartrige(file_name))
+		{
+			std::cout << "Cartrige loaded!\n";
+			break;
+		}
+
+		std::cout << "Failed to load cartrige!\n";
+	}
 
 	mmu.register_chunk(0, 0x7FFF, cart.get_memory_interface());
 	mmu.register_chunk(0x8000, 0x9FFF, &gpu); //vram
 	mmu.register_chunk(0xA000, 0xBFFF, cart.get_memory_interface());
 	mmu.register_chunk(0xC000, 0xFDFF, &ram);
 	mmu.register_chunk(0xFE00, 0xFE9F, &gpu); //oam tables
+	mmu.register_chunk(0xFF00, 0xFF00, &joypad);//input keys register
 	mmu.register_chunk(0xFF01, 0xFF02, &tr); //TEST READER!!!!
 	mmu.register_chunk(0xFF04, 0xFF07, &timer);//timer controls
 	mmu.register_chunk(0xFF0F, 0xFF0F, &ints);//interrupts flags
 	mmu.register_chunk(0xFF40, 0xFF4B, &gpu); //gpu control regs
 	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
+
+	gpu.ram_ptr = ram.get(); //TODO: REMOVE IT IMMEDIATELY!
 
 	cpu.reset();
 	cpu.attach_memory(&mmu);
@@ -74,7 +92,90 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 
 	while (spin)
 	{
-		while (!gpu.is_entering_vblank()) 
+		while (SDL_PollEvent(&ev))
+		{
+			switch (ev.type)
+			{
+				case SDL_KEYDOWN:
+					switch (ev.key.keysym.sym)
+					{
+						case SDLK_LEFT:
+							joypad.push_key(K_LEFT);
+							break;
+
+						case SDLK_RIGHT:
+							joypad.push_key(K_RIGHT);
+							break;
+
+						case SDLK_UP:
+							joypad.push_key(K_UP);
+							break;
+
+						case SDLK_DOWN:
+							joypad.push_key(K_DOWN);
+							break;
+
+						case SDLK_a:
+							joypad.push_key(K_A);
+							break;
+
+						case SDLK_b:
+							joypad.push_key(K_B);
+							break;
+
+						case SDLK_KP_ENTER:
+							joypad.push_key(K_SELECT);
+							break;
+
+						case SDLK_s:
+							joypad.push_key(K_START);
+							break;
+					}
+					break;
+
+				case SDL_KEYUP:
+					switch (ev.key.keysym.sym)
+					{
+					case SDLK_LEFT:
+						joypad.release_key(K_LEFT);
+						break;
+
+					case SDLK_RIGHT:
+						joypad.release_key(K_RIGHT);
+						break;
+
+					case SDLK_UP:
+						joypad.release_key(K_UP);
+						break;
+
+					case SDLK_DOWN:
+						joypad.release_key(K_DOWN);
+						break;
+
+					case SDLK_a:
+						joypad.release_key(K_A);
+						break;
+
+					case SDLK_b:
+						joypad.release_key(K_B);
+						break;
+
+					case SDLK_KP_ENTER:
+						joypad.release_key(K_SELECT);
+						break;
+
+					case SDLK_s:
+						joypad.release_key(K_START);
+						break;
+					}
+					break;
+			}
+
+			if (ev.type == SDL_QUIT)
+				spin = false;
+		}
+
+		while (!gpu.is_entering_vblank()) //if someone turn off lcd, this loop may spin forever
 		{
 			u32 sync_cycles = 0;
 
@@ -105,6 +206,10 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 		SDL_RenderCopy(rend, tex, NULL, NULL);
 		SDL_RenderPresent(rend);
 	}
+
+	SDL_DestroyTexture(tex);
+	SDL_DestroyRenderer(rend);
+	SDL_DestroyWindow(window);
 
 	return 0;
 }
