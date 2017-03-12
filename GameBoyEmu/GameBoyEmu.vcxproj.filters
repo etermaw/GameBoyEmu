@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="tests">
-      <UniqueIdentifier>{aabea5e2-8be7-4dea-8986-6da56fc52ed7}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -98,17 +95,6 @@
     <ClInclude Include="cpu_debugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="gb_test_01.txt">
-      <Filter>tests</Filter>
-    </Text>
-    <Text Include="gb_test_02.txt">
-      <Filter>tests</Filter>
-    </Text>
-    <Text Include="gb_test_03.txt">
-      <Filter>tests</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

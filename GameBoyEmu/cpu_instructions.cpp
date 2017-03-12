@@ -50,6 +50,7 @@ u32 CPUCore::illegal_op(u8 opcode)
 {
 	assert(0 && "Accessed unimplemented instruction!");
 	//DEBUG_ERROR("Accessed unimplemented instruction: %d!", opcode);
+	//__debugbreak();
 	return 0;
 }
 

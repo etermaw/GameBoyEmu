@@ -47,6 +47,7 @@ inline void CPU_Debugger<T>::enter_trap()
 	printf("0x%04x: %s\n", cpu.pc, dispatch_opcode(cpu.mmu->read_byte(cpu.pc)));
 	printf("continue - y, dump registers - d, dump memory - m\n");
 	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
+	printf("change pc - p\n");
 
 	char choice = 0;
 	next_instruction = false;
@@ -120,6 +121,21 @@ inline void CPU_Debugger<T>::enter_trap()
 					printf("Adress greater than 0xFFFF!\n");
 
 				break;
+
+			case 'p':
+			{
+				u32 new_pc = 0;
+				printf("\nnew program counter (16bit): ");
+				scanf("%x", &new_pc);
+
+				if (new_pc <= 0xFFFF)
+					cpu.pc = new_pc;
+
+				else
+					printf("Adress greater than 0xFFFF!\n");
+
+				break;
+			}
 		}
 
 	}
@@ -171,6 +187,11 @@ inline void CPU_Debugger<T>::dump_memory_region(u16 start, u16 end)
 
 	if (end < start)
 		std::swap(start, end);
+
+	printf("\t");
+
+	for (u32 i = 0; i < 16; ++i)
+		printf(" %01x ", (start + i) % 16);
 
 	for (u32 i = start; i <= end; ++i)
 	{
@@ -242,6 +263,7 @@ inline const char* CPU_Debugger<T>::dispatch_opcode(u8 opcode)
 	//static const char* regs_16[] = { "BC", "DE", "HL", "SP", "AF" };
 	//static const char* adr[] = { "(HL)", "(BC)", "(DE)" };
 	//static const char* conditions[] = { "NZ", "Z", "NC", "C" };
+	//static const char* imm[] = { "%02x","%04x" };
 
 	static const u8 adr_tab[256] = { 0, 1, 1, 2, 2, 3, 1, 4, 1, 5, 1, 3,
 	2, 3, 1, 1, 6, 1, 1, 2, 2, 3, 1, 7, 8, 5, 1, 3, 2, 3, 1, 1, 8, 1, 1,

@@ -30,23 +30,26 @@ struct TestReader final : public IMemory
 		}
 };
 
-int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
+int main(int argc, char *argv[])
 {
 	Timer timer;
 	Interrupts ints;
 	MMU mmu;
-	CPU_Debugger<CPU> cpu;//CPU cpu;
+	//CPU cpu;
+	CPU_Debugger<CPU> cpu;
 	Ram ram;
 	Cartrige cart;
 	TestReader tr; //testing
 	Joypad joypad;
 	Gpu gpu;
 
+	cpu.insert_breakpoint(0x100);
+
 	SDL_Window* window = SDL_CreateWindow("Test",
 											SDL_WINDOWPOS_UNDEFINED,
 											SDL_WINDOWPOS_UNDEFINED,
-											160 * 2,
-											144 * 2,
+											160 * 3,
+											144 * 3,
 											0);
 
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, 0);
@@ -175,6 +178,7 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 				spin = false;
 		}
 
+		auto start = std::chrono::high_resolution_clock::now();
 		while (!gpu.is_entering_vblank()) //if someone turn off lcd, this loop may spin forever
 		{
 			u32 sync_cycles = 0;
@@ -205,6 +209,12 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 		SDL_RenderClear(rend);
 		SDL_RenderCopy(rend, tex, NULL, NULL);
 		SDL_RenderPresent(rend);
+
+		auto end = std::chrono::high_resolution_clock::now();
+		auto dur = (end - start).count();
+
+		/*if ((dur / 1000000) < 16)
+			SDL_Delay(16 - (dur / 1000000));*/
 	}
 
 	SDL_DestroyTexture(tex);
@@ -213,69 +223,3 @@ int main(int argc, char *argv[])//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPS
 
 	return 0;
 }
-
-//int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
-//{
-//	Cartrige cart;
-//	Interrupts interrupts;
-//	Ram ram;
-//	MMU virtual_memory;
-//	CPU cpu;
-//	Gpu gpu;
-//	Timer timer;
-//	Joypad joypad;
-//
-//	virtual_memory.register_chunk(0, 0x7FFF, cart.get_memory_interface()); //cartrige rom banks
-//	virtual_memory.register_chunk(0x8000, 0x9FFF, &gpu); //vram memory
-//	virtual_memory.register_chunk(0xA000, 0xBFFF, cart.get_memory_interface()); //external ram
-//	virtual_memory.register_chunk(0xC000, 0xFDFF, &ram); //internal ram
-//	virtual_memory.register_chunk(0xFE00, 0xFE9F, &gpu); //oam tables
-//	//virtual_memory.register_chunk(0xFEA0, 0xFEFF, &not_usable); //reserved memory
-//	virtual_memory.register_chunk(0xFF00, 0xFF00, &joypad);//input keys register
-//	//FF01-FF02 serial data transfer registers
-//	virtual_memory.register_chunk(0xFF04, 0xFF07, &timer);//timer controls
-//	virtual_memory.register_chunk(0xFF0F, 0xFF0F, &interrupts);//interrupts flags
-//	//FF10 - FF3F should be audio registers
-//	virtual_memory.register_chunk(0xFF40, 0xFF4B, &gpu); //gpu control regs
-//	//FF4D - speed switch (CGB only)
-//	virtual_memory.register_chunk(0xFF4F, 0xFF4F, &gpu); //gpu vram bank (GBC)
-//	virtual_memory.register_chunk(0xFF51, 0xFF55, &gpu); //gpu hdma transfer (GBC)
-//	//FF56 - led (CBG only)
-//	virtual_memory.register_chunk(0xFF68, 0xFF6B, &gpu); //gpu GBC regs (GBC)
-//	virtual_memory.register_chunk(0xFF70, 0xFF70, &ram); //internal RAM switch (GBC)
-//	virtual_memory.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
-//	virtual_memory.register_chunk(0xFFFF, 0xFFFF, &interrupts); //interrupts
-//
-//	cpu.attach_memory(&virtual_memory);
-//	cpu.fill_tabs();
-//
-//	bool double_speed = false;
-//
-//	while (wnd.end())
-//	{
-//		u32 cycles = 0;
-//		const u32 clock_mul = double_speed ? 1 : 0; //multiply by 2, or 1
-//		const u32 next_vblank = 70224 << clock_mul;
-//
-//		while (cycles < next_vblank)
-//		{
-//			u32 sync_cycles = 0;
-//
-//			if (interrupts.is_any_raised() && cpu.is_interrupt_enabled())
-//				sync_cycles = cpu.handle_interrupt(interrupts.get_first_raised());
-//
-//			sync_cycles += cpu.step();
-//			sync_cycles += gpu.step(sync_cycles, interrupts) << clock_mul; //if hdma is active, cpu is blocked
-//			//apu.step(sync_cycles);
-//			
-//			if (timer.step(sync_cycles))
-//				interrupts.raise(INT_TIMER);
-//
-//			cycles += sync_cycles;
-//		}
-//
-//		renderer.draw(gpu.get_framebuffer());
-//	}
-//
-//	return 0;
-//}

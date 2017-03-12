@@ -13,7 +13,7 @@ class Cartrige
 		std::unique_ptr<IMemory> memory_interface;
 
 		size_t ram_size;
-		u8 rtc_regs[5];
+		u8 rtc_regs[5] = {};
 		bool battery_ram;
 
 		void load_ram();

@@ -124,8 +124,8 @@ void Cartrige::dispatch()
 {
 	rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
 
-	if (header->cartrige_type == 0x00)
-		memory_interface = std::make_unique<ROMOnly>(ROMOnly(rom.get()));
+	if (header->cartrige_type == 0x00) //or 0x08,0x09 (rom+ram,rom+ram+battery)
+		memory_interface = std::make_unique<NoMBC>(NoMBC(rom.get(), ram.get()));
 
 	else if (in_range(header->cartrige_type, 0x01, 0x03))
 		memory_interface = std::make_unique<MBC1>(MBC1(rom.get(), ram.get()));
@@ -133,7 +133,7 @@ void Cartrige::dispatch()
 	else if (in_range(header->cartrige_type, 0x05, 0x06))
 		memory_interface = std::make_unique<MBC2>(MBC2(rom.get(), ram.get()));
 
-	else if (in_range(header->cartrige_type, 0x0F, 0x13))
+	else if (in_range(header->cartrige_type, 0x0F, 0x13)) //only for 0x0F,0x10 timer is present!
 		memory_interface = std::make_unique<MBC3>(MBC3(rom.get(), ram.get(), rtc_regs));
 
 	else if (in_range(header->cartrige_type, 0x1A, 0x1E))
@@ -141,4 +141,6 @@ void Cartrige::dispatch()
 
 	else
 		memory_interface = nullptr;
+
+	//memory_interface = new(buffer) NoMBC(rom.get(), ram.get());
 }

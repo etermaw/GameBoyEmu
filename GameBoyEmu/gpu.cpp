@@ -47,13 +47,33 @@ void Gpu::vb_mode(Interrupts& interrupts)
 		cycles -= 456;
 		regs[IO_LY]++;
 
+		if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
+		{
+			regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
+			interrupts.raise(INT_LCD);
+		}
+
 		if (regs[IO_LY] == 153)
 		{
-			if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
-				interrupts.raise(INT_LCD);
+			/*if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
+				interrupts.raise(INT_LCD);*/
 
 			regs[IO_LY] = 0;
+		
+			if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
+			{
+				regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
+				interrupts.raise(INT_LCD);
+			}
+		}
+
+		else if (regs[IO_LY] == 1)
+		{
+			regs[IO_LY] = 0;
 			regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
+
+			if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
+				interrupts.raise(INT_LCD);
 		}
 	}
 }
@@ -64,6 +84,12 @@ void Gpu::hb_mode(Interrupts& interrupts)
 	{
 		cycles -= 204;
 		regs[IO_LY]++;
+
+		if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
+		{
+			regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
+			interrupts.raise(INT_LCD);
+		}
 
 		if (regs[IO_LY] != 144)
 			regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
@@ -112,7 +138,7 @@ u8 Gpu::read_byte(u16 adress)
 
 	//if gpu is in mode 2 or 3, ignore read
 	else if (adress >= 0xFE00 && adress < 0xFEA0)
-		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2) ? oam[adress - 0xFE00] : 0xFF;
+		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 && dma_cycles <= 0) ? oam[adress - 0xFE00] : 0xFF;
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
 		return regs[adress - 0xFF40];
@@ -149,7 +175,7 @@ void Gpu::write_byte(u16 adress, u8 value)
 			regs[IO_LCD_STATUS] = (value & 0xF8) | (regs[IO_LCD_STATUS] & 0x3);
 
 		else if (adress == 0xFF44)
-			regs[IO_LY] = 0; //TODO: check LY==LYC
+			regs[IO_LY] = 0; 
 
 		else if (adress == 0xFF46)
 			dma_copy(value);
@@ -157,9 +183,6 @@ void Gpu::write_byte(u16 adress, u8 value)
 		else
 			regs[adress - 0xFF40] = value;
 	}
-
-	else
-		int a = 0;
 }
 
 bool Gpu::is_entering_vblank()
@@ -181,9 +204,8 @@ void Gpu::dma_copy(u8 adress)
 	else if(real_adress >= 0xC000 && real_adress < 0xF000)
 		std::memcpy(oam, &ram_ptr[real_adress - 0xC000], sizeof(u8) * 0xA0);
 
-	dma_cycles = 672; //~160 us, should be correct
-	//however, other spec says that it takes 160 * 4 + 4 cycles (644)
-	//aaaand when dma is launched, cpu can only access HRAM!
+	dma_cycles = 644;
+	//when dma is launched, cpu can only access HRAM!
 	//rumors says that OAM is blocked, but rest can be accessed (with bus conflicts)
 	//but, cpu also can be interrupted
 	//and when cpu is in double-speed mode, oam dma is 2x faster
@@ -325,10 +347,6 @@ void Gpu::draw_sprite_row()
 			}
 		}
 	}
-
-	//select 10 sprites (asc order by x, then by number in oam)
-	//draw them starting from last one (DMG mode, in CGB priority is always assigned by OAM index)
-	//check priority bit, BGP[0] will be always covered by OBJ pixel!!!!
 }
 
 void Gpu::draw_window_row() 
@@ -340,7 +358,7 @@ void Gpu::draw_window_row()
 	const u32 wy = regs[IO_WY];
 	const i32 wx = regs[IO_WX7] - 7;
 	
-	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_BG_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
+	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
 	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
 	const u32 buffer_offset = line * 160;
@@ -391,7 +409,7 @@ void Gpu::turn_off_lcd()
 	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 160 * 140);
 	regs[IO_LY] = 0;
 	regs[IO_LYC] = 0;
-	regs[IO_LCD_STATUS] &= 0xFD; //mode 1
+	regs[IO_LCD_STATUS] &= 0xFC; //mode 1
 	cycles = 0;
 
 	entering_vblank = true;
