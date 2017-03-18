@@ -55,9 +55,6 @@ void Gpu::vb_mode(Interrupts& interrupts)
 
 		if (regs[IO_LY] == 153)
 		{
-			/*if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
-				interrupts.raise(INT_LCD);*/
-
 			regs[IO_LY] = 0;
 		
 			if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
@@ -65,11 +62,7 @@ void Gpu::vb_mode(Interrupts& interrupts)
 				regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
 				interrupts.raise(INT_LCD);
 			}
-		}
 
-		else if (regs[IO_LY] == 1)
-		{
-			regs[IO_LY] = 0;
 			regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
 
 			if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
@@ -138,7 +131,7 @@ u8 Gpu::read_byte(u16 adress)
 
 	//if gpu is in mode 2 or 3, ignore read
 	else if (adress >= 0xFE00 && adress < 0xFEA0)
-		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 && dma_cycles <= 0) ? oam[adress - 0xFE00] : 0xFF;
+		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 /*&& dma_cycles <= 0*/) ? oam[adress - 0xFE00] : 0xFF;
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
 		return regs[adress - 0xFF40];
@@ -279,9 +272,9 @@ void Gpu::draw_sprite_row()
 	//in CBG, just take first 10 fitting line
 	for (u32 i = 0; i < 40 && count < 10; ++i)
 	{
-		i32 y = oam[i*4] - 16; //full sort if oam-dma launched, if single x is modded, just resort it
+		i32 y = oam[i*4] - 16;
 
-		if (y <= line && ((y + height) > line)) //should be ok now
+		if (y <= line && ((y + height) > line))
 		{
 			to_draw[count].y = oam[i * 4];
 			to_draw[count].x = oam[i * 4 + 1];
@@ -303,7 +296,7 @@ void Gpu::draw_sprite_row()
 		const u32 palette_num = IO_OBP_0 + check_bit(atr, 4); //0 - OBP[0], 1 - OBP[1]
 
 		if (check_bit(atr, 6)) //Y flip
-			tile_line = height - tile_line - 1; //should be correct now
+			tile_line = height - tile_line - 1;
 				
 		if (sprite_size)
 			tile_num = tile_line < 8 ? (tile_num & 0xFE) : (tile_num | 0x1);
@@ -325,7 +318,7 @@ void Gpu::draw_sprite_row()
 		{
 			for (u32 j = begin; j < end; ++j) 
 			{
-				u32 id = end - j - 1; //should be ok
+				u32 id = end - j - 1;
 				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 				u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
 
@@ -338,7 +331,7 @@ void Gpu::draw_sprite_row()
 		{
 			for (u32 j = begin; j < end; ++j)
 			{
-				u32 id = end - j - 1; //should be ok
+				u32 id = end - j - 1;
 				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 				u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
 
@@ -454,12 +447,6 @@ u32 Gpu::step(u32 clock_cycles, Interrupts& interrupts)
 		case 3: 
 			transfer_mode(interrupts);
 			break;
-	}
-
-	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-	{
-		regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
-		interrupts.raise(INT_LCD);
 	}
 
 	return 0;

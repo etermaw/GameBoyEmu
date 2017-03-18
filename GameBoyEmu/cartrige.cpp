@@ -86,7 +86,7 @@ void Cartrige::load_ram()
 
 		if (ram_file.is_open())
 		{
-			//if this is mbc3 cart, we need to save additional time registers
+			//if this is mbc3 cart, we need to read additional time registers
 			if (in_range(header->cartrige_type, 0x0F, 0x10))
 				ram_file.read(reinterpret_cast<char*>(rtc_regs), 5); 
 
@@ -123,24 +123,23 @@ IMemory* Cartrige::get_memory_interface() const
 void Cartrige::dispatch()
 {
 	rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
+	u8 type = header->cartrige_type;
 
-	if (header->cartrige_type == 0x00) //or 0x08,0x09 (rom+ram,rom+ram+battery)
+	if (type == 0x00 || type == 0x08 || type == 0x09)
 		memory_interface = std::make_unique<NoMBC>(NoMBC(rom.get(), ram.get()));
 
-	else if (in_range(header->cartrige_type, 0x01, 0x03))
+	else if (in_range(type, 0x01, 0x03))
 		memory_interface = std::make_unique<MBC1>(MBC1(rom.get(), ram.get()));
 
-	else if (in_range(header->cartrige_type, 0x05, 0x06))
+	else if (in_range(type, 0x05, 0x06))
 		memory_interface = std::make_unique<MBC2>(MBC2(rom.get(), ram.get()));
 
-	else if (in_range(header->cartrige_type, 0x0F, 0x13)) //only for 0x0F,0x10 timer is present!
+	else if (in_range(type, 0x0F, 0x13))
 		memory_interface = std::make_unique<MBC3>(MBC3(rom.get(), ram.get(), rtc_regs));
 
-	else if (in_range(header->cartrige_type, 0x1A, 0x1E))
+	else if (in_range(type, 0x1A, 0x1E))
 		memory_interface = std::make_unique<MBC5>(MBC5(rom.get(), ram.get()));
 
 	else
 		memory_interface = nullptr;
-
-	//memory_interface = new(buffer) NoMBC(rom.get(), ram.get());
 }

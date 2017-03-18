@@ -120,6 +120,8 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="apu.cpp" />
     <ClCompile Include="cartrige.cpp" />
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="interrupts.cpp" />
@@ -159,6 +162,7 @@
     <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="apu.h" />
     <ClInclude Include="bit_ops.h" />
     <ClInclude Include="cartrige.h" />
     <ClInclude Include="cpu_debugger.h" />

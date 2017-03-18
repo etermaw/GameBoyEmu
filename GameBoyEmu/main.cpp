@@ -7,6 +7,7 @@
 #include "gpu.h"
 #include "timer.h"
 #include "joypad.h"
+#include "apu.h"
 
 struct TestReader final : public IMemory
 {
@@ -17,7 +18,8 @@ struct TestReader final : public IMemory
 
 		u8 read_byte(u16 adress) override
 		{
-			return 0xFF;
+			return 0;
+			//return 0xFF;
 		}
 
 		void write_byte(u16 adress, u8 val) override
@@ -42,6 +44,7 @@ int main(int argc, char *argv[])
 	TestReader tr; //testing
 	Joypad joypad;
 	Gpu gpu;
+	APU apu;
 
 	cpu.insert_breakpoint(0x100);
 
@@ -81,6 +84,10 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFF01, 0xFF02, &tr); //TEST READER!!!!
 	mmu.register_chunk(0xFF04, 0xFF07, &timer);//timer controls
 	mmu.register_chunk(0xFF0F, 0xFF0F, &ints);//interrupts flags
+
+	mmu.register_chunk(0xFF10, 0xFF26, &apu); //a bit incorrect APU registers
+	mmu.register_chunk(0xFF30, 0xFF3F, &apu); //wave RAM
+
 	mmu.register_chunk(0xFF40, 0xFF4B, &gpu); //gpu control regs
 	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts

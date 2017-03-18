@@ -13,7 +13,7 @@ class CPU_Debugger
 		bool is_breakpoint();
 		void enter_trap();
 
-		const char* dispatch_opcode(u8 opcode);
+		const char* dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2);
 
 	public:
 		T& get_cpu();
@@ -21,7 +21,7 @@ class CPU_Debugger
 		void insert_breakpoint(u16 adress);
 		void remove_breakpoint(u16 adress);
 
-		//void change_register_value(u32 reg, u16 new_val);
+		void change_register_value(u32 reg, u16 new_val);
 		void dump_registers();
 		void dump_memory_region(u16 start, u16 end);
 
@@ -43,11 +43,15 @@ inline bool CPU_Debugger<T>::is_breakpoint()
 template<class T>
 inline void CPU_Debugger<T>::enter_trap()
 {
+	u8 opcode = cpu.mmu->read_byte(cpu.pc), 
+	   b1 = cpu.mmu->read_byte(cpu.pc + 1),
+	   b2 = cpu.mmu->read_byte(cpu.pc + 2);
+
 	printf("\nBREAK POINT!\n");
-	printf("0x%04x: %s\n", cpu.pc, dispatch_opcode(cpu.mmu->read_byte(cpu.pc)));
+	printf("0x%04x: %s\n", cpu.pc, dispatch_opcode(opcode, b1, b2));
 	printf("continue - y, dump registers - d, dump memory - m\n");
 	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
-	printf("change pc - p\n");
+	printf("change pc - p\n");// , change reg value - q\n");
 
 	char choice = 0;
 	next_instruction = false;
@@ -136,6 +140,16 @@ inline void CPU_Debugger<T>::enter_trap()
 
 				break;
 			}
+
+			/*case 'q':
+			{
+				printf("\nSelect register:\n");
+				printf("B - 0,C - 1,D - 2,E - 3,H - 4,L - 5,A - 6,F - 7\n");
+				printf("BC,DE,HL,SP,AF\n");
+
+				change_register_value();
+				break;
+			}*/
 		}
 
 	}
@@ -161,6 +175,16 @@ inline void CPU_Debugger<T>::remove_breakpoint(u16 adress)
 
 	if (it != break_points.end())
 		break_points.erase(it);
+}
+
+template<class T>
+inline void CPU_Debugger<T>::change_register_value(u32 reg, u16 new_val)
+{
+	if (new_val < 0x08)
+		cpu.reg_8[reg] = new_val & 0xFF;
+
+	else if (new_val >= 0x10 && new_val <= 0x13)
+		cpu.reg_16[reg - 0x10] = new_val;
 }
 
 template<class T>
@@ -252,12 +276,17 @@ inline void CPU_Debugger<T>::unhalt()
 }
 
 template<class T>
-inline const char* CPU_Debugger<T>::dispatch_opcode(u8 opcode)
+inline const char* CPU_Debugger<T>::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
 {
 	static const char* opcodes[] = { "NOP", "LD %s,%s", "INC %s", "DEC %s", "RLCA",
 		"ADD %s,%s", "STOP", "RLA", "JR %s", "DAA", "SCF", "HALT", "ADC %s,%s", "SUB %s,%s",
 		"SBC %s,%s", "AND %s", "XOR %s", "OR %s", "CP %s", "RET %s", "POP %s", "PUSH %s", 
 		"JP %s", "CALL %s", "RST %s", "RETI", "LDH %s,%s", "DI", "EI"};
+
+	static const char* ext_opcodes[] = { "RLC {0}", "RRC {0}", "RL {0}", "RR {0}",
+		"SLA {0}", "SRA {0}", "SWAP {0}", "SRL {0}", "BIT {1},{0}", "RES {1},{0}", "SET {1},{0}"};
+
+	static const char* regs[] = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
 
 	//static const char* regs_8[] = { "B", "C", "D", "E", "H", "L", "A" };
 	//static const char* regs_16[] = { "BC", "DE", "HL", "SP", "AF" };
@@ -280,5 +309,9 @@ inline const char* CPU_Debugger<T>::dispatch_opcode(u8 opcode)
 	22, 1, 1, 1, 1, 16, 24, 26, 20, 1, 27, 1, 21, 17, 24, 1, 1, 1, 28, 1,
 	1, 18, 24 };
 
-	return opcodes[adr_tab[opcode]];
+	if (opcode != 0xCB)
+		return opcodes[adr_tab[opcode]];
+
+	else
+		return ext_opcodes[byte_1 < 0x40 ? byte_1 / 8 : byte_1 / 0x40 + 7];
 }

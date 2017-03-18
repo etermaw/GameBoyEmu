@@ -130,7 +130,7 @@ u8 MBC3::read_byte(u16 adress)
 void MBC3::write_byte(u16 adress, u8 value)
 {
 	if (adress < 0x2000)
-		ram_enabled = ((value & 0x0F) == 0x0A); //mbc3 + timer
+		ram_enabled = ((value & 0x0F) == 0x0A); //ram_enabled affects ram AND timer
 
 	else if (adress < 0x4000)
 		swap_rom_bank(std::max(1, value & 0x7F));
