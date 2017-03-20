@@ -200,6 +200,7 @@ int main(int argc, char *argv[])
 
 			sync_cycles += cpu.step();
 			sync_cycles += gpu.step(sync_cycles, ints);
+			apu.step(sync_cycles);
 
 			if (timer.step(sync_cycles))
 				ints.raise(INT_TIMER);

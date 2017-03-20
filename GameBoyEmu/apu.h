@@ -14,7 +14,7 @@ class APU final : public IMemory
 		u8 wave_ram[16];
 		u8 dummy_regs[22];
 
-		SquareSynth channel_1,channel_2;
+		//SquareSynth channel_1,channel_2;
 		WaveSynth channel_3;
 		NoiseSynth channel_4;
 

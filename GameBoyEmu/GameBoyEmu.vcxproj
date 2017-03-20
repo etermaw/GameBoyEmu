@@ -162,6 +162,7 @@
     <ClCompile Include="ram.cpp" />
     <ClCompile Include="square_synth.cpp" />
     <ClCompile Include="timer.cpp" />
+    <ClCompile Include="wave_synth.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="apu.h" />

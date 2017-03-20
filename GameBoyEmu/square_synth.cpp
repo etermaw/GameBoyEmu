@@ -2,7 +2,7 @@
 
 void SquareSynth::update_sweep()
 {
-	--sweep_counter;
+	/*--sweep_counter;
 
 	if (sweep_counter == 0)
 	{
@@ -15,7 +15,7 @@ void SquareSynth::update_sweep()
 		{
 
 		}
-	}
+	}*/
 }
 
 void SquareSynth::update_length()

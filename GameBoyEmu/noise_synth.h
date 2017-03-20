@@ -26,6 +26,8 @@ class NoiseSynth
 		void start_playing();
 
 	public:
+		NoiseSynth() { memset(this, 0, sizeof(*this)); }
+
 		void update_length();		
 		void update_envelope();
 		void step(u32 cycles);
