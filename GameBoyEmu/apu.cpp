@@ -32,4 +32,37 @@ void APU::write_byte(u16 adress, u8 value)
 
 void APU::step(u32 cycles)
 {
+	sequencer_cycles += cycles;
+
+	if (sequencer_cycles >= 8192)
+	{
+		sequencer_cycles -= 8192;
+
+		if (sequencer_frame % 2 == 0)
+		{
+			channel_1.update_length();
+			channel_2.update_length();
+			channel_3.update_length();
+			channel_4.update_length();
+
+			if (sequencer_frame == 2 || sequencer_frame == 6)
+				channel_1.update_sweep();
+		}
+
+		else if (sequencer_frame == 7)
+		{
+			channel_1.update_envelope();
+			channel_2.update_envelope();
+			channel_4.update_envelope();
+		}
+
+		sequencer_frame = (sequencer_frame + 1) % 8;
+	}
+
+	channel_1.step(cycles);
+	channel_2.step(cycles);
+	channel_3.step(cycles);
+	channel_4.step(cycles);
+
+	//every ~96 cycles take one sample into final buffer (downsampling)
 }

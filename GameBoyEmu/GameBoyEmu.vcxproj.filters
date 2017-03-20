@@ -51,6 +51,12 @@
     <ClCompile Include="apu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="noise_synth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="square_synth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="definitions.h">
@@ -99,6 +105,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="apu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="noise_synth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wave_synth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="square_synth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

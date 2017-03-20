@@ -1,17 +1,22 @@
 #pragma once
 #include "stdafx.h"
 #include "IMemory.h"
+#include "square_synth.h"
+#include "wave_synth.h"
+#include "noise_synth.h"
 
 class APU final : public IMemory
 {
 	private:
-		/*u8 nr1x[5];
-		u8 nr2x[4];
-		u8 nr3x[5];
-		u8 nr4x[4];
-		u8 control[3];*/
+		u32 sequencer_cycles;
+		u32 sequencer_frame;
+
 		u8 wave_ram[16];
 		u8 dummy_regs[22];
+
+		SquareSynth channel_1,channel_2;
+		WaveSynth channel_3;
+		NoiseSynth channel_4;
 
 	public:
 		APU();

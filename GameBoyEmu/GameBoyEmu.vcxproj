@@ -158,7 +158,9 @@
     <ClCompile Include="cpu_instructions.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mmu.cpp" />
+    <ClCompile Include="noise_synth.cpp" />
     <ClCompile Include="ram.cpp" />
+    <ClCompile Include="square_synth.cpp" />
     <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -175,9 +177,12 @@
     <ClInclude Include="definitions.h" />
     <ClInclude Include="IMemory.h" />
     <ClInclude Include="mmu.h" />
+    <ClInclude Include="noise_synth.h" />
     <ClInclude Include="ram.h" />
+    <ClInclude Include="square_synth.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="timer.h" />
+    <ClInclude Include="wave_synth.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
