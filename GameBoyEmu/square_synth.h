@@ -32,6 +32,8 @@ class SquareSynth
 		void start_playing();
 
 	public:
+		SquareSynth() { memset(this, 0, sizeof(*this)); }
+
 		void update_sweep();
 		void update_length();
 		void update_envelope();

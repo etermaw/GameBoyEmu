@@ -11,6 +11,8 @@ class APU final : public IMemory
 		u32 sequencer_cycles;
 		u32 sequencer_frame;
 
+		bool enabled = false;
+
 		//u8 wave_ram[16];
 		u8 dummy_regs[22];
 

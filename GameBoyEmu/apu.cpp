@@ -4,25 +4,32 @@ APU::APU() : dummy_regs() {}
 
 u8 APU::read_byte(u16 adress)
 {
-	if (adress >= 0xFF10 && adress <= 0xFF14)
-		return channel_1.read_reg(adress - 0xFF10);
-
-	else if (adress >= 0xFF16 && adress <= 0xFF19)
-		return channel_2.read_reg(adress - 0xFF15); //why ff15? because we skip 1st register!
-
-	else if (adress >= 0xFF1A && adress <= 0xFF1E)
-		return channel_3.read_reg(adress - 0xFF1A);
-
-	else if (adress >= 0xFF20 && adress <= 0xFF23)
-		return channel_4.read_reg(adress - 0xFF20);
-
-	else if (adress >= 0xFF24 && adress <= 0xFF26)
+	if (enabled)
 	{
+		if (adress >= 0xFF10 && adress <= 0xFF14)
+			return channel_1.read_reg(adress - 0xFF10);
 
+		else if (adress >= 0xFF16 && adress <= 0xFF19)
+			return channel_2.read_reg(adress - 0xFF15); //why ff15? because we skip 1st register!
+
+		else if (adress >= 0xFF1A && adress <= 0xFF1E)
+			return channel_3.read_reg(adress - 0xFF1A);
+
+		else if (adress >= 0xFF20 && adress <= 0xFF23)
+			return channel_4.read_reg(adress - 0xFF20);
+
+		else if (adress >= 0xFF24 && adress <= 0xFF25)
+			return dummy_regs[adress - 0xFF10];
+
+		else if (adress == 0xFF26)
+			return (enabled << 7) & 0x80;
+
+		else if (adress >= 0xFF30 && adress <= 0xFF3F)
+			return channel_3.read_ram(adress - 0xFF30);
 	}
 
-	else if (adress >= 0xFF30 && adress <= 0xFF3F)
-		return channel_3.read_ram(adress - 0xFF30);
+	else if (adress == 0xFF26)
+		return (enabled << 7) & 0x80;
 
 	else
 		return 0xFF;
@@ -42,8 +49,11 @@ void APU::write_byte(u16 adress, u8 value)
 	else if (adress >= 0xFF20 && adress <= 0xFF23)
 		channel_4.write_reg(adress - 0xFF20, value);
 
-	else if (adress >= 0xFF24 && adress <= 0xFF26)
+	else if (adress >= 0xFF24 && adress <= 0xFF25)
 		dummy_regs[adress - 0xFF10] = value;
+
+	else if (adress == 0xFF26)
+		enabled = check_bit(value, 7);
 
 	else if (adress >= 0xFF30 && adress <= 0xFF3F)
 		channel_3.write_ram(adress - 0xFF30, value);
