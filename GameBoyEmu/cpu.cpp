@@ -16,7 +16,7 @@ void CPU::fill_tabs()
 
 	instruction_map[0x00] = &CPUCore::nop;
 	instruction_map[0x01] = &CPUCore::ld_rr_nn;
-	instruction_map[0x02] = &CPUCore::ld_adr_a;
+	instruction_map[0x02] = &CPUCore::ld_rr_a;
 	instruction_map[0x03] = &CPUCore::inc_rr;
 	instruction_map[0x04] = &CPUCore::inc_r;
 	instruction_map[0x05] = &CPUCore::dec_r;
@@ -33,7 +33,7 @@ void CPU::fill_tabs()
 
 	instruction_map[0x10] = &CPUCore::stop;
 	instruction_map[0x11] = &CPUCore::ld_rr_nn;
-	instruction_map[0x12] = &CPUCore::ld_adr_a;
+	instruction_map[0x12] = &CPUCore::ld_rr_a;
 	instruction_map[0x13] = &CPUCore::inc_rr;
 	instruction_map[0x14] = &CPUCore::inc_r;
 	instruction_map[0x15] = &CPUCore::dec_r;
@@ -48,7 +48,7 @@ void CPU::fill_tabs()
 	instruction_map[0x1E] = &CPUCore::ld_r_n;
 	instruction_map[0x1F] = &CPUCore::rra;
 
-	instruction_map[0x20] = &CPUCore::jr_nz_r;
+	instruction_map[0x20] = &CPUCore::jr_cond_r;
 	instruction_map[0x21] = &CPUCore::ld_rr_nn;
 	instruction_map[0x22] = &CPUCore::ldi_hl_a;
 	instruction_map[0x23] = &CPUCore::inc_rr;
@@ -56,7 +56,7 @@ void CPU::fill_tabs()
 	instruction_map[0x25] = &CPUCore::dec_r;
 	instruction_map[0x26] = &CPUCore::ld_r_n;
 	instruction_map[0x27] = &CPUCore::daa;
-	instruction_map[0x28] = &CPUCore::jr_z_r;
+	instruction_map[0x28] = &CPUCore::jr_cond_r;
 	instruction_map[0x29] = &CPUCore::add_hl_rr;
 	instruction_map[0x2A] = &CPUCore::ldi_a_hl;
 	instruction_map[0x2B] = &CPUCore::dec_rr;
@@ -65,7 +65,7 @@ void CPU::fill_tabs()
 	instruction_map[0x2E] = &CPUCore::ld_r_n;
 	instruction_map[0x2F] = &CPUCore::cpl;
 
-	instruction_map[0x30] = &CPUCore::jr_nc_r;
+	instruction_map[0x30] = &CPUCore::jr_cond_r;
 	instruction_map[0x31] = &CPUCore::ld_rr_nn;
 	instruction_map[0x32] = &CPUCore::ldd_hl_a;
 	instruction_map[0x33] = &CPUCore::inc_rr;
@@ -73,7 +73,7 @@ void CPU::fill_tabs()
 	instruction_map[0x35] = &CPUCore::dec_hl;
 	instruction_map[0x36] = &CPUCore::ld_hl_n;
 	instruction_map[0x37] = &CPUCore::scf;
-	instruction_map[0x38] = &CPUCore::jr_c_r;
+	instruction_map[0x38] = &CPUCore::jr_cond_r;
 	instruction_map[0x39] = &CPUCore::add_hl_rr;
 	instruction_map[0x3A] = &CPUCore::ldd_a_hl;
 	instruction_map[0x3B] = &CPUCore::dec_rr;

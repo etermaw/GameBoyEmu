@@ -35,7 +35,7 @@ class CPUCore
 
 		u32 nop(u8 unused);
 		u32 ld_rr_nn(u8 opcode);
-		u32 ld_adr_a(u8 opcode);
+		u32 ld_rr_a(u8 opcode);
 		u32 inc_rr(u8 opcode);
 		u32 inc_r(u8 opcode);
 		u32 dec_r(u8 opcode);
@@ -50,19 +50,16 @@ class CPUCore
 		u32 rla(u8 opcode);
 		u32 jr_n(u8 opcode);
 		u32 rra(u8 opcode);
-		u32 jr_nz_r(u8 opcode);
+		u32 jr_cond_r(u8 opcode);
 		u32 ldi_hl_a(u8 opcode);
 		u32 daa(u8 opcode);
-		u32 jr_z_r(u8 opcode);
 		u32 ldi_a_hl(u8 opcode);
 		u32 cpl(u8 opcode);
-		u32 jr_nc_r(u8 opcode);
 		u32 ldd_hl_a(u8 opcode);
 		u32 inc_hl(u8 opcode);
 		u32 dec_hl(u8 opcode);
 		u32 ld_hl_n(u8 opcode);
 		u32 scf(u8 opcode);
-		u32 jr_c_r(u8 opcode);
 		u32 ldd_a_hl(u8 opcode);
 		u32 ccf(u8 opcode);
 		u32 ld_r_r(u8 opcode);

@@ -6,9 +6,7 @@
 class Gpu final : public IMemory
 {
 	private:
-		std::function<u8*(u16)> memory_callback;
 		std::unique_ptr<u32[]> screen_buffer;
-
 		std::unique_ptr<u8[]> vram; 
 		
 		u32 cycles;
@@ -47,5 +45,4 @@ class Gpu final : public IMemory
 		
 		u32 step(u32 clock_cycles, Interrupts& interrupts);
 		const u32* get_frame_buffer() const { return screen_buffer.get(); }
-		void set_memory_callback(std::function<u8*(u16)> callback) { memory_callback = callback; }
 };
