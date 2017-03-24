@@ -123,8 +123,15 @@ void Gpu::transfer_mode(Interrupts& interrupts)
 	}
 }
 
+//u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 u8 Gpu::read_byte(u16 adress)
 {
+	/*if (cycles_passed > 0)
+	{
+		step(cycles_passed);
+		cycles_ahead = cycles_passed;
+	}*/
+
 	//if gpu is in mode 3 ignore read (return 0xFF instead)
 	if (adress >= 0x8000 && adress < 0xA000)
 		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? vram[adress - 0x8000] : 0xFF;
@@ -137,8 +144,15 @@ u8 Gpu::read_byte(u16 adress)
 		return regs[adress - 0xFF40];
 }
 
+//void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 void Gpu::write_byte(u16 adress, u8 value)
 {
+	/*if (cycles_passed > 0)
+	{
+		step(cycles_passed);
+		cycles_ahead = cycles_passed;
+	}*/
+
 	//if gpu is in mode 3 ignore write
 	if (adress >= 0x8000 && adress < 0xA000 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 		vram[adress - 0x8000] = value;

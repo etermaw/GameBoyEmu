@@ -5,16 +5,14 @@ static constexpr u8 reg_map[] = { B, C, D, E, H, L, -1, A }; //instead of -1, ad
 
 void CPUCore::push(u16 value)
 {
-	mmu->write_byte(reg_16[SP] - 1, (value >> 8) & 0xFF);
-	mmu->write_byte(reg_16[SP] - 2, value & 0xFF);
-	reg_16[SP] -= 2;
+	mmu->write_byte(--reg_16[SP], (value >> 8) & 0xFF);
+	mmu->write_byte(--reg_16[SP], value & 0xFF);
 }
 
 u16 CPUCore::pop()
 {
-	u8 high = mmu->read_byte(reg_16[SP] + 1);
-	u8 low = mmu->read_byte(reg_16[SP]);
-	reg_16[SP] += 2;
+	u8 low = mmu->read_byte(reg_16[SP]++);
+	u8 high = mmu->read_byte(reg_16[SP]++);
 
 	return (high << 8) | low;
 }

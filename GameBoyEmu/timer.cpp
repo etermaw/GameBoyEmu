@@ -23,14 +23,14 @@ bool Timer::step(u32 cycles)
 
 		while (counter_cycles >= tick_cycles[control])
 		{
-			if (counter == 0xFF)
+			if (counter != 0xFF)
+				++counter;
+
+			else
 			{
 				counter = mod;
 				raise_interrupt = true;
 			}
-
-			else
-				counter++;
 
 			counter_cycles -= tick_cycles[control];
 		}
@@ -39,8 +39,15 @@ bool Timer::step(u32 cycles)
 	return raise_interrupt;
 }
 
+//u8 Timer::read_byte(u16 adress, u32 cycles_passed)
 u8 Timer::read_byte(u16 adress)
 {
+	/*if (cycles_passed > 0)
+	{
+		step(cycles_passed);
+		cycles_ahead = cycles_passed;
+	}*/
+
 	if (adress == 0xFF04)
 		return divider;
 
@@ -54,8 +61,15 @@ u8 Timer::read_byte(u16 adress)
 		return change_bit(control, enabled, 2);
 }
 
+//void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 void Timer::write_byte(u16 adress, u8 value)
 {
+	/*if (cycles_passed > 0)
+	{
+		step(cycles_passed);
+		cycles_ahead = cycles_passed;
+	}*/
+
 	if (adress == 0xFF04)
 		divider = 0;
 
