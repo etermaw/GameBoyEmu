@@ -8,6 +8,7 @@
 class APU final : public IMemory
 {
 	private:
+		u32 cycles_ahead;
 		u32 sequencer_cycles;
 		u32 sequencer_frame;
 
@@ -20,11 +21,13 @@ class APU final : public IMemory
 		WaveSynth channel_3;
 		NoiseSynth channel_4;
 
+		void step_ahead(u32 cycles);
+
 	public:
 		APU();
 		
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 
 		void step(u32 cycles);
 };

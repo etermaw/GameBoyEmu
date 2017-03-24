@@ -13,10 +13,10 @@ class CPUCore
 	using instr = u32(CPUCore::*)(u8);
 
 	protected:
-		void push(u16 value);
-		u16 pop();
-		void write_word(u16 adress, u16 value);
-		u16 read_word(u16 adress);
+		void push(u16 value, u32 cach_up_cycles);
+		u16 pop(u32 cach_up_cycles);
+		void write_word(u16 adress, u16 value, u32 cach_up_cycles);
+		u16 read_word(u16 adress, u32 cach_up_cycles);
 
 	public:
 		MMU* mmu;
@@ -28,8 +28,8 @@ class CPUCore
 		bool is_halted;
 		bool interrupts;
 
-		u8 fetch8();
-		u16 fetch16();
+		u8 fetch8(u32 cach_up_cycles);
+		u16 fetch16(u32 cach_up_cycles);
 
 		u32 illegal_op(u8 opcode);
 

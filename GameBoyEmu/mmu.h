@@ -12,7 +12,7 @@ class MMU
 	public:
 		void register_chunk(u16 start, u16 end, IMemory* handler);
 
-		u8 read_byte(u16 adress);
-		void write_byte(u16 adress, u8 value);
+		u8 read_byte(u16 adress, u32 cycles_passed);
+		void write_byte(u16 adress, u8 value, u32 cycles_passed);
 };
 

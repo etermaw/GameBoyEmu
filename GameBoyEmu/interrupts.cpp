@@ -24,7 +24,7 @@ INTERRUPTS Interrupts::get_first_raised()
 	return static_cast<INTERRUPTS>(counter);
 }
 
-u8 Interrupts::read_byte(u16 adress)
+u8 Interrupts::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress == 0xFF0F)
 		return interrupt_flags;
@@ -32,10 +32,11 @@ u8 Interrupts::read_byte(u16 adress)
 	else if (adress == 0xFFFF)
 		return interrupt_mask;
 
-	//else ignore
+	else
+		return 0xFF;
 }
 
-void Interrupts::write_byte(u16 adress, u8 value)
+void Interrupts::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
 	if (adress == 0xFF0F)
 		interrupt_flags = value & 0x1F;

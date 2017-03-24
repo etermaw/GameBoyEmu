@@ -44,9 +44,9 @@ inline bool CPU_Debugger<T>::is_breakpoint()
 template<class T>
 inline void CPU_Debugger<T>::enter_trap()
 {
-	u8 opcode = cpu.mmu->read_byte(cpu.pc), 
-	   b1 = cpu.mmu->read_byte(cpu.pc + 1),
-	   b2 = cpu.mmu->read_byte(cpu.pc + 2);
+	u8 opcode = cpu.mmu->read_byte(cpu.pc, 0), 
+	   b1 = cpu.mmu->read_byte(cpu.pc + 1, 0),
+	   b2 = cpu.mmu->read_byte(cpu.pc + 2, 0);
 
 	char buffer[32];
 	const char* op = dispatch_opcode(opcode, b1, b2);
@@ -227,7 +227,7 @@ inline void CPU_Debugger<T>::dump_memory_region(u16 start, u16 end)
 		if (in_row == 15)
 			printf("\n0x%04x: ", i);
 
-		printf("%02x ", cpu.mmu->read_byte(i));
+		printf("%02x ", cpu.mmu->read_byte(i, 0));
 
 		in_row = (in_row + 1) % 16;
 	}

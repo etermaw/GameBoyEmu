@@ -1,6 +1,6 @@
 #include "ram.h"
 
-u8 Ram::read_byte(u16 adress)
+u8 Ram::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress >= 0xC000 && adress < 0xD000)
 		return memory[adress - 0xC000];
@@ -21,7 +21,7 @@ u8 Ram::read_byte(u16 adress)
 		return 0xFF;
 }
 
-void Ram::write_byte(u16 adress, u8 value)
+void Ram::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
 	if (adress >= 0xC000 && adress < 0xE000)
 		memory[adress - 0xC000] = value;

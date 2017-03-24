@@ -26,7 +26,8 @@ u32 get_dmg_color(u32 num)
 	return color_tab[num]; //0xFFFFFFFF - (0x00555555 * num);
 }
 
-Gpu::Gpu() : regs(), cycles(0), dma_cycles(0), enable_delay(0), entering_vblank()
+Gpu::Gpu(Interrupts& ints) : 
+	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), entering_vblank()
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -40,7 +41,7 @@ Gpu::Gpu() : regs(), cycles(0), dma_cycles(0), enable_delay(0), entering_vblank(
 	std::memset(oam, 0xFF, sizeof(u8) * 0xA0);
 }
 
-void Gpu::vb_mode(Interrupts& interrupts)
+void Gpu::vb_mode()
 {
 	if (cycles >= 456)
 	{
@@ -71,7 +72,7 @@ void Gpu::vb_mode(Interrupts& interrupts)
 	}
 }
 
-void Gpu::hb_mode(Interrupts& interrupts)
+void Gpu::hb_mode()
 {
 	if (cycles >= 204)
 	{
@@ -100,7 +101,7 @@ void Gpu::hb_mode(Interrupts& interrupts)
 	}
 }
 
-void Gpu::oam_mode(Interrupts& interrupts)
+void Gpu::oam_mode()
 {
 	if (cycles >= 80)
 	{
@@ -109,7 +110,7 @@ void Gpu::oam_mode(Interrupts& interrupts)
 	}
 }
 
-void Gpu::transfer_mode(Interrupts& interrupts)
+void Gpu::transfer_mode()
 {
 	if (cycles >= 172)
 	{
@@ -123,81 +124,40 @@ void Gpu::transfer_mode(Interrupts& interrupts)
 	}
 }
 
-//u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
-u8 Gpu::read_byte(u16 adress)
+void Gpu::step_ahead(u32 clock_cycles)
 {
-	/*if (cycles_passed > 0)
+	if (dma_cycles > 0)
+		dma_cycles = std::max(0, dma_cycles - static_cast<int>(clock_cycles));
+
+	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
+		return;
+
+	else if (enable_delay > 0)
 	{
-		step(cycles_passed);
-		cycles_ahead = cycles_passed;
-	}*/
-
-	//if gpu is in mode 3 ignore read (return 0xFF instead)
-	if (adress >= 0x8000 && adress < 0xA000)
-		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? vram[adress - 0x8000] : 0xFF;
-
-	//if gpu is in mode 2 or 3, ignore read
-	else if (adress >= 0xFE00 && adress < 0xFEA0)
-		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 /*&& dma_cycles <= 0*/) ? oam[adress - 0xFE00] : 0xFF;
-
-	else if (adress >= 0xFF40 && adress <= 0xFF4B)
-		return regs[adress - 0xFF40];
-}
-
-//void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
-void Gpu::write_byte(u16 adress, u8 value)
-{
-	/*if (cycles_passed > 0)
-	{
-		step(cycles_passed);
-		cycles_ahead = cycles_passed;
-	}*/
-
-	//if gpu is in mode 3 ignore write
-	if (adress >= 0x8000 && adress < 0xA000 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
-		vram[adress - 0x8000] = value;
-
-	//if gpu is in mode 2 or 3, ignore write
-	else if (adress >= 0xFE00 && adress < 0xFEA0 && ((regs[IO_LCD_STATUS] & 0x3) < 0x2))
-		oam[adress - 0xFE00] = value;
-
-	else if (adress >= 0xFF40 && adress <= 0xFF4B)
-	{
-		if (adress == 0xFF40)
-		{
-			bool lcd_power = check_bit(value, LC_POWER);
-			bool current_power = check_bit(regs[IO_LCD_CONTROL], LC_POWER);
-
-			if (!lcd_power && current_power)
-				turn_off_lcd();
-
-			else if (lcd_power && !current_power)
-				turn_on_lcd();
-
-			regs[IO_LCD_CONTROL] = value;
-		}
-
-		//bits 0-2 in lcd_status are read only, so we need to mask them out!
-		else if (adress == 0xFF41)
-			regs[IO_LCD_STATUS] = (value & 0xF8) | (regs[IO_LCD_STATUS] & 0x3);
-
-		else if (adress == 0xFF44)
-			regs[IO_LY] = 0; 
-
-		else if (adress == 0xFF46)
-			dma_copy(value);
-
-		else
-			regs[adress - 0xFF40] = value;
+		enable_delay = std::max(0, enable_delay - static_cast<int>(clock_cycles));
+		return;
 	}
-}
 
-bool Gpu::is_entering_vblank()
-{
-	bool tmp = entering_vblank;
-	entering_vblank = false;
+	cycles += clock_cycles;
 
-	return tmp;
+	switch (regs[IO_LCD_STATUS] & 0x3)
+	{
+		case 0:
+			hb_mode();
+			break;
+
+		case 1:
+			vb_mode();
+			break;
+
+		case 2:
+			oam_mode();
+			break;
+
+		case 3:
+			transfer_mode();
+			break;
+	}
 }
 
 void Gpu::dma_copy(u8 adress)
@@ -428,40 +388,87 @@ void Gpu::turn_on_lcd()
 		enable_delay = 244;
 }
 
-u32 Gpu::step(u32 clock_cycles, Interrupts& interrupts)
+u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 {
-	if (dma_cycles > 0)
-		dma_cycles = std::max(0, dma_cycles - static_cast<int>(clock_cycles));
+	cycles_passed -= cycles_ahead;
 
-	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
-		return 0;
-
-	else if (enable_delay > 0)
+	if (cycles_passed > 0)
 	{
-		enable_delay = std::max(0, enable_delay - static_cast<int>(clock_cycles));
-		return 0;
+		step_ahead(cycles_passed);
+		cycles_ahead += cycles_passed;
 	}
 
-	cycles += clock_cycles;
+	//if gpu is in mode 3 ignore read (return 0xFF instead)
+	if (adress >= 0x8000 && adress < 0xA000)
+		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? vram[adress - 0x8000] : 0xFF;
 
-	switch (regs[IO_LCD_STATUS] & 0x3)
+	//if gpu is in mode 2 or 3, ignore read
+	else if (adress >= 0xFE00 && adress < 0xFEA0)
+		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 /*&& dma_cycles <= 0*/) ? oam[adress - 0xFE00] : 0xFF;
+
+	else if (adress >= 0xFF40 && adress <= 0xFF4B)
+		return regs[adress - 0xFF40];
+}
+
+void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
+{
+	cycles_passed -= cycles_ahead;
+
+	if (cycles_passed > 0)
 	{
-		case 0: 
-			hb_mode(interrupts);
-			break;
-
-		case 1:
-			vb_mode(interrupts);
-			break;
-
-		case 2:
-			oam_mode(interrupts);
-			break;
-
-		case 3: 
-			transfer_mode(interrupts);
-			break;
+		step_ahead(cycles_passed);
+		cycles_ahead += cycles_passed;
 	}
 
-	return 0;
+	//if gpu is in mode 3 ignore write
+	if (adress >= 0x8000 && adress < 0xA000 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
+		vram[adress - 0x8000] = value;
+
+	//if gpu is in mode 2 or 3, ignore write
+	else if (adress >= 0xFE00 && adress < 0xFEA0 && ((regs[IO_LCD_STATUS] & 0x3) < 0x2))
+		oam[adress - 0xFE00] = value;
+
+	else if (adress >= 0xFF40 && adress <= 0xFF4B)
+	{
+		if (adress == 0xFF40)
+		{
+			bool lcd_power = check_bit(value, LC_POWER);
+			bool current_power = check_bit(regs[IO_LCD_CONTROL], LC_POWER);
+
+			if (!lcd_power && current_power)
+				turn_off_lcd();
+
+			else if (lcd_power && !current_power)
+				turn_on_lcd();
+
+			regs[IO_LCD_CONTROL] = value;
+		}
+
+		//bits 0-2 in lcd_status are read only, so we need to mask them out!
+		else if (adress == 0xFF41)
+			regs[IO_LCD_STATUS] = (value & 0xF8) | (regs[IO_LCD_STATUS] & 0x3);
+
+		else if (adress == 0xFF44)
+			regs[IO_LY] = 0;
+
+		else if (adress == 0xFF46)
+			dma_copy(value);
+
+		else
+			regs[adress - 0xFF40] = value;
+	}
+}
+
+bool Gpu::is_entering_vblank()
+{
+	bool tmp = entering_vblank;
+	entering_vblank = false;
+
+	return tmp;
+}
+
+void Gpu::step(u32 clock_cycles)
+{
+	step_ahead(clock_cycles - cycles_ahead);
+	cycles_ahead = 0;
 }

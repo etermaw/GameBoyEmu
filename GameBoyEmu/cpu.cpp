@@ -231,14 +231,14 @@ u32 CPU::step()
 		return nop(0); 
 
 	u32 cycles_passed = 0;
-	u8 opcode = fetch8();
+	u8 opcode = fetch8(0); //currently we are 0 cycles ahead of rest systems
 	
 	if (opcode != 0xCB)
 		cycles_passed = (this->*instruction_map[opcode])(opcode);
 
 	else
 	{
-		u8 ext_opcode = fetch8();
+		u8 ext_opcode = fetch8(4); //2x fetch == cpu are ~4 cycles ahead 
 		cycles_passed = (this->*ext_instruction_map[ext_opcode])(ext_opcode);
 	}
 
@@ -249,7 +249,7 @@ u32 CPU::handle_interrupt(INTERRUPTS code)
 {
 	interrupts = false; //disable all interrupts
 
-	push(pc);
+	push(pc, 4); //TODO: not sure if this is correct value
 	pc = 0x40 + code * 8; //jump to interrupt handler
 
 	return 20;

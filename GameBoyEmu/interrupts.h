@@ -15,6 +15,6 @@ class Interrupts final : public IMemory
 		bool is_any_raised();
 		INTERRUPTS get_first_raised();
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 };

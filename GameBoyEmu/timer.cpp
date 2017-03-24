@@ -1,12 +1,10 @@
 #include "stdafx.h"
 #include "timer.h"
 
-bool Timer::step(u32 cycles)
+void Timer::step_ahead(u32 cycles)
 {
 	//~4kHz, ~262kHz, ~65,5kHz, ~16kHz
 	static const u32 tick_cycles[] = {1024, 16, 64, 256};
-
-	bool raise_interrupt = false;
 
 	divider_cycles += cycles;
 
@@ -29,24 +27,29 @@ bool Timer::step(u32 cycles)
 			else
 			{
 				counter = mod;
-				raise_interrupt = true;
+				interrupts.raise(INT_TIMER);
 			}
 
 			counter_cycles -= tick_cycles[control];
 		}
 	}
-
-	return raise_interrupt;
 }
 
-//u8 Timer::read_byte(u16 adress, u32 cycles_passed)
-u8 Timer::read_byte(u16 adress)
+void Timer::step(u32 cycles)
 {
-	/*if (cycles_passed > 0)
+	step_ahead(cycles - cycles_ahead);
+	cycles_ahead = 0;
+}
+
+u8 Timer::read_byte(u16 adress, u32 cycles_passed)
+{
+	cycles_passed -= cycles_ahead;
+
+	if (cycles_passed > 0)
 	{
-		step(cycles_passed);
-		cycles_ahead = cycles_passed;
-	}*/
+		step_ahead(cycles_passed);
+		cycles_ahead += cycles_passed;
+	}
 
 	if (adress == 0xFF04)
 		return divider;
@@ -61,14 +64,15 @@ u8 Timer::read_byte(u16 adress)
 		return change_bit(control, enabled, 2);
 }
 
-//void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
-void Timer::write_byte(u16 adress, u8 value)
+void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
-	/*if (cycles_passed > 0)
+	cycles_passed -= cycles_ahead;
+
+	if (cycles_passed > 0)
 	{
-		step(cycles_passed);
-		cycles_ahead = cycles_passed;
-	}*/
+		step_ahead(cycles_passed);
+		cycles_ahead += cycles_passed;
+	}
 
 	if (adress == 0xFF04)
 		divider = 0;

@@ -15,6 +15,6 @@ class Ram final : public IMemory
 
 		const u8* get() const { return memory.get(); }
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 };

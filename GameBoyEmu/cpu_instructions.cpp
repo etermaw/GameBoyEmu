@@ -3,42 +3,42 @@
 
 static constexpr u8 reg_map[] = { B, C, D, E, H, L, -1, A }; //instead of -1, add 1 reg to reg_8 named as REG_GUARD
 
-void CPUCore::push(u16 value)
+void CPUCore::push(u16 value, u32 cach_up_cycles)
 {
-	mmu->write_byte(--reg_16[SP], (value >> 8) & 0xFF);
-	mmu->write_byte(--reg_16[SP], value & 0xFF);
+	mmu->write_byte(--reg_16[SP], (value >> 8) & 0xFF, cach_up_cycles);
+	mmu->write_byte(--reg_16[SP], value & 0xFF, cach_up_cycles + 4);
 }
 
-u16 CPUCore::pop()
+u16 CPUCore::pop(u32 cach_up_cycles)
 {
-	u8 low = mmu->read_byte(reg_16[SP]++);
-	u8 high = mmu->read_byte(reg_16[SP]++);
+	u8 low = mmu->read_byte(reg_16[SP]++, cach_up_cycles);
+	u8 high = mmu->read_byte(reg_16[SP]++, cach_up_cycles + 4);
 
 	return (high << 8) | low;
 }
 
-void CPUCore::write_word(u16 adress, u16 value)
+void CPUCore::write_word(u16 adress, u16 value, u32 cach_up_cycles)
 {
-	mmu->write_byte(adress, value & 0x00FF);
-	mmu->write_byte(adress + 1, (value >> 8) & 0x00FF);
+	mmu->write_byte(adress, value & 0x00FF, cach_up_cycles);
+	mmu->write_byte(adress + 1, (value >> 8) & 0x00FF, cach_up_cycles + 4);
 }
 
-u16 CPUCore::read_word(u16 adress)
+u16 CPUCore::read_word(u16 adress, u32 cach_up_cycles)
 {
-	auto low = mmu->read_byte(adress);
-	auto high = mmu->read_byte(adress + 1);
+	auto low = mmu->read_byte(adress, cach_up_cycles);
+	auto high = mmu->read_byte(adress + 1, cach_up_cycles + 4);
 
 	return (high << 8) | low;
 }
 
-u8 CPUCore::fetch8()
+u8 CPUCore::fetch8(u32 cach_up_cycles)
 {
-	return mmu->read_byte(pc++);
+	return mmu->read_byte(pc++, cach_up_cycles);
 }
 
-u16 CPUCore::fetch16()
+u16 CPUCore::fetch16(u32 cach_up_cycles)
 {
-	auto ret = read_word(pc);
+	auto ret = read_word(pc, cach_up_cycles);
 	pc += 2;
 
 	return ret;
@@ -57,13 +57,13 @@ u32 CPUCore::nop(u8 unused)
 
 u32 CPUCore::ld_rr_nn(u8 opcode)
 {
-	reg_16[(opcode >> 4) & 3] = fetch16();
+	reg_16[(opcode >> 4) & 3] = fetch16(4);
 	return 12;
 }
 
 u32 CPUCore::ld_rr_a(u8 opcode)
 {
-	mmu->write_byte(reg_16[(opcode >> 4) & 3], reg_8[A]);
+	mmu->write_byte(reg_16[(opcode >> 4) & 3], reg_8[A], 4);
 	return 8;
 }
 
@@ -101,7 +101,7 @@ u32 CPUCore::dec_r(u8 opcode)
 
 u32 CPUCore::ld_r_n(u8 opcode)
 {
-	reg_8[reg_map[(opcode >> 3) & 7]] = fetch8();
+	reg_8[reg_map[(opcode >> 3) & 7]] = fetch8(4);
 	return 8;
 }
 
@@ -115,8 +115,8 @@ u32 CPUCore::rlca(u8 opcode)
 
 u32 CPUCore::ld_nn_sp(u8 opcode)
 {
-	u16 adr = fetch16();
-	write_word(adr, reg_16[SP]);
+	u16 adr = fetch16(4);
+	write_word(adr, reg_16[SP], 12); //TODO is it correct value?
 	return 20;
 }
 
@@ -134,7 +134,7 @@ u32 CPUCore::add_hl_rr(u8 opcode)
 
 u32 CPUCore::ld_a_adr(u8 opcode)
 {
-	reg_8[A] = mmu->read_byte(reg_16[(opcode >> 4) & 3]);
+	reg_8[A] = mmu->read_byte(reg_16[(opcode >> 4) & 3], 4);
 	return 8;
 }
 
@@ -167,7 +167,7 @@ u32 CPUCore::rla(u8 opcode)
 
 u32 CPUCore::jr_n(u8 opcode)
 {
-	pc += static_cast<i8>(fetch8());
+	pc += static_cast<i8>(fetch8(4));
 	return 12;
 }
 
@@ -204,7 +204,7 @@ u32 CPUCore::jr_cond_r(u8 opcode)
 
 	if (cond)
 	{
-		pc += static_cast<i8>(fetch8());
+		pc += static_cast<i8>(fetch8(4));
 		return 12;
 	}
 
@@ -217,7 +217,7 @@ u32 CPUCore::jr_cond_r(u8 opcode)
 
 u32 CPUCore::ldi_hl_a(u8 opcode)
 {
-	mmu->write_byte(reg_16[HL]++, reg_8[A]);
+	mmu->write_byte(reg_16[HL]++, reg_8[A], 4);
 	return 8;
 }
 
@@ -259,7 +259,7 @@ u32 CPUCore::daa(u8 opcode)
 
 u32 CPUCore::ldi_a_hl(u8 opcode)
 {
-	reg_8[A] = mmu->read_byte(reg_16[HL]++);
+	reg_8[A] = mmu->read_byte(reg_16[HL]++, 4);
 	return 8;
 }
 
@@ -274,40 +274,39 @@ u32 CPUCore::cpl(u8 opcode)
 
 u32 CPUCore::ldd_hl_a(u8 opcode)
 {
-	mmu->write_byte(reg_16[HL]--, reg_8[A]);
+	mmu->write_byte(reg_16[HL]--, reg_8[A], 4);
 	return 8;
 }
 
 u32 CPUCore::inc_hl(u8 opcode)
 {
-	u8 val = mmu->read_byte(reg_16[HL]) + 1;
+	u8 val = mmu->read_byte(reg_16[HL], 4) + 1;
 
 	reg_8[F] = clear_bit(reg_8[F], F_N);
 	reg_8[F] = change_bit(reg_8[F], val == 0, F_Z);
 	reg_8[F] = change_bit(reg_8[F], (val & 0xF) == 0, F_H);
 	
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 8);
 	return 12;
 }
 
 u32 CPUCore::dec_hl(u8 opcode)
 {
-	u16 val = mmu->read_byte(reg_16[HL]) - 1;
+	u16 val = mmu->read_byte(reg_16[HL], 4) - 1;
 
 	reg_8[F] = set_bit(reg_8[F], F_N);
 	reg_8[F] = change_bit(reg_8[F], val == 0, F_Z);
 	reg_8[F] = change_bit(reg_8[F], (val & 0xF) == 0xF, F_H);
 
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 8);
 
 	return 12;
 }
 
 u32 CPUCore::ld_hl_n(u8 opcode)
 {
-	auto val = fetch8();
-	mmu->write_byte(reg_16[HL], val);
-
+	auto val = fetch8(4);
+	mmu->write_byte(reg_16[HL], val, 8);
 	return 12;
 }
 
@@ -322,7 +321,7 @@ u32 CPUCore::scf(u8 opcode)
 
 u32 CPUCore::ldd_a_hl(u8 opcode)
 {
-	reg_8[A] = mmu->read_byte(reg_16[HL]--);
+	reg_8[A] = mmu->read_byte(reg_16[HL]--, 4);
 	return 8;
 }
 
@@ -343,13 +342,13 @@ u32 CPUCore::ld_r_r(u8 opcode)
 
 u32 CPUCore::ld_r_hl(u8 opcode)
 {
-	reg_8[reg_map[(opcode >> 3) & 7]] = mmu->read_byte(reg_16[HL]);
+	reg_8[reg_map[(opcode >> 3) & 7]] = mmu->read_byte(reg_16[HL], 4);
 	return 8;
 }
 
 u32 CPUCore::ld_hl_r(u8 opcode)
 {
-	mmu->write_byte(reg_16[HL], reg_8[reg_map[opcode & 7]]);
+	mmu->write_byte(reg_16[HL], reg_8[reg_map[opcode & 7]], 4);
 	return 8;
 }
 
@@ -375,7 +374,7 @@ u32 CPUCore::add_a_r(u8 opcode)
 
 u32 CPUCore::add_a_hl(u8 opcode)
 {
-	u8 val = mmu->read_byte(reg_16[HL]);
+	u8 val = mmu->read_byte(reg_16[HL], 4);
 	u32 result = reg_8[A] + val; 
 	
 	reg_8[F] = clear_bit(reg_8[F], F_N);
@@ -403,7 +402,7 @@ u32 CPUCore::adc_a_r(u8 opcode)
 
 u32 CPUCore::adc_a_hl(u8 opcode)
 {
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 4);
 	u32 result = reg_8[A] + val + check_bit(reg_8[F], F_C);
 
 	reg_8[F] = clear_bit(reg_8[F], F_N);
@@ -431,7 +430,7 @@ u32 CPUCore::sub_a_r(u8 opcode)
 
 u32 CPUCore::sub_a_hl(u8 opcode)
 {
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 4);
 	u32 result = reg_8[A] - val;
 
 	reg_8[F] = set_bit(reg_8[F], F_N);
@@ -460,7 +459,7 @@ u32 CPUCore::sbc_a_r(u8 opcode)
 
 u32 CPUCore::sbc_a_hl(u8 opcode) 
 {
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 4);
 	i32 result = reg_8[A] - val - check_bit(reg_8[F], F_C);
 	i32 half_result = (reg_8[A] & 0xF) - (val & 0xF) - check_bit(reg_8[F], F_C);
 	reg_8[A] = static_cast<u8>(result);
@@ -484,7 +483,7 @@ u32 CPUCore::and_a_r(u8 opcode)
 
 u32 CPUCore::and_a_hl(u8 opcode)
 {
-	reg_8[A] &= mmu->read_byte(reg_16[HL]);
+	reg_8[A] &= mmu->read_byte(reg_16[HL], 4);
 	reg_8[F] = change_bit(0, reg_8[A] == 0, F_Z);
 	reg_8[F] = set_bit(reg_8[F], F_H);
 
@@ -501,7 +500,7 @@ u32 CPUCore::xor_a_r(u8 opcode)
 
 u32 CPUCore::xor_a_hl(u8 opcode)
 {
-	reg_8[A] ^= mmu->read_byte(reg_16[HL]);
+	reg_8[A] ^= mmu->read_byte(reg_16[HL], 4);
 	reg_8[F] = change_bit(0, reg_8[A] == 0, F_Z);
 
 	return 8;
@@ -517,7 +516,7 @@ u32 CPUCore::or_a_r(u8 opcode)
 
 u32 CPUCore::or_a_hl(u8 opcode)
 {
-	reg_8[A] |= mmu->read_byte(reg_16[HL]);
+	reg_8[A] |= mmu->read_byte(reg_16[HL], 4);
 	reg_8[F] = change_bit(0, reg_8[A] == 0, F_Z);
 
 	return 8;
@@ -537,7 +536,7 @@ u32 CPUCore::cp_a_r(u8 opcode)
 
 u32 CPUCore::cp_a_hl(u8 opcode)
 {
-	u8 val = mmu->read_byte(reg_16[HL]);
+	u8 val = mmu->read_byte(reg_16[HL], 4);
 
 	reg_8[F] = set_bit(reg_8[F], F_N);
 	reg_8[F] = change_bit(reg_8[F], reg_8[A] == val, F_Z);
@@ -572,7 +571,7 @@ u32 CPUCore::ret_cond(u8 opcode)
 
 	if (cond)
 	{
-		pc = pop();
+		pc = pop(8);
 		return 20;
 	}
 
@@ -582,7 +581,7 @@ u32 CPUCore::ret_cond(u8 opcode)
 
 u32 CPUCore::pop_rr(u8 opcode)
 {
-	reg_16[(opcode >> 4) & 3] = pop(); 
+	reg_16[(opcode >> 4) & 3] = pop(4); 
 	return 12;
 }
 
@@ -611,7 +610,7 @@ u32 CPUCore::jp_cond_nn(u8 opcode)
 
 	if (cond)
 	{
-		pc = fetch16();
+		pc = fetch16(4);
 		return 16;
 	}
 
@@ -624,7 +623,7 @@ u32 CPUCore::jp_cond_nn(u8 opcode)
 
 u32 CPUCore::jp_nn(u8 opcode)
 {
-	pc = fetch16();
+	pc = fetch16(4);
 	return 16;
 }
 
@@ -653,9 +652,9 @@ u32 CPUCore::call_cond_nn(u8 opcode)
 
 	if (cond)
 	{
-		push(pc + 2);
-		pc = fetch16();
-
+		u16 new_pc = pc + 2;
+		pc = fetch16(4);
+		push(new_pc, 16);
 		return 24;
 	}
 
@@ -668,13 +667,13 @@ u32 CPUCore::call_cond_nn(u8 opcode)
 
 u32 CPUCore::push_rr(u8 opcode)
 {
-	push(reg_16[(opcode >> 4) & 3]);
+	push(reg_16[(opcode >> 4) & 3], 4);
 	return 16;
 }
 
 u32 CPUCore::add_a_n(u8 opcode)
 {
-	u8 val = fetch8();
+	u8 val = fetch8(4);
 	u32 result = reg_8[A] + val; 
 
 	reg_8[F] = clear_bit(reg_8[F], F_N);
@@ -689,7 +688,7 @@ u32 CPUCore::add_a_n(u8 opcode)
 u32 CPUCore::rst_nn(u8 opcode)
 {
 	u16 adr = (opcode >> 3) & 7;
-	push(pc); 
+	push(pc, 4); 
 	pc = adr * 0x8; 
 
 	return 16;
@@ -697,20 +696,21 @@ u32 CPUCore::rst_nn(u8 opcode)
 
 u32 CPUCore::ret(u8 opcode)
 {
-	pc = pop();
+	pc = pop(4);
 	return 16;
 }
 
 u32 CPUCore::call_nn(u8 opcode)
 {
-	push(pc + 2);
-	pc = fetch16();
+	u16 new_pc = pc + 2;
+	pc = fetch16(4);
+	push(new_pc, 16);
 	return 24;
 }
 
 u32 CPUCore::adc_a_n(u8 opcode)
 {
-	u8 val = fetch8();
+	u8 val = fetch8(4);
 	u32 result = reg_8[A] + val + check_bit(reg_8[F], F_C);
 
 	reg_8[F] = clear_bit(reg_8[F], F_N);
@@ -724,7 +724,7 @@ u32 CPUCore::adc_a_n(u8 opcode)
 
 u32 CPUCore::sub_a_n(u8 opcode) 
 {
-	u8 val = fetch8();
+	u8 val = fetch8(4);
 	u32 result = reg_8[A] - val; 
 	
 	reg_8[F] = set_bit(reg_8[F], F_N);
@@ -738,14 +738,14 @@ u32 CPUCore::sub_a_n(u8 opcode)
 
 u32 CPUCore::reti(u8 opcode)
 {
+	pc = pop(4);
 	interrupts = true;
-	pc = pop();
 	return 16;
 }
 
 u32 CPUCore::sbc_a_n(u8 opcode) 
 {
-	u8 val = fetch8();
+	u8 val = fetch8(4);
 	i32 result = reg_8[A] - val - check_bit(reg_8[F], F_C);
 	i32 half_result = (reg_8[A] & 0xF) - (val & 0xF) - check_bit(reg_8[F], F_C);
 	
@@ -760,21 +760,20 @@ u32 CPUCore::sbc_a_n(u8 opcode)
 
 u32 CPUCore::ldh_n_a(u8 opcode)
 {
-	auto val = fetch8();
-	mmu->write_byte(0xFF00 + val, reg_8[A]);
-
+	auto val = fetch8(4);
+	mmu->write_byte(0xFF00 + val, reg_8[A], 8);
 	return 12;
 }
 
 u32 CPUCore::ldh_c_a(u8 opcode)
 {
-	mmu->write_byte(0xFF00 + reg_8[C], reg_8[A]);
+	mmu->write_byte(0xFF00 + reg_8[C], reg_8[A], 4);
 	return 8;
 }
 
 u32 CPUCore::and_n(u8 opcode)
 {
-	reg_8[A] &= fetch8();
+	reg_8[A] &= fetch8(4);
 	reg_8[F] = change_bit(0, reg_8[A] == 0, F_Z);
 	reg_8[F] = set_bit(reg_8[F], F_H);
 
@@ -783,7 +782,7 @@ u32 CPUCore::and_n(u8 opcode)
 
 u32 CPUCore::add_sp_n(u8 opcode)
 {
-	i8 val = static_cast<i8>(fetch8());
+	i8 val = static_cast<i8>(fetch8(4));
 	u16 reg = reg_16[SP];
 	reg_16[SP] += val;
 
@@ -802,38 +801,35 @@ u32 CPUCore::jp_hl(u8 opcode)
 
 u32 CPUCore::ld_nn_a(u8 opcode)
 {
-	auto adr = fetch16();
-	mmu->write_byte(adr, reg_8[A]);
-
+	auto adr = fetch16(4);
+	mmu->write_byte(adr, reg_8[A], 12);
 	return 16;
 }
 
 u32 CPUCore::xor_n(u8 opcode)
 {
-	reg_8[A] ^= fetch8();
+	reg_8[A] ^= fetch8(4);
 	reg_8[F] = change_bit(0, reg_8[A] == 0, F_Z);
-
 	return 8;
 }
 
 u32 CPUCore::ldh_a_n(u8 opcode)
 {
-	auto val = fetch8();
-	reg_8[A] = mmu->read_byte(0xFF00 + val);
-	
+	auto val = fetch8(4);
+	reg_8[A] = mmu->read_byte(0xFF00 + val, 8);
 	return 12;
 }
 
 u32 CPUCore::pop_af(u8 opcode)
 {
-	reg_16[AF] = pop();
+	reg_16[AF] = pop(4);
 	reg_8[F] &= 0xF0;
 	return 12;
 }
 
 u32 CPUCore::ldh_a_c(u8 opcode)
 {
-	reg_8[A] = mmu->read_byte(0xFF00 + reg_8[C]);
+	reg_8[A] = mmu->read_byte(0xFF00 + reg_8[C], 4);
 	return 8;
 }
 
@@ -843,23 +839,22 @@ u32 CPUCore::di(u8 opcode)
 	return 4;
 }
 
-u32 CPUCore::push_af(u8 opcode)
+u32 CPUCore::push_af(u8 opcode) //TODO: somewhere is 4 cycle delay...
 {
-	push(reg_16[AF]);
+	push(reg_16[AF], 4);
 	return 16;
 }
 
 u32 CPUCore::or_n(u8 opcode)
 {
-	reg_8[A] |= fetch8();
+	reg_8[A] |= fetch8(4);
 	reg_8[F] = change_bit(0, reg_8[A] == 0, F_Z);
-
 	return 8;
 }
 
 u32 CPUCore::ld_hl_sp_n(u8 opcode)
 {
-	i8 val = static_cast<i8>(fetch8());
+	i8 val = static_cast<i8>(fetch8(4));
 	u16 result = reg_16[SP] + val; 
 	u16 tmp = reg_16[SP] ^ result ^ val;
 
@@ -879,8 +874,8 @@ u32 CPUCore::ld_sp_hl(u8 opcode)
 
 u32 CPUCore::ld_a_nn(u8 opcode)
 {
-	auto adr = fetch16();
-	reg_8[A] = mmu->read_byte(adr);
+	auto adr = fetch16(4);
+	reg_8[A] = mmu->read_byte(adr, 12); 
 	return 16;
 }
 
@@ -892,7 +887,7 @@ u32 CPUCore::ei(u8 opcode)
 
 u32 CPUCore::cp_n(u8 opcode)
 {
-	u8 val = fetch8();
+	u8 val = fetch8(4);
 	
 	reg_8[F] = set_bit(reg_8[F], F_N);
 	reg_8[F] = change_bit(reg_8[F], reg_8[A] == val, F_Z);
@@ -902,6 +897,9 @@ u32 CPUCore::cp_n(u8 opcode)
 	return 8;
 }
 
+//CB opcodes
+//-----------------------------------------------------------------------------------------
+
 u32 CPUCore::rlc_r(u8 opcode)
 {
 	reg_8[F] = change_bit(0, check_bit(reg_8[reg_map[opcode & 7]], 7), F_C);
@@ -909,19 +907,18 @@ u32 CPUCore::rlc_r(u8 opcode)
 	reg_8[reg_map[opcode & 7]] = rol(reg_8[reg_map[opcode & 7]], 1);
 
 	reg_8[F] = change_bit(reg_8[F], reg_8[reg_map[opcode & 7]] == 0, F_Z);
-
 	return 8;
 }
 
 u32 CPUCore::rlc_hl(u8 opcode)
 {
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 8);
 	reg_8[F] = change_bit(0, check_bit(val, 7), F_C);
 
 	val = rol(val, 1);
 
 	reg_8[F] = change_bit(reg_8[F], val == 0, F_Z);
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 12);
 
 	return 16;
 }
@@ -931,21 +928,20 @@ u32 CPUCore::rrc_r(u8 opcode)
 	reg_8[F] = change_bit(0, check_bit(reg_8[reg_map[opcode & 7]], 0), F_C);
 
 	reg_8[reg_map[opcode & 7]] = ror(reg_8[reg_map[opcode & 7]], 1);
-	reg_8[F] = change_bit(reg_8[F], reg_8[reg_map[opcode & 7]] == 0, F_Z);
 
+	reg_8[F] = change_bit(reg_8[F], reg_8[reg_map[opcode & 7]] == 0, F_Z);
 	return 8;
 }
 
 u32 CPUCore::rrc_hl(u8 opcode)
 {
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 8);
 	reg_8[F] = change_bit(0, check_bit(val, 0), F_C);
 
 	val = ror(val, 1);
 	reg_8[F] = change_bit(reg_8[F], val == 0, F_Z);
 
-	mmu->write_byte(reg_16[HL], val);
-
+	mmu->write_byte(reg_16[HL], val, 12);
 	return 16;
 }
 
@@ -964,14 +960,14 @@ u32 CPUCore::rl_r(u8 opcode)
 
 u32 CPUCore::rl_hl(u8 opcode)
 {
-	u8 val = mmu->read_byte(reg_16[HL]);
+	u8 val = mmu->read_byte(reg_16[HL], 8);
 	auto carry = check_bit(val, 7);
 
 	val = change_bit(val << 1, check_bit(reg_8[F], F_C), 0);
 	reg_8[F] = change_bit(0, carry, F_C);
 	reg_8[F] = change_bit(reg_8[F], val == 0, F_Z);
 
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 12);
 	return 16;
 }
 
@@ -991,14 +987,14 @@ u32 CPUCore::rr_r(u8 opcode)
 
 u32 CPUCore::rr_hl(u8 opcode)
 {
-	u8 val = mmu->read_byte(reg_16[HL]);
+	u8 val = mmu->read_byte(reg_16[HL], 8);
 	auto carry = check_bit(val, 0);
 
 	val = change_bit(val >> 1, check_bit(reg_8[F], F_C), 7);
 	reg_8[F] = change_bit(0, carry, F_C);
 	reg_8[F] = change_bit(reg_8[F], val == 0, F_Z);
 	
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 12);
 	return 16;
 }
 
@@ -1015,14 +1011,14 @@ u32 CPUCore::sla_r(u8 opcode)
 
 u32 CPUCore::sla_hl(u8 opcode)
 {
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 8);
 	reg_8[F] = change_bit(0, check_bit(val, 7), F_C);
 
 	val <<= 1;
 
 	reg_8[F] = change_bit(reg_8[F], val == 0, F_Z);
 
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 12);
 
 	return 16;
 }
@@ -1042,14 +1038,14 @@ u32 CPUCore::sra_r(u8 opcode)
 
 u32 CPUCore::sra_hl(u8 opcode)
 {
-	auto r = mmu->read_byte(reg_16[HL]);
+	auto r = mmu->read_byte(reg_16[HL], 8);
 
 	reg_8[F] = change_bit(0, check_bit(r, 0), F_C);
 
 	r = (r >> 1) | (r & 0x80);
 
 	reg_8[F] = change_bit(reg_8[F], r == 0, F_Z);
-	mmu->write_byte(reg_16[HL], r);
+	mmu->write_byte(reg_16[HL], r, 12);
 
 	return 16;
 }
@@ -1064,11 +1060,11 @@ u32 CPUCore::swap_r(u8 opcode)
 
 u32 CPUCore::swap_hl(u8 opcode)
 {
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 8);
 	val = rol(val, 4);
 
 	reg_8[F] = change_bit(0, val == 0, F_Z);
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 12);
 
 	return 16;
 }
@@ -1087,13 +1083,13 @@ u32 CPUCore::srl_r(u8 opcode)
 
 u32 CPUCore::srl_hl(u8 opcode)
 {
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 8);
 	reg_8[F] = change_bit(0, check_bit(val, 0), F_C);
 
 	val >>= 1;
 
 	reg_8[F] = change_bit(reg_8[F], val == 0, F_Z);
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 12);
 
 	return 16;
 }
@@ -1112,7 +1108,7 @@ u32 CPUCore::bit_r_x(u8 opcode)
 u32 CPUCore::bit_hl_x(u8 opcode)
 {
 	const auto bit = (opcode >> 3) & 7;
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 8);
 
 	reg_8[F] = change_bit(reg_8[F], !check_bit(val, bit), F_Z);
 	reg_8[F] = clear_bit(reg_8[F], F_N);
@@ -1132,12 +1128,11 @@ u32 CPUCore::res_r_x(u8 opcode)
 u32 CPUCore::res_hl_x(u8 opcode)
 {
 	const auto bit = (opcode >> 3) & 7;
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 8);
 
 	val = clear_bit(val, bit);
 
-	mmu->write_byte(reg_16[HL], val);
-
+	mmu->write_byte(reg_16[HL], val, 12);
 	return 16;
 }
 
@@ -1145,17 +1140,16 @@ u32 CPUCore::set_r_x(u8 opcode)
 {
 	const auto bit = (opcode >> 3) & 7;
 	reg_8[reg_map[opcode & 7]] = set_bit(reg_8[reg_map[opcode & 7]], bit);
-
 	return 8;
 }
 
 u32 CPUCore::set_hl_x(u8 opcode)
 {
 	const auto bit = (opcode >> 3) & 7;
-	auto val = mmu->read_byte(reg_16[HL]);
+	auto val = mmu->read_byte(reg_16[HL], 8);
 
 	val = set_bit(val, bit);
 
-	mmu->write_byte(reg_16[HL], val);
+	mmu->write_byte(reg_16[HL], val, 12);
 	return 16;
 }

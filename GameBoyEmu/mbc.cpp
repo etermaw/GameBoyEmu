@@ -11,7 +11,7 @@ void MBCBase::swap_ram_bank(u32 new_bank_num)
 	cur_ram_bank = ram + new_bank_num * 0x2000;
 }
 
-u8 NoMBC::read_byte(u16 adress)
+u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress < 0x8000)
 		return rom[adress];
@@ -20,7 +20,7 @@ u8 NoMBC::read_byte(u16 adress)
 		return ram_enabled ? ram[adress - 0xA000] : 0xFF;
 }
 
-void NoMBC::write_byte(u16 adress, u8 value)
+void NoMBC::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
 	if (adress < 0x2000)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);
@@ -31,7 +31,7 @@ void NoMBC::write_byte(u16 adress, u8 value)
 	//else ignore
 }
 
-u8 MBC1::read_byte(u16 adress)
+u8 MBC1::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress < 0x4000)
 		return rom[adress];
@@ -43,7 +43,7 @@ u8 MBC1::read_byte(u16 adress)
 		return (ram_enabled ? cur_ram_bank[adress - 0xA000] : 0xFF);
 }
 
-void MBC1::write_byte(u16 adress, u8 value)
+void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
 	if (adress < 0x2000)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);
@@ -84,7 +84,7 @@ void MBC1::write_byte(u16 adress, u8 value)
 		cur_ram_bank[adress - 0xA000] = value;
 }
 
-u8 MBC2::read_byte(u16 adress)
+u8 MBC2::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress < 0x4000)
 		return rom[adress];
@@ -96,7 +96,7 @@ u8 MBC2::read_byte(u16 adress)
 		return (ram_enabled ? ram[adress - 0xA000] : 0xFF);
 }
 
-void MBC2::write_byte(u16 adress, u8 value)
+void MBC2::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
 	if (adress < 0x2000 && ((adress & 0x0100) == 0x0000))
 		ram_enabled = ((value & 0x0F) == 0x0A);
@@ -112,7 +112,7 @@ void MBC3::latch_rtc()
 {
 }
 
-u8 MBC3::read_byte(u16 adress)
+u8 MBC3::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress < 0x4000)
 		return rom[adress];
@@ -127,7 +127,7 @@ u8 MBC3::read_byte(u16 adress)
 		return 0xFF;
 }
 
-void MBC3::write_byte(u16 adress, u8 value)
+void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
 	if (adress < 0x2000)
 		ram_enabled = ((value & 0x0F) == 0x0A); //ram_enabled affects ram AND timer
@@ -162,7 +162,7 @@ void MBC3::write_byte(u16 adress, u8 value)
 		reg_used ? rtc[selected_time_reg] : cur_ram_bank[adress - 0xA000] = value;
 }
 
-u8 MBC5::read_byte(u16 adress)
+u8 MBC5::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress < 0x4000)
 		return rom[adress];
@@ -174,7 +174,7 @@ u8 MBC5::read_byte(u16 adress)
 		return (ram_enabled ? cur_ram_bank[adress - 0xA000] : 0xFF);
 }
 
-void MBC5::write_byte(u16 adress, u8 value)
+void MBC5::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
 	if (adress < 0x2000)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);

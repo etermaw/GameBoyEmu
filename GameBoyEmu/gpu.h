@@ -6,9 +6,12 @@
 class Gpu final : public IMemory
 {
 	private:
+		Interrupts& interrupts;
+		
 		std::unique_ptr<u32[]> screen_buffer;
 		std::unique_ptr<u8[]> vram; 
 		
+		u32 cycles_ahead;
 		u32 cycles;
 		i32 dma_cycles;
 		i32 enable_delay;
@@ -18,10 +21,10 @@ class Gpu final : public IMemory
 
 		bool entering_vblank;
 
-		void vb_mode(Interrupts& interrupts);
-		void hb_mode(Interrupts& interrupts);
-		void oam_mode(Interrupts& interrupts);
-		void transfer_mode(Interrupts& interrupts);
+		void vb_mode();
+		void hb_mode();
+		void oam_mode();
+		void transfer_mode();
 
 		void dma_copy(u8 adress);
 
@@ -33,16 +36,18 @@ class Gpu final : public IMemory
 		void turn_off_lcd();
 		void turn_on_lcd();
 
+		void step_ahead(u32 cycles);
+
 	public:
 		const u8* ram_ptr;
 
-		Gpu();
+		Gpu(Interrupts& ints);
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 
 		bool is_entering_vblank();
 		
-		u32 step(u32 clock_cycles, Interrupts& interrupts);
+		void step(u32 clock_cycles);
 		const u32* get_frame_buffer() const { return screen_buffer.get(); }
 };

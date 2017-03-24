@@ -31,8 +31,8 @@ class NoMBC final : public IMemory
 	public:
 		NoMBC(const u8* rom = nullptr, u8* ram = nullptr) : rom(rom), ram(ram), ram_enabled(false) {}
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 };
 
 class MBC1 final : public MBCBase, public IMemory
@@ -50,8 +50,8 @@ class MBC1 final : public MBCBase, public IMemory
 			swap_rom_bank(1);
 		}
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 };
 
 class MBC2 final : public MBCBase, public IMemory
@@ -59,8 +59,8 @@ class MBC2 final : public MBCBase, public IMemory
 	public:
 		MBC2(const u8* rom, u8* ram) : MBCBase(rom, ram) {}
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 };
 
 class MBC3 final : public MBCBase, public IMemory
@@ -77,8 +77,8 @@ class MBC3 final : public MBCBase, public IMemory
 		MBC3(const u8* rom = nullptr, u8* ram = nullptr, u8* rtc_regs = nullptr) : 
 			MBCBase(rom, ram), rtc(rtc_regs), reg_used(false), selected_time_reg(0) {}
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 };
 
 class MBC5 final : public MBCBase, public IMemory
@@ -90,7 +90,7 @@ class MBC5 final : public MBCBase, public IMemory
 	public:
 		MBC5(const u8* rom, u8* ram) : MBCBase(rom, ram) {}
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 };
 

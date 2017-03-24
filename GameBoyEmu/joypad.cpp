@@ -2,7 +2,7 @@
 #include "joypad.h"
 #include "bit_ops.h"
 
-u8 Joypad::read_byte(u16 adress)
+u8 Joypad::read_byte(u16 adress, u32 cycles_passed)
 {
 	u8 ret = 0xFF;
 	
@@ -15,7 +15,7 @@ u8 Joypad::read_byte(u16 adress)
 	return ret; 
 }
 
-void Joypad::write_byte(u16 adress, u8 value)
+void Joypad::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
 	dir_keys = ((value & 0x30) == 0x20);//if bit 4 is zero, then we select direction keys
 	sel_keys = ((value & 0x30) == 0x10);//if bit 5 is zero, then we select special keys

@@ -16,13 +16,13 @@ struct TestReader final : public IMemory
 	public:
 		TestReader() : a() {}
 
-		u8 read_byte(u16 adress) override
+		u8 read_byte(u16 adress, u32 unused) override
 		{
 			return 0;
 			//return 0xFF;
 		}
 
-		void write_byte(u16 adress, u8 val) override
+		void write_byte(u16 adress, u8 val, u32 unused) override
 		{
 			if (adress == 0xFF01)
 				a = val;
@@ -34,16 +34,16 @@ struct TestReader final : public IMemory
 
 int main(int argc, char *argv[])
 {
-	Timer timer;
-	Interrupts ints;
-	MMU mmu;
 	//CPU cpu;
 	CPU_Debugger<CPU> cpu;
+	Interrupts ints;
+	Timer timer(ints);
+	MMU mmu;
 	Ram ram;
 	Cartrige cart;
 	TestReader tr; //testing
 	Joypad joypad;
-	Gpu gpu;
+	Gpu gpu(ints);
 	APU apu;
 
 	cpu.insert_breakpoint(0x100);
@@ -199,11 +199,9 @@ int main(int argc, char *argv[])
 			}
 
 			sync_cycles += cpu.step();
-			sync_cycles += gpu.step(sync_cycles, ints);
+			gpu.step(sync_cycles);
 			apu.step(sync_cycles);
-
-			if (timer.step(sync_cycles))
-				ints.raise(INT_TIMER);
+			timer.step(sync_cycles);
 		}
 
 		auto ptr = gpu.get_frame_buffer();

@@ -14,8 +14,8 @@ class Joypad final : public IMemory
 	public:
 		Joypad() { for (auto& i : keys) i = true; dir_keys = false; sel_keys = false; }
 
-		u8 read_byte(u16 adress) override;
-		void write_byte(u16 adress, u8 value) override;
+		u8 read_byte(u16 adress, u32 cycles_passed) override;
+		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 
 		void push_key(KEYS keycode);
 		void release_key(KEYS keycode);
