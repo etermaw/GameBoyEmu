@@ -404,7 +404,7 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 
 	//if gpu is in mode 2 or 3, ignore read
 	else if (adress >= 0xFE00 && adress < 0xFEA0)
-		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 /*&& dma_cycles <= 0*/) ? oam[adress - 0xFE00] : 0xFF;
+		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 && dma_cycles <= 0) ? oam[adress - 0xFE00] : 0xFF;
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
 		return regs[adress - 0xFF40];

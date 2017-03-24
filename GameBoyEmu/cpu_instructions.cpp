@@ -667,7 +667,7 @@ u32 CPUCore::call_cond_nn(u8 opcode)
 
 u32 CPUCore::push_rr(u8 opcode)
 {
-	push(reg_16[(opcode >> 4) & 3], 4);
+	push(reg_16[(opcode >> 4) & 3], 8);
 	return 16;
 }
 
@@ -841,7 +841,7 @@ u32 CPUCore::di(u8 opcode)
 
 u32 CPUCore::push_af(u8 opcode) //TODO: somewhere is 4 cycle delay...
 {
-	push(reg_16[AF], 4);
+	push(reg_16[AF], 8);
 	return 16;
 }
 
@@ -881,7 +881,7 @@ u32 CPUCore::ld_a_nn(u8 opcode)
 
 u32 CPUCore::ei(u8 opcode)
 {
-	interrupts = true;
+	interrupts = true; //TODO: ei has 4 cycles of delay, so ei,di,ei,di won`t trigger any intterupts
 	return 4;
 }
 

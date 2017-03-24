@@ -75,7 +75,10 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	}
 
 	if (adress == 0xFF04)
+	{
 		divider = 0;
+		divider_cycles = 0;
+	}
 
 	else if (adress == 0xFF05)
 		counter = value;
