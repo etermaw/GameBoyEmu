@@ -27,7 +27,7 @@ u32 get_dmg_color(u32 num)
 }
 
 Gpu::Gpu(Interrupts& ints) : 
-	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), entering_vblank()
+	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), entering_vblank(),cycles_ahead(0)
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -171,7 +171,7 @@ void Gpu::dma_copy(u8 adress)
 	else if(real_adress >= 0xC000 && real_adress < 0xF000)
 		std::memcpy(oam, &ram_ptr[real_adress - 0xC000], sizeof(u8) * 0xA0);
 
-	dma_cycles = 644;
+	dma_cycles = 648;
 	//when dma is launched, cpu can only access HRAM!
 	//rumors says that OAM is blocked, but rest can be accessed (with bus conflicts)
 	//but, cpu also can be interrupted
@@ -425,7 +425,7 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		vram[adress - 0x8000] = value;
 
 	//if gpu is in mode 2 or 3, ignore write
-	else if (adress >= 0xFE00 && adress < 0xFEA0 && ((regs[IO_LCD_STATUS] & 0x3) < 0x2))
+	else if (adress >= 0xFE00 && adress < 0xFEA0 && ((regs[IO_LCD_STATUS] & 0x3) < 0x2) && dma_cycles <= 0)
 		oam[adress - 0xFE00] = value;
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)

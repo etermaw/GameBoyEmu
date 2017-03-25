@@ -1,6 +1,6 @@
 #include "apu.h"
 
-APU::APU() : dummy_regs() {}
+APU::APU() : dummy_regs(), cycles_ahead(0) {}
 
 void APU::step_ahead(u32 cycles)
 {
