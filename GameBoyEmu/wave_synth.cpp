@@ -11,6 +11,11 @@ void WaveSynth::start_playing()
 	enabled = true;
 }
 
+bool WaveSynth::is_enabled() const
+{
+	return enabled;
+}
+
 void WaveSynth::reset()
 {
 	length_counter = 0;
@@ -67,7 +72,7 @@ u8 WaveSynth::read_reg(u16 reg_num)
 		return change_bit<u8>(0xFF, dac_enabled, 7);
 
 	else if (reg_num == 1)
-		return 0xFF; //wr-only ???
+		return 0xFF; //write only
 
 	else if (reg_num == 2)
 		return (output_level << 5) | 0x9F;

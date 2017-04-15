@@ -68,7 +68,14 @@ u8 APU::read_byte(u16 adress, u32 cycles_passed)
 		return dummy_regs[adress - 0xFF24];
 
 	else if (adress == 0xFF26)
-		return change_bit(0x70, enabled, 7);
+	{
+		bool c1 = channel_1.is_enabled();
+		bool c2 = channel_2.is_enabled();
+		bool c3 = channel_3.is_enabled();
+		bool c4 = channel_4.is_enabled();
+
+		return combine_bits(enabled, true, true, true, c4, c3, c2, c1);
+	}
 
 	else if (adress >= 0xFF30 && adress <= 0xFF3F)
 		return channel_3.read_ram(adress - 0xFF30);

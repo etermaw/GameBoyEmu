@@ -27,6 +27,7 @@ class NoiseSynth
 	public:
 		NoiseSynth() { reset(); }
 
+		bool is_enabled() const;
 		void reset();
 		void update_length();		
 		void update_envelope();

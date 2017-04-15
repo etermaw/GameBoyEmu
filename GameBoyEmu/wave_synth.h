@@ -28,6 +28,7 @@ class WaveSynth
 			reset();
 		}
 
+		bool is_enabled() const;
 		void reset();
 
 		void update_length();

@@ -34,6 +34,11 @@ void SquareSynth::start_playing()
 		calculate_freq();
 }
 
+bool SquareSynth::is_enabled() const
+{
+	return enabled;
+}
+
 void SquareSynth::reset()
 {
 	length_counter = 0;

@@ -29,6 +29,7 @@ constexpr inline bool check_bit(T num, size_t pos)
 	return (num >> pos) & 1;
 }
 
+//swap all bits eg. flip_bits(00110010) == 01001100
 inline u8 flip_bits(u8 b)
 {
 	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
@@ -37,17 +38,19 @@ inline u8 flip_bits(u8 b)
 	return b;
 }
 
-constexpr inline u8 combine_bits(bool first, bool last)
+//combine up to 8 bits (pad with 0) into 1 byte
+//eg. combine_bits(1,1,0,0,1,0,0,1) == 11001001, combine_bits(1,1) == 00000011
+constexpr inline u8 combine_bits(bool first, bool lowest)
 {
-	return (static_cast<u8>(first) << 1) | static_cast<u8>(last);
+	return (static_cast<u8>(first) << 1) | static_cast<u8>(lowest);
 }
 
 template<class... T>
-constexpr inline u8 combine_bits(bool first, T... args)
+constexpr inline u8 combine_bits(bool highest, T... args)
 {
-	static_assert(sizeof...(args) < 8, "Combine_bits takes max 8 params!");
+	static_assert(sizeof...(args) < 8, "Combine_bits takes max 8 bits!");
 
-	return (static_cast<u8>(first) << (sizeof...(args))) | combine_bits(args...);
+	return (static_cast<u8>(highest) << (sizeof...(args))) | combine_bits(args...);
 }
 
 template<class I>

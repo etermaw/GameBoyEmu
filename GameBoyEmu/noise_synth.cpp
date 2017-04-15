@@ -16,6 +16,11 @@ void NoiseSynth::start_playing()
 	enabled = true;
 }
 
+bool NoiseSynth::is_enabled() const
+{
+	return enabled;
+}
+
 void NoiseSynth::reset()
 {
 	length_counter = 0;

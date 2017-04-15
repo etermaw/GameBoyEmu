@@ -33,6 +33,7 @@ class SquareSynth
 	public:
 		SquareSynth() { reset(); }
 
+		bool is_enabled() const;
 		void reset();
 		void update_sweep();
 		void update_length();
