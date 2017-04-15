@@ -57,6 +57,7 @@ inline I ror(I num, u32 shift)
 	//add static_assert to ensure that passed value is 8,16,32,64 bit
 
 	//return (num >> shift) | (num << (sizeof(I) * CHAR_BIT - shift));
+	//MSVC is not smart enough to catch that ^ op is bit rotation, so we use intriscs
 
 	switch (sizeof(I) * CHAR_BIT)
 	{

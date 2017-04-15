@@ -143,7 +143,7 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			swap_ram_bank(value);
 		}
 
-		else if (rtc != nullptr) //keep an eye on it
+		else if (rtc != nullptr) //TODO: keep an eye on it
 		{
 			reg_used = true;
 			selected_time_reg = value - 0x08;

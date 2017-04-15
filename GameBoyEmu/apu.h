@@ -8,18 +8,17 @@
 class APU final : public IMemory
 {
 	private:
+		SquareSynth channel_1, 
+					channel_2;
+		WaveSynth channel_3;
+		NoiseSynth channel_4;
+
 		u32 cycles_ahead;
 		u32 sequencer_cycles;
 		u32 sequencer_frame;
+		u8 dummy_regs[2] = {};
 
 		bool enabled = false;
-
-		//u8 wave_ram[16];
-		u8 dummy_regs[22];
-
-		SquareSynth channel_1,channel_2;
-		WaveSynth channel_3;
-		NoiseSynth channel_4;
 
 		void step_ahead(u32 cycles);
 

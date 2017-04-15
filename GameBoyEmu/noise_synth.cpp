@@ -16,6 +16,27 @@ void NoiseSynth::start_playing()
 	enabled = true;
 }
 
+void NoiseSynth::reset()
+{
+	length_counter = 0;
+	envelope_counter = 0;
+	envelope_load = 0;
+	timer = 0;
+	current_divisor = 0;
+	clock_shift = 0;
+	volume_load = 0;
+	lfsr = 0;
+	volume = 0;
+	out_vol = 0;
+
+	enabled = false;
+	envelope_asc = false;
+	length_enabled = false;
+	envelope_enabled = false;
+	width_mode = false;
+	dac_enabled = false;
+}
+
 void NoiseSynth::update_length()
 {
 	if (length_enabled && length_counter > 0)
@@ -29,16 +50,14 @@ void NoiseSynth::update_length()
 
 void NoiseSynth::update_envelope()
 {
-	--envelope_counter;
-
-	if (envelope_counter == 0)
+	if (envelope_enabled && --envelope_counter == 0)
 	{
 		envelope_counter = envelope_load;
 
 		if (envelope_counter == 0) //obscure behaviour
 			envelope_counter = 8;
 
-		if (envelope_enabled && envelope_load > 0)
+		if (/*envelope_enabled &&*/ envelope_load > 0)
 		{
 			if (envelope_asc && volume < 15)
 				++volume;
@@ -77,7 +96,7 @@ void NoiseSynth::step(u32 cycles)
 u8 NoiseSynth::read_reg(u16 reg_num)
 {
 	if (reg_num == 0)
-		return length_load & 0x3F;
+		return 0xFF; //write only
 
 	else if (reg_num == 1)
 		return ((volume_load & 0xF) << 4) | (envelope_asc << 3) | (envelope_load & 0x7);
@@ -86,7 +105,7 @@ u8 NoiseSynth::read_reg(u16 reg_num)
 		return ((clock_shift & 0xF) << 4) | (width_mode << 3) | (current_divisor & 0x7);
 
 	else if (reg_num == 3)
-		return length_enabled << 6;
+		return change_bit(0xFF, length_enabled, 6);
 
 	else
 		return 0xFF;
@@ -95,10 +114,7 @@ u8 NoiseSynth::read_reg(u16 reg_num)
 void NoiseSynth::write_reg(u16 reg_num, u8 value)
 {
 	if (reg_num == 0)
-	{
-		length_load = (value & 0x3F);
-		length_counter = 64 - length_load;
-	}
+		length_counter = 64 - (value & 0x3F);
 
 	else if (reg_num == 1)
 	{

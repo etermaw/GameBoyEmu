@@ -4,11 +4,11 @@
 class WaveSynth
 {
 	private:
-		u16 wave_ram[16];
 		u32 length_counter;
 		u32 sound_length;
 		u32 timer;
 		u32 buffer_pos;
+		u16 wave_ram[16];
 		u8 freq_low;
 		u8 freq_high;
 		u8 output_level;
@@ -21,10 +21,14 @@ class WaveSynth
 		void start_playing();
 
 	public:
-		WaveSynth() { memset(this, 0, sizeof(*this)); static const u8 init_wave_ram[] = { 0x84,0x40,0x43,0xAA,0x2D,0x78,0x92,0x3C,0x60,0x59,0x59,0xB0,0x34,0xB8,0x2E,0xDA };
-
-		std::memcpy(wave_ram, init_wave_ram, sizeof(u8) * 16);
+		WaveSynth() 
+		{
+			static const u8 init_wave_ram[] = { 0x84,0x40,0x43,0xAA,0x2D,0x78,0x92,0x3C,0x60,0x59,0x59,0xB0,0x34,0xB8,0x2E,0xDA };
+			std::memcpy(wave_ram, init_wave_ram, sizeof(u8) * 16);
+			reset();
 		}
+
+		void reset();
 
 		void update_length();
 		void step(u32 cycles);

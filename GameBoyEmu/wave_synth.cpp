@@ -11,6 +11,22 @@ void WaveSynth::start_playing()
 	enabled = true;
 }
 
+void WaveSynth::reset()
+{
+	length_counter = 0;
+	sound_length = 0;
+	timer = 0;
+	buffer_pos = 0;
+	freq_low = 0;
+	freq_high = 0;
+	output_level = 0;
+	out_volume = 0;
+
+	enabled = false;
+	dac_enabled = false;
+	length_enabled = false;
+}
+
 void WaveSynth::update_length()
 {
 	if (length_enabled)
@@ -24,7 +40,7 @@ void WaveSynth::update_length()
 
 void WaveSynth::step(u32 cycles)
 {
-	while(cycles > timer)
+	while (cycles > timer)
 	{
 		cycles -= timer;
 		timer = (2048 - ((freq_high << 8) | freq_low)) * 2;
@@ -48,19 +64,19 @@ void WaveSynth::step(u32 cycles)
 u8 WaveSynth::read_reg(u16 reg_num)
 {
 	if (reg_num == 0)
-		return (dac_enabled << 7);
+		return change_bit<u8>(0xFF, dac_enabled, 7);
 
 	else if (reg_num == 1)
-		return sound_length;
+		return 0xFF; //wr-only ???
 
 	else if (reg_num == 2)
-		return (output_level << 5) & 0x60;
+		return (output_level << 5) | 0x9F;
 
 	else if (reg_num == 3)
-		return freq_low; //freq is write only
+		return 0xFF; //freq is write only
 
 	else if (reg_num == 4)
-		return (length_enabled << 6) | (freq_high & 0x7); //freq is write only
+		return change_bit<u8>(0xFF, length_enabled, 6); //freq is write only
 
 	else 
 		return 0xFF;

@@ -15,7 +15,6 @@ class SquareSynth
 		u32 sweep_shadow;
 		u32 sweep_shift;
 		u32 sweep_load;
-		u32 length_load;
 		u8 volume_load;
 		u8 volume;
 		u8 out_vol;
@@ -32,8 +31,9 @@ class SquareSynth
 		void start_playing();
 
 	public:
-		SquareSynth() { memset(this, 0, sizeof(*this)); }
+		SquareSynth() { reset(); }
 
+		void reset();
 		void update_sweep();
 		void update_length();
 		void update_envelope();

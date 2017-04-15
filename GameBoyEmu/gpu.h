@@ -10,13 +10,13 @@ class Gpu final : public IMemory
 		
 		std::unique_ptr<u32[]> screen_buffer;
 		std::unique_ptr<u8[]> vram; 
+		std::unique_ptr<u8[]> oam;
 		
 		u32 cycles_ahead;
 		u32 cycles;
 		i32 dma_cycles;
 		i32 enable_delay;
 
-		u8 oam[0xA0];
 		u8 regs[12];
 
 		bool entering_vblank;

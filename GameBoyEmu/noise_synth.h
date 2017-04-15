@@ -5,7 +5,6 @@ class NoiseSynth
 {
 	private:
 		u32 length_counter;
-		u32 length_load;
 		u32 envelope_counter;
 		u32 envelope_load;
 		u32 timer;
@@ -26,8 +25,9 @@ class NoiseSynth
 		void start_playing();
 
 	public:
-		NoiseSynth() { memset(this, 0, sizeof(*this)); }
+		NoiseSynth() { reset(); }
 
+		void reset();
 		void update_length();		
 		void update_envelope();
 		void step(u32 cycles);

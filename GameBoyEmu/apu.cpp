@@ -1,9 +1,12 @@
 #include "apu.h"
 
-APU::APU() : dummy_regs(), cycles_ahead(0) {}
+APU::APU() : cycles_ahead(0) {}
 
 void APU::step_ahead(u32 cycles)
 {
+	if (!enabled)
+		return;
+
 	sequencer_cycles += cycles;
 
 	if (sequencer_cycles >= 8192)
@@ -49,32 +52,26 @@ u8 APU::read_byte(u16 adress, u32 cycles_passed)
 		cycles_ahead += cycles_passed;
 	}
 
-	if (enabled)
-	{
-		if (adress >= 0xFF10 && adress <= 0xFF14)
-			return channel_1.read_reg(adress - 0xFF10);
+	if (adress >= 0xFF10 && adress <= 0xFF14)
+		return channel_1.read_reg(adress - 0xFF10);
 
-		else if (adress >= 0xFF16 && adress <= 0xFF19)
-			return channel_2.read_reg(adress - 0xFF15); //why ff15? because we skip 1st register!
+	else if (adress >= 0xFF16 && adress <= 0xFF19)
+		return channel_2.read_reg(adress - 0xFF15); //why ff15? because we skip 1st register!
 
-		else if (adress >= 0xFF1A && adress <= 0xFF1E)
-			return channel_3.read_reg(adress - 0xFF1A);
+	else if (adress >= 0xFF1A && adress <= 0xFF1E)
+		return channel_3.read_reg(adress - 0xFF1A);
 
-		else if (adress >= 0xFF20 && adress <= 0xFF23)
-			return channel_4.read_reg(adress - 0xFF20);
+	else if (adress >= 0xFF20 && adress <= 0xFF23)
+		return channel_4.read_reg(adress - 0xFF20);
 
-		else if (adress >= 0xFF24 && adress <= 0xFF25)
-			return dummy_regs[adress - 0xFF10];
-
-		else if (adress == 0xFF26)
-			return (enabled << 7) & 0x80;
-
-		else if (adress >= 0xFF30 && adress <= 0xFF3F)
-			return channel_3.read_ram(adress - 0xFF30);
-	}
+	else if (adress >= 0xFF24 && adress <= 0xFF25)
+		return dummy_regs[adress - 0xFF24];
 
 	else if (adress == 0xFF26)
-		return (enabled << 7) & 0x80;
+		return change_bit(0x70, enabled, 7);
+
+	else if (adress >= 0xFF30 && adress <= 0xFF3F)
+		return channel_3.read_ram(adress - 0xFF30);
 
 	else
 		return 0xFF;
@@ -103,10 +100,22 @@ void APU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		channel_4.write_reg(adress - 0xFF20, value);
 
 	else if (adress >= 0xFF24 && adress <= 0xFF25)
-		dummy_regs[adress - 0xFF10] = value;
+		dummy_regs[adress - 0xFF24] = value;
 
 	else if (adress == 0xFF26)
+	{
 		enabled = check_bit(value, 7);
+
+		if (!enabled)
+		{
+			channel_1.reset();
+			channel_2.reset();
+			channel_3.reset();
+			channel_4.reset();
+
+			std::memset(dummy_regs, 0, sizeof(dummy_regs));
+		}
+	}
 
 	else if (adress >= 0xFF30 && adress <= 0xFF3F)
 		channel_3.write_ram(adress - 0xFF30, value);

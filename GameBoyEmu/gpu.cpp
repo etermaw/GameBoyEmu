@@ -27,7 +27,8 @@ u32 get_dmg_color(u32 num)
 }
 
 Gpu::Gpu(Interrupts& ints) : 
-	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), entering_vblank(),cycles_ahead(0)
+	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), 
+	entering_vblank(), cycles_ahead(0)
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -36,9 +37,10 @@ Gpu::Gpu(Interrupts& ints) :
 
 	vram = std::make_unique<u8[]>(0x2000);
 	screen_buffer = std::make_unique<u32[]>(144 * 160);
+	oam = std::make_unique<u8[]>(0xA0);
 
 	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
-	std::memset(oam, 0xFF, sizeof(u8) * 0xA0);
+	std::memset(oam.get(), 0xFF, sizeof(u8) * 0xA0);
 }
 
 void Gpu::vb_mode()
@@ -166,10 +168,10 @@ void Gpu::dma_copy(u8 adress)
 
 	//TODO: make it cycle accurant? (split it into per cycle read-write)
 	if (real_adress >= 0x8000 && real_adress < 0xA000)
-		std::memcpy(oam, &vram[real_adress - 0x8000], sizeof(u8) * 0xA0);
+		std::memcpy(oam.get(), &vram[real_adress - 0x8000], sizeof(u8) * 0xA0);
 
 	else if(real_adress >= 0xC000 && real_adress < 0xF000)
-		std::memcpy(oam, &ram_ptr[real_adress - 0xC000], sizeof(u8) * 0xA0);
+		std::memcpy(oam.get(), &ram_ptr[real_adress - 0xC000], sizeof(u8) * 0xA0);
 
 	dma_cycles = 648;
 	//when dma is launched, cpu can only access HRAM!
@@ -402,7 +404,7 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 	if (adress >= 0x8000 && adress < 0xA000)
 		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? vram[adress - 0x8000] : 0xFF;
 
-	//if gpu is in mode 2 or 3, ignore read
+	//if gpu is in mode 2,3 or during oam dma, ignore read
 	else if (adress >= 0xFE00 && adress < 0xFEA0)
 		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 && dma_cycles <= 0) ? oam[adress - 0xFE00] : 0xFF;
 
@@ -424,7 +426,7 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	if (adress >= 0x8000 && adress < 0xA000 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 		vram[adress - 0x8000] = value;
 
-	//if gpu is in mode 2 or 3, ignore write
+	//if gpu is in mode 2,3 or during oam dma, ignore write
 	else if (adress >= 0xFE00 && adress < 0xFEA0 && ((regs[IO_LCD_STATUS] & 0x3) < 0x2) && dma_cycles <= 0)
 		oam[adress - 0xFE00] = value;
 

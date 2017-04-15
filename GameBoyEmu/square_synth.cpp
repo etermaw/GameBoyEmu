@@ -34,18 +34,42 @@ void SquareSynth::start_playing()
 		calculate_freq();
 }
 
+void SquareSynth::reset()
+{
+	length_counter = 0;
+	timer = 0;
+	duty_pos = 0;
+	duty = 0;
+	envelope_counter = 0;
+	start_envelope = 0;
+	freq = 0;
+	sweep_counter = 0;
+	sweep_shadow = 0;
+	sweep_shift = 0;
+	sweep_load = 0;
+	volume_load = 0;
+	volume = 0;
+	out_vol = 0;
+
+	enabled = false;
+	length_enabled = false;
+	envelope_enabled = false;
+	envelope_asc = false;
+	dac_enabled = false;
+	sweep_enabled = false;
+	sweep_neg = false;
+}
+
 void SquareSynth::update_sweep()
 {
-	--sweep_counter;
-
-	if (sweep_counter == 0)
+	if (sweep_enabled && --sweep_counter == 0)
 	{
 		sweep_counter = sweep_load;
 
 		if (sweep_counter == 0)
 			sweep_counter = 8;
 
-		if (sweep_enabled && sweep_load > 0)
+		if (/*sweep_enabled &&*/ sweep_load > 0)
 		{
 			auto new_freq = calculate_freq();
 
@@ -74,9 +98,7 @@ void SquareSynth::update_length()
 
 void SquareSynth::update_envelope()
 {
-	--envelope_counter;
-
-	if (envelope_enabled && envelope_counter == 0)
+	if (envelope_enabled && --envelope_counter == 0)
 	{
 		envelope_counter = start_envelope;
 
@@ -114,19 +136,19 @@ void SquareSynth::step(u32 cycles)
 u8 SquareSynth::read_reg(u16 reg_num)
 {
 	if (reg_num == 0)
-		return (sweep_load << 4) | (sweep_neg << 3) | (sweep_shift);
+		return 0x80 | (sweep_load << 4) | (sweep_neg << 3) | (sweep_shift);
 
 	else if (reg_num == 1)
-		return (duty << 6);
+		return (duty << 6) | 0x3F;
 
 	else if (reg_num == 2)
 		return (volume_load << 4) | (envelope_asc << 3) | (envelope_counter);
 
 	else if (reg_num == 3)
-		return freq & 0xFF; //write only!
+		return 0xFF; //write only!
 
 	else if (reg_num == 4)
-		return (length_enabled << 6);
+		return (length_enabled << 6) | 0xBF;
 }
 
 void SquareSynth::write_reg(u16 reg_num, u8 value)
@@ -141,8 +163,7 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 	else if (reg_num == 1)
 	{
 		duty = (value >> 6) & 0x3;
-		length_load = value & 0x1F; //why we store it, if this is write-only?
-		length_counter = 64 - length_load;
+		length_counter = 64 - (value & 0x1F);
 	}
 
 	else if (reg_num == 2)
