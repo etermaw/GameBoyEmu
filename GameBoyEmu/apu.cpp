@@ -87,22 +87,25 @@ void APU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		cycles_ahead += cycles_passed;
 	}
 
-	if (adress >= 0xFF10 && adress <= 0xFF14)
-		channel_1.write_reg(adress - 0xFF10, value);
+	if (enabled)
+	{
+		if (adress >= 0xFF10 && adress <= 0xFF14)
+			channel_1.write_reg(adress - 0xFF10, value);
 
-	else if (adress >= 0xFF16 && adress <= 0xFF19)
-		channel_2.write_reg(adress - 0xFF15, value); //why ff15? because we skip 1st register!
+		else if (adress >= 0xFF16 && adress <= 0xFF19)
+			channel_2.write_reg(adress - 0xFF15, value); //why ff15? because we skip 1st register!
 
-	else if (adress >= 0xFF1A && adress <= 0xFF1E)
-		channel_3.write_reg(adress - 0xFF1A, value);
+		else if (adress >= 0xFF1A && adress <= 0xFF1E)
+			channel_3.write_reg(adress - 0xFF1A, value);
 
-	else if (adress >= 0xFF20 && adress <= 0xFF23)
-		channel_4.write_reg(adress - 0xFF20, value);
+		else if (adress >= 0xFF20 && adress <= 0xFF23)
+			channel_4.write_reg(adress - 0xFF20, value);
 
-	else if (adress >= 0xFF24 && adress <= 0xFF25)
-		dummy_regs[adress - 0xFF24] = value;
+		else if (adress >= 0xFF24 && adress <= 0xFF25)
+			dummy_regs[adress - 0xFF24] = value;
+	}
 
-	else if (adress == 0xFF26)
+	if (adress == 0xFF26)
 	{
 		enabled = check_bit(value, 7);
 
