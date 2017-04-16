@@ -13,13 +13,12 @@ void WaveSynth::start_playing()
 
 bool WaveSynth::is_enabled() const
 {
-	return enabled;
+	return enabled && dac_enabled;
 }
 
 void WaveSynth::reset()
 {
 	length_counter = 0;
-	sound_length = 0;
 	timer = 0;
 	buffer_pos = 0;
 	freq_low = 0;
@@ -71,32 +70,28 @@ u8 WaveSynth::read_reg(u16 reg_num)
 	if (reg_num == 0)
 		return change_bit<u8>(0xFF, dac_enabled, 7);
 
-	else if (reg_num == 1)
-		return 0xFF; //write only
-
 	else if (reg_num == 2)
 		return (output_level << 5) | 0x9F;
-
-	else if (reg_num == 3)
-		return 0xFF; //freq is write only
 
 	else if (reg_num == 4)
 		return change_bit<u8>(0xFF, length_enabled, 6); //freq is write only
 
 	else 
-		return 0xFF;
+		return 0xFF; //regs 1,3 are write only, so they return 0xFF
 }
 
 void WaveSynth::write_reg(u16 reg_num, u8 value)
 {
 	if (reg_num == 0)
+	{
 		dac_enabled = check_bit(value, 7);
 
-	else if (reg_num == 1)
-	{
-		length_counter = 256 - value;
-		sound_length = value;
+		if (!dac_enabled)
+			enabled = false;
 	}
+
+	else if (reg_num == 1)
+		length_counter = 256 - value;
 
 	else if (reg_num == 2)
 		output_level = (value >> 5) & 0x3;
@@ -116,13 +111,10 @@ void WaveSynth::write_reg(u16 reg_num, u8 value)
 
 u8 WaveSynth::read_ram(u16 adress)
 {
-	return (!dac_enabled) ? wave_ram[adress] : 0xFF;
+	return wave_ram[adress];
 }
 
 void WaveSynth::write_ram(u16 adress, u8 value)
 {
-	if (!dac_enabled)
-		wave_ram[adress] = value;
-
-	//else ignore
+	wave_ram[adress] = value;
 }

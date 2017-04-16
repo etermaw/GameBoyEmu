@@ -18,7 +18,7 @@ void NoiseSynth::start_playing()
 
 bool NoiseSynth::is_enabled() const
 {
-	return enabled;
+	return enabled && dac_enabled;
 }
 
 void NoiseSynth::reset()
@@ -62,7 +62,7 @@ void NoiseSynth::update_envelope()
 		if (envelope_counter == 0) //obscure behaviour
 			envelope_counter = 8;
 
-		if (/*envelope_enabled &&*/ envelope_load > 0)
+		if (envelope_load > 0)
 		{
 			if (envelope_asc && volume < 15)
 				++volume;
@@ -130,6 +130,9 @@ void NoiseSynth::write_reg(u16 reg_num, u8 value)
 
 		envelope_counter = envelope_load;
 		volume = volume_load;
+
+		if (!dac_enabled)
+			enabled = false;
 	}
 
 	else if (reg_num == 2)

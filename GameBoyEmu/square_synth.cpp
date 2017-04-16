@@ -36,7 +36,7 @@ void SquareSynth::start_playing()
 
 bool SquareSynth::is_enabled() const
 {
-	return enabled;
+	return enabled && dac_enabled;
 }
 
 void SquareSynth::reset()
@@ -74,7 +74,7 @@ void SquareSynth::update_sweep()
 		if (sweep_counter == 0)
 			sweep_counter = 8;
 
-		if (/*sweep_enabled &&*/ sweep_load > 0)
+		if (sweep_load > 0)
 		{
 			auto new_freq = calculate_freq();
 
@@ -168,7 +168,7 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 	else if (reg_num == 1)
 	{
 		duty = (value >> 6) & 0x3;
-		length_counter = 64 - (value & 0x1F);
+		length_counter = 64 - (value & 0x3F);
 	}
 
 	else if (reg_num == 2)
@@ -179,6 +179,9 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 		start_envelope = value & 0x7;
 		envelope_counter = start_envelope;
 		volume = volume_load;
+
+		if (!dac_enabled)
+			enabled = false;
 	}
 
 	else if (reg_num == 3)

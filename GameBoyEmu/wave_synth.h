@@ -5,7 +5,7 @@ class WaveSynth
 {
 	private:
 		u32 length_counter;
-		u32 sound_length;
+		//u32 sound_length;
 		u32 timer;
 		u32 buffer_pos;
 		u16 wave_ram[16];
