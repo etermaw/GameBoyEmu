@@ -238,7 +238,7 @@ u32 CPU::step()
 
 	else
 	{
-		u8 ext_opcode = fetch8(4); //2x fetch == cpu are ~4 cycles ahead 
+		u8 ext_opcode = fetch8(4); //after fetch cpu is ~4 cycles ahead 
 		cycles_passed = (this->*ext_instruction_map[ext_opcode])(ext_opcode);
 	}
 

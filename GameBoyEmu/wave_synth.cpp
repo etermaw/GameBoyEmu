@@ -33,7 +33,7 @@ void WaveSynth::reset()
 
 void WaveSynth::update_length()
 {
-	if (length_enabled)
+	if (length_enabled && length_counter > 0)
 	{
 		--length_counter;
 

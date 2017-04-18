@@ -53,51 +53,18 @@ constexpr inline u8 combine_bits(bool highest, T... args)
 	return (static_cast<u8>(highest) << (sizeof...(args))) | combine_bits(args...);
 }
 
-template<class I>
-inline I ror(I num, u32 shift)
+template<class U>
+inline U ror(U num, u32 shift)
 {
-	static_assert(std::is_integral<I>::value && std::is_unsigned<I>::value, "Ror is only for unsigned ints!");
-	//add static_assert to ensure that passed value is 8,16,32,64 bit
-
-	//return (num >> shift) | (num << (sizeof(I) * CHAR_BIT - shift));
-	//MSVC is not smart enough to catch that ^ op is bit rotation, so we use intriscs
-
-	switch (sizeof(I) * CHAR_BIT)
-	{
-		case 8:
-			return _rotr8(num, shift);
-
-		case 16:
-			return _rotr16(num, shift);
-
-		case 32:
-			return _rotr(num, shift);
-
-		case 64:
-			return _rotr64(num, shift);
-	}
+	static_assert(std::is_integral<U>::value && std::is_unsigned<U>::value, "Ror is only for unsigned ints!");
+	
+	return (num >> shift) | (num << (sizeof(U) * CHAR_BIT - shift));
 }
 
-template<class I>
-inline I rol(I num, u32 shift)
+template<class U>
+inline U rol(U num, u32 shift)
 {
-	static_assert(std::is_integral<I>::value && std::is_unsigned<I>::value, "Rol is only for unsigned ints!");
-	//add static_assert to ensure that passed value is 8,16,32,64 bit
-
-	//return (num << shift) | ();
-
-	switch (sizeof(I) * CHAR_BIT)
-	{
-		case 8:
-			return _rotl8(num, shift);
-
-		case 16:
-			return _rotl16(num, shift);
-
-		case 32:
-			return _rotl(num, shift);
-
-		case 64:
-			return _rotl64(num, shift);
-	}
+	static_assert(std::is_integral<U>::value && std::is_unsigned<U>::value, "Rol is only for unsigned ints!");
+	
+	return (num << shift) | (num >> (sizeof(U) * CHAR_BIT - shift));
 }

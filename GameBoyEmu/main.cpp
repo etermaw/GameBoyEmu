@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 				spin = false;
 		}
 
-		auto start = std::chrono::high_resolution_clock::now();
+		//auto start = std::chrono::high_resolution_clock::now();
 		while (!gpu.is_entering_vblank()) //if someone turn off lcd, this loop may spin forever
 		{
 			u32 sync_cycles = 0;
@@ -215,8 +215,8 @@ int main(int argc, char *argv[])
 		SDL_RenderCopy(rend, tex, NULL, NULL);
 		SDL_RenderPresent(rend);
 
-		auto end = std::chrono::high_resolution_clock::now();
-		auto dur = (end - start).count();
+		//auto end = std::chrono::high_resolution_clock::now();
+		//auto dur = (end - start).count();
 
 		/*if ((dur / 1000000) < 16)
 			SDL_Delay(16 - (dur / 1000000));*/

@@ -28,7 +28,7 @@ void SquareSynth::start_playing()
 	if (sweep_counter == 0)
 		sweep_counter = 8;
 
-	sweep_enabled = sweep_counter > 0 || sweep_shift > 0;
+	sweep_enabled = (sweep_counter > 0) || (sweep_shift > 0);
 
 	if (sweep_shift > 0)
 		calculate_freq();
@@ -92,7 +92,7 @@ void SquareSynth::update_sweep()
 
 void SquareSynth::update_length()
 {
-	if (length_enabled)
+	if (length_enabled && length_counter > 0)
 	{
 		--length_counter;
 
@@ -177,6 +177,7 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 		volume_load = (value >> 4) & 0xF;
 		envelope_asc = check_bit(value, 3);
 		start_envelope = value & 0x7;
+
 		envelope_counter = start_envelope;
 		volume = volume_load;
 
@@ -185,12 +186,12 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 	}
 
 	else if (reg_num == 3)
-		freq = value;
+		freq = (freq & 0x700) | value;
 
 	else if (reg_num == 4)
 	{
 		length_enabled = check_bit(value, 6);
-		freq = (freq & 0x000000FF) | ((value & 0x7) << 8);
+		freq = (freq & 0xFF) | ((value & 0x7) << 8);
 
 		if (check_bit(value, 7))
 			start_playing();

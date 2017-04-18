@@ -12,7 +12,7 @@ void APU::step_ahead(u32 cycles)
 	if (sequencer_cycles >= 8192)
 	{
 		sequencer_cycles -= 8192;
-
+		
 		if (sequencer_frame % 2 == 0)
 		{
 			channel_1.update_length();
@@ -124,6 +124,8 @@ void APU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			channel_4.reset();
 
 			std::memset(dummy_regs, 0, sizeof(dummy_regs));
+			sequencer_frame = TEST_VAL;
+			sequencer_cycles = TEST_CYCLE;
 		}
 	}
 
