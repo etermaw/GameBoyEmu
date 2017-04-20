@@ -121,7 +121,7 @@ u8 MBC3::read_byte(u16 adress, u32 cycles_passed)
 		return cur_rom_bank[adress - 0x4000];
 
 	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
-		return reg_used ? rtc[selected_time_reg] : cur_ram_bank[adress - 0xA000];
+		return (reg_used ? rtc[selected_time_reg] : cur_ram_bank[adress - 0xA000]);
 
 	else
 		return 0xFF;
@@ -159,7 +159,7 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	}
 
 	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
-		reg_used ? rtc[selected_time_reg] : cur_ram_bank[adress - 0xA000] = value;
+		(reg_used ? rtc[selected_time_reg] : cur_ram_bank[adress - 0xA000]) = value;
 }
 
 u8 MBC5::read_byte(u16 adress, u32 cycles_passed)

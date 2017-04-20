@@ -154,7 +154,6 @@
     <ClCompile Include="interrupts.cpp" />
     <ClCompile Include="joypad.cpp" />
     <ClCompile Include="mbc.cpp" />
-    <ClCompile Include="cpu.cpp" />
     <ClCompile Include="cpu_instructions.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mmu.cpp" />

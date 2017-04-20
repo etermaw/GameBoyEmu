@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "cpu.h"
+#include "cpu_instructions.h"
 #include "mmu.h"
 #include "ram.h"
 #include "cartrige.h"
@@ -34,8 +35,7 @@ struct TestReader final : public IMemory
 
 int main(int argc, char *argv[])
 {
-	//CPU cpu;
-	CPU_Debugger<CPU> cpu;
+	CPU<CPUCore> cpu;
 	Interrupts ints;
 	Timer timer(ints);
 	MMU mmu;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	Gpu gpu(ints);
 	APU apu;
 
-	cpu.insert_breakpoint(0x100);
+	//cpu.insert_breakpoint(0x100);
 
 	SDL_Window* window = SDL_CreateWindow("Test",
 											SDL_WINDOWPOS_UNDEFINED,
@@ -95,7 +95,6 @@ int main(int argc, char *argv[])
 
 	cpu.reset();
 	cpu.attach_memory(&mmu);
-	cpu.fill_tabs();
 
 	bool spin = true;
 

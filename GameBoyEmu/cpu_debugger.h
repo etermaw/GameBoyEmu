@@ -212,7 +212,7 @@ inline void CPU_Debugger<T>::dump_registers()
 template<class T>
 inline void CPU_Debugger<T>::dump_memory_region(u16 start, u16 end)
 {
-	u32 in_row = 15;
+	u32 in_row = start % 16;
 
 	if (end < start)
 		std::swap(start, end);
@@ -220,12 +220,18 @@ inline void CPU_Debugger<T>::dump_memory_region(u16 start, u16 end)
 	printf("\t");
 
 	for (u32 i = 0; i < 16; ++i)
-		printf(" %01x ", (start + i) % 16);
+		printf(" %01x ", i);
+
+	if (in_row != 0)
+		printf("\n0x%04x: ", start & 0xFFF0);
+
+	for (u32 i = 0; i < in_row; ++i)
+		printf("   ");
 
 	for (u32 i = start; i <= end; ++i)
 	{
-		if (in_row == 15)
-			printf("\n0x%04x: ", i);
+		if (in_row == 0)
+			printf("\n0x%04x: ", i & 0xFFF0);
 
 		printf("%02x ", cpu.mmu->read_byte(i, 0));
 
@@ -263,7 +269,7 @@ inline void CPU_Debugger<T>::fill_tabs()
 }
 
 template<class T>
-inline void CPU_Debugger<T>::attach_memory(MMU * memory_controller)
+inline void CPU_Debugger<T>::attach_memory(MMU* memory_controller)
 {
 	cpu.attach_memory(memory_controller);
 }

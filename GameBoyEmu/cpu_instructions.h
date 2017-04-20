@@ -1,36 +1,29 @@
 #pragma once
 #include "stdafx.h"
 #include "mmu.h"
+#include "cpu.h"
 
-//TODO those enums must be private!
-enum FLAGS {F_C = 4, F_H, F_N, F_Z};
-//enum REGISTER_8 { B, C, D, E, H, L, UNUSED_1, UNUSED_2, A, F }; //big endian 
-enum REGISTER_8 { C, B, E, D, L, H, UNUSED_1, UNUSED_2, F, A }; //little endian
-enum REGISTER_16 { BC, DE, HL, SP, AF, R16_SIZE };
-
-class CPUCore
+class CPUCore : public CPU<CPUCore>
 {
-	using instr = u32(CPUCore::*)(u8);
-
-	protected:
+	private:
+		//internal utility functions
 		void push(u16 value, u32 cach_up_cycles);
 		u16 pop(u32 cach_up_cycles);
+
 		void write_word(u16 adress, u16 value, u32 cach_up_cycles);
 		u16 read_word(u16 adress, u32 cach_up_cycles);
-
-	public:
-		MMU* mmu;
-
-		u16 reg_16[REGISTER_16::R16_SIZE];
-		u16 pc;
-
-		u8* const reg_8 = reinterpret_cast<u8* const>(reg_16);
-		bool is_halted;
-		bool interrupts;
 
 		u8 fetch8(u32 cach_up_cycles);
 		u16 fetch16(u32 cach_up_cycles);
 
+	public:
+		//CPU interface
+		void fill_instruction_maps();
+		u8 fetch_op();
+		u8 fetch_ext_op();
+		u32 interrupt_handler(INTERRUPTS code);
+
+		//CPU instructions
 		u32 illegal_op(u8 opcode);
 
 		u32 nop(u8 unused);
