@@ -5,8 +5,13 @@
 
 class CPUCore : public CPU<CPUCore>
 {
-	private:
-		//internal utility functions
+	public: //CPU interface
+		void fill_instruction_maps();
+		u8 fetch_op();
+		u8 fetch_ext_op();
+		u32 interrupt_handler(INTERRUPTS code);
+
+	protected: //internal utility functions (allow to modify them, to access memory ops)
 		void push(u16 value, u32 cach_up_cycles);
 		u16 pop(u32 cach_up_cycles);
 
@@ -16,14 +21,7 @@ class CPUCore : public CPU<CPUCore>
 		u8 fetch8(u32 cach_up_cycles);
 		u16 fetch16(u32 cach_up_cycles);
 
-	public:
-		//CPU interface
-		void fill_instruction_maps();
-		u8 fetch_op();
-		u8 fetch_ext_op();
-		u32 interrupt_handler(INTERRUPTS code);
-
-		//CPU instructions
+	private: //CPU instructions (lots of them)
 		u32 illegal_op(u8 opcode);
 
 		u32 nop(u8 unused);

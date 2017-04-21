@@ -3,47 +3,6 @@
 
 static constexpr u8 reg_map[] = { B, C, D, E, H, L, -1, A }; //instead of -1, add 1 reg to reg_8 named as REG_GUARD
 
-void CPUCore::push(u16 value, u32 cach_up_cycles)
-{
-	mmu->write_byte(--reg_16[SP], (value >> 8) & 0xFF, cach_up_cycles);
-	mmu->write_byte(--reg_16[SP], value & 0xFF, cach_up_cycles + 4);
-}
-
-u16 CPUCore::pop(u32 cach_up_cycles)
-{
-	u8 low = mmu->read_byte(reg_16[SP]++, cach_up_cycles);
-	u8 high = mmu->read_byte(reg_16[SP]++, cach_up_cycles + 4);
-
-	return (high << 8) | low;
-}
-
-void CPUCore::write_word(u16 adress, u16 value, u32 cach_up_cycles)
-{
-	mmu->write_byte(adress, value & 0x00FF, cach_up_cycles);
-	mmu->write_byte(adress + 1, (value >> 8) & 0x00FF, cach_up_cycles + 4);
-}
-
-u16 CPUCore::read_word(u16 adress, u32 cach_up_cycles)
-{
-	auto low = mmu->read_byte(adress, cach_up_cycles);
-	auto high = mmu->read_byte(adress + 1, cach_up_cycles + 4);
-
-	return (high << 8) | low;
-}
-
-u8 CPUCore::fetch8(u32 cach_up_cycles)
-{
-	return mmu->read_byte(pc++, cach_up_cycles);
-}
-
-u16 CPUCore::fetch16(u32 cach_up_cycles)
-{
-	auto ret = read_word(pc, cach_up_cycles);
-	pc += 2;
-
-	return ret;
-}
-
 //CPU Interface
 //--------------------------------------------------------------------------------------
 
@@ -267,6 +226,49 @@ u32 CPUCore::interrupt_handler(INTERRUPTS code)
 	pc = 0x40 + code * 8; //jump to interrupt handler
 
 	return 20;
+}
+
+//internal helpers
+//--------------------------------------------------------------------------------------
+void CPUCore::push(u16 value, u32 cach_up_cycles)
+{
+	mmu->write_byte(--reg_16[SP], (value >> 8) & 0xFF, cach_up_cycles);
+	mmu->write_byte(--reg_16[SP], value & 0xFF, cach_up_cycles + 4);
+}
+
+u16 CPUCore::pop(u32 cach_up_cycles)
+{
+	u8 low = mmu->read_byte(reg_16[SP]++, cach_up_cycles);
+	u8 high = mmu->read_byte(reg_16[SP]++, cach_up_cycles + 4);
+
+	return (high << 8) | low;
+}
+
+void CPUCore::write_word(u16 adress, u16 value, u32 cach_up_cycles)
+{
+	mmu->write_byte(adress, value & 0x00FF, cach_up_cycles);
+	mmu->write_byte(adress + 1, (value >> 8) & 0x00FF, cach_up_cycles + 4);
+}
+
+u16 CPUCore::read_word(u16 adress, u32 cach_up_cycles)
+{
+	auto low = mmu->read_byte(adress, cach_up_cycles);
+	auto high = mmu->read_byte(adress + 1, cach_up_cycles + 4);
+
+	return (high << 8) | low;
+}
+
+u8 CPUCore::fetch8(u32 cach_up_cycles)
+{
+	return mmu->read_byte(pc++, cach_up_cycles);
+}
+
+u16 CPUCore::fetch16(u32 cach_up_cycles)
+{
+	auto ret = read_word(pc, cach_up_cycles);
+	pc += 2;
+
+	return ret;
 }
 
 //CPU opcodes

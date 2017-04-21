@@ -30,8 +30,6 @@ class CPU
 		bool interrupts;
 		bool is_halted;
 
-		void debug() {}; //dummy implementation
-
 	public:
 		CPU();
 		void attach_memory(MMU* memory_controller);
@@ -72,8 +70,6 @@ inline void CPU<T>::reset()
 template<class T>
 inline u32 CPU<T>::step()
 {
-	static_cast<T*>(this)->debug();
-
 	if (is_halted)
 		return 4;
 
