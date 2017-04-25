@@ -35,7 +35,6 @@ struct TestReader final : public IMemory
 
 int main(int argc, char *argv[])
 {
-	CPU<CPUCore> cpu;
 	Interrupts ints;
 	Timer timer(ints);
 	MMU mmu;
@@ -43,6 +42,7 @@ int main(int argc, char *argv[])
 	Cartrige cart;
 	TestReader tr; //testing
 	Joypad joypad;
+	CPU cpu(mmu);
 	Gpu gpu(ints);
 	APU apu;
 
@@ -92,9 +92,6 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
 	gpu.ram_ptr = ram.get(); //TODO: REMOVE IT IMMEDIATELY!
-
-	cpu.reset();
-	cpu.attach_memory(&mmu);
 
 	bool spin = true;
 

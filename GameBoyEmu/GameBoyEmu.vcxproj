@@ -150,6 +150,7 @@
   <ItemGroup>
     <ClCompile Include="apu.cpp" />
     <ClCompile Include="cartrige.cpp" />
+    <ClCompile Include="cpu.cpp" />
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="interrupts.cpp" />
     <ClCompile Include="joypad.cpp" />
@@ -167,13 +168,12 @@
     <ClInclude Include="apu.h" />
     <ClInclude Include="bit_ops.h" />
     <ClInclude Include="cartrige.h" />
+    <ClInclude Include="cpu.h" />
     <ClInclude Include="cpu_debugger.h" />
     <ClInclude Include="gpu.h" />
     <ClInclude Include="interrupts.h" />
     <ClInclude Include="joypad.h" />
     <ClInclude Include="mbc.h" />
-    <ClInclude Include="cpu.h" />
-    <ClInclude Include="cpu_instructions.h" />
     <ClInclude Include="definitions.h" />
     <ClInclude Include="IMemory.h" />
     <ClInclude Include="mmu.h" />

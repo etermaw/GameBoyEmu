@@ -8,100 +8,153 @@ enum FLAGS { F_C = 4, F_H, F_N, F_Z };
 enum REGISTER_8 { C, B, E, D, L, H, UNUSED_1, UNUSED_2, F, A, R8_SIZE }; //little endian
 enum REGISTER_16 { BC, DE, HL, SP, AF, R16_SIZE };
 
-template<class T>
 class CPU
 {
-	protected:
-		using op_fun = u32(T::*)(u8);
+	protected: //internals, protected to allow CPU_Debugger access them (cpu_instructions.cpp)
+		using op_fun = u32(CPU::*)(u8);
 
 		op_fun instr_map[256];
 		op_fun ext_instr_map[256];
 
-		MMU* mmu;
+		MMU& mmu;
 
 		union
 		{
 			u16 reg_16[REGISTER_16::R16_SIZE];
 			u8 reg_8[REGISTER_8::R8_SIZE];
 		};
-		
+
 		u16 pc;
 
 		bool interrupts;
 		bool is_halted;
 
-	public:
-		CPU();
-		void attach_memory(MMU* memory_controller);
+		void push(u16 value, u32 cach_up_cycles);
+		u16 pop(u32 cach_up_cycles);
+
+		void write_word(u16 adress, u16 value, u32 cach_up_cycles);
+		u16 read_word(u16 adress, u32 cach_up_cycles);
+
+		u8 fetch8(u32 cach_up_cycles);
+		u16 fetch16(u32 cach_up_cycles);
+
+		void fill_instruction_maps();
+
+	public: //cpu.cpp
+		CPU(MMU& memory_controller);
 
 		void reset();
 		u32 step();
 		u32 handle_interrupt(INTERRUPTS code); //it will cost 16~20 cycles!
 		bool is_interrupt_enabled() const;
 		void unhalt();
+
+	private: //CPU instructions (lots of them, implementations in cpu_instructions.cpp)
+		u32 illegal_op(u8 opcode);
+
+		u32 nop(u8 unused);
+		u32 ld_rr_nn(u8 opcode);
+		u32 ld_rr_a(u8 opcode);
+		u32 inc_rr(u8 opcode);
+		u32 inc_r(u8 opcode);
+		u32 dec_r(u8 opcode);
+		u32 ld_r_n(u8 opcode);
+		u32 rlca(u8 opcode);
+		u32 ld_nn_sp(u8 opcode);
+		u32 add_hl_rr(u8 opcode);
+		u32 ld_a_adr(u8 opcode);
+		u32 dec_rr(u8 opcode);
+		u32 rrca(u8 opcode);
+		u32 stop(u8 opcode);
+		u32 rla(u8 opcode);
+		u32 jr_n(u8 opcode);
+		u32 rra(u8 opcode);
+		u32 jr_cond_r(u8 opcode);
+		u32 ldi_hl_a(u8 opcode);
+		u32 daa(u8 opcode);
+		u32 ldi_a_hl(u8 opcode);
+		u32 cpl(u8 opcode);
+		u32 ldd_hl_a(u8 opcode);
+		u32 inc_hl(u8 opcode);
+		u32 dec_hl(u8 opcode);
+		u32 ld_hl_n(u8 opcode);
+		u32 scf(u8 opcode);
+		u32 ldd_a_hl(u8 opcode);
+		u32 ccf(u8 opcode);
+		u32 ld_r_r(u8 opcode);
+		u32 ld_r_hl(u8 opcode);
+		u32 ld_hl_r(u8 opcode);
+		u32 halt(u8 opcode);
+		u32 add_a_r(u8 opcode);
+		u32 add_a_hl(u8 opcode);
+		u32 adc_a_r(u8 opcode);
+		u32 adc_a_hl(u8 opcode);
+		u32 sub_a_r(u8 opcode);
+		u32 sub_a_hl(u8 opcode);
+		u32 sbc_a_r(u8 opcode);
+		u32 sbc_a_hl(u8 opcode);
+		u32 and_a_r(u8 opcode);
+		u32 and_a_hl(u8 opcode);
+		u32 xor_a_r(u8 opcode);
+		u32 xor_a_hl(u8 opcode);
+		u32 or_a_r(u8 opcode);
+		u32 or_a_hl(u8 opcode);
+		u32 cp_a_r(u8 opcode);
+		u32 cp_a_hl(u8 opcode);
+		u32 ret_cond(u8 opcode);
+		u32 pop_rr(u8 opcode);
+		u32 jp_cond_nn(u8 opcode);
+		u32 jp_nn(u8 opcode);
+		u32 call_cond_nn(u8 opcode);
+		u32 push_rr(u8 opcode);
+		u32 add_a_n(u8 opcode);
+		u32 rst_nn(u8 opcode);
+		u32 ret(u8 opcode);
+		u32 call_nn(u8 opcode);
+		u32 adc_a_n(u8 opcode);
+		u32 sub_a_n(u8 opcode);
+		u32 reti(u8 opcode);
+		u32 sbc_a_n(u8 opcode);
+		u32 ldh_n_a(u8 opcode);
+		u32 ldh_c_a(u8 opcode);
+		u32 and_n(u8 opcode);
+		u32 add_sp_n(u8 opcode);
+		u32 jp_hl(u8 opcode);
+		u32 ld_nn_a(u8 opcode);
+		u32 xor_n(u8 opcode);
+		u32 ldh_a_n(u8 opcode);
+		u32 pop_af(u8 opcode);
+		u32 ldh_a_c(u8 opcode);
+		u32 di(u8 opcode);
+		u32 push_af(u8 opcode);
+		u32 or_n(u8 opcode);
+		u32 ld_hl_sp_n(u8 opcode);
+		u32 ld_sp_hl(u8 opcode);
+		u32 ld_a_nn(u8 opcode);
+		u32 ei(u8 opcode);
+		u32 cp_n(u8 opcode);
+
+		//extended instructions (CB prefix)
+		u32 rlc_r(u8 opcode);
+		u32 rlc_hl(u8 opcode);
+		u32 rrc_r(u8 opcode);
+		u32 rrc_hl(u8 opcode);
+		u32 rl_r(u8 opcode);
+		u32 rl_hl(u8 opcode);
+		u32 rr_r(u8 opcode);
+		u32 rr_hl(u8 opcode);
+		u32 sla_r(u8 opcode);
+		u32 sla_hl(u8 opcode);
+		u32 sra_r(u8 opcode);
+		u32 sra_hl(u8 opcode);
+		u32 swap_r(u8 opcode);
+		u32 swap_hl(u8 opcode);
+		u32 srl_r(u8 opcode);
+		u32 srl_hl(u8 opcode);
+		u32 bit_r_x(u8 opcode);
+		u32 bit_hl_x(u8 opcode);
+		u32 res_r_x(u8 opcode);
+		u32 res_hl_x(u8 opcode);
+		u32 set_r_x(u8 opcode);
+		u32 set_hl_x(u8 opcode);
 };
-
-template<class T>
-inline CPU<T>::CPU()
-{
-	static_cast<T*>(this)->fill_instruction_maps();
-}
-
-template<class T>
-inline void CPU<T>::attach_memory(MMU* memory_controller)
-{
-	mmu = memory_controller;
-}
-
-template<class T>
-inline void CPU<T>::reset()
-{
-	is_halted = false;
-	interrupts = false;
-
-	reg_16[AF] = 0x01B0;
-	reg_16[BC] = 0x0013;
-	reg_16[DE] = 0x00D8;
-	reg_16[HL] = 0x014D;
-	reg_16[SP] = 0xFFFE;
-	pc = 0x100;
-}
-
-template<class T>
-inline u32 CPU<T>::step()
-{
-	if (is_halted)
-		return 4;
-
-	u32 cycles_passed = 0;
-	u8 opcode = static_cast<T*>(this)->fetch_op();
-
-	if (opcode != 0xCB)
-		cycles_passed = (static_cast<T*>(this)->*instr_map[opcode])(opcode);
-
-	else
-	{
-		u8 ext_opcode = static_cast<T*>(this)->fetch_ext_op();
-		cycles_passed = (static_cast<T*>(this)->*ext_instr_map[ext_opcode])(ext_opcode);
-	}
-
-	return cycles_passed;
-}
-
-template<class T>
-inline u32 CPU<T>::handle_interrupt(INTERRUPTS code)
-{
-	return static_cast<T*>(this)->interrupt_handler(code);
-}
-
-template<class T>
-inline bool CPU<T>::is_interrupt_enabled() const
-{
-	return interrupts;
-}
-
-template<class T>
-inline void CPU<T>::unhalt()
-{
-	is_halted = false;
-}
