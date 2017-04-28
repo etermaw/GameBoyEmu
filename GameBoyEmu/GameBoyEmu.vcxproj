@@ -169,7 +169,8 @@
     <ClInclude Include="bit_ops.h" />
     <ClInclude Include="cartrige.h" />
     <ClInclude Include="cpu.h" />
-    <ClInclude Include="cpu_debugger.h" />
+    <ClInclude Include="debugger.h" />
+    <ClInclude Include="function.h" />
     <ClInclude Include="gpu.h" />
     <ClInclude Include="interrupts.h" />
     <ClInclude Include="joypad.h" />

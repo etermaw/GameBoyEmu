@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "mmu.h"
+#include "debugger.h"
 
 //TODO those enums must be private!
 enum FLAGS { F_C = 4, F_H, F_N, F_Z };
@@ -10,7 +11,9 @@ enum REGISTER_16 { BC, DE, HL, SP, AF, R16_SIZE };
 
 class CPU
 {
-	protected: //internals, protected to allow CPU_Debugger access them (cpu_instructions.cpp)
+	friend class Debugger<CPU>;
+
+	protected: //internals (cpu_instructions.cpp)
 		using op_fun = u32(CPU::*)(u8);
 
 		op_fun instr_map[256];

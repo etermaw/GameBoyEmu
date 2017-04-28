@@ -9,6 +9,7 @@
 #include "timer.h"
 #include "joypad.h"
 #include "apu.h"
+#include "debugger.h"
 
 struct TestReader final : public IMemory
 {
@@ -46,7 +47,8 @@ int main(int argc, char *argv[])
 	Gpu gpu(ints);
 	APU apu;
 
-	//cpu.insert_breakpoint(0x100);
+	Debugger<CPU> debugger(cpu);
+	mmu.attach_debug_callback(make_function(&Debugger<CPU>::check_memory_access, &debugger));
 
 	SDL_Window* window = SDL_CreateWindow("Test",
 											SDL_WINDOWPOS_UNDEFINED,
@@ -192,6 +194,8 @@ int main(int argc, char *argv[])
 				if (cpu.is_interrupt_enabled())
 					sync_cycles = cpu.handle_interrupt(ints.get_first_raised());
 			}
+
+			debugger.step();
 
 			sync_cycles += cpu.step();
 			gpu.step(sync_cycles);

@@ -2,22 +2,24 @@
 #include "stdafx.h"
 
 template<class T>
-class CPU_Debugger
+class Debugger
 {
 	private:
-		T cpu;
+		T& cpu;
 		
-		std::vector<u16> break_points;
+		std::vector<u16> break_points = { 0x100 };
+		std::vector<u16> memory_watches = { 0xFF79 };
+
+		u16 change_adress = 0;
+		u8 new_val = 0;
 		bool next_instruction = false;
+		bool memory_changed = false;
 
 		bool is_breakpoint();
 		void enter_trap();
 
 		const char* dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2);
 		u8 get_opcode_bytes(u8 opcode);
-
-	public:
-		T& get_cpu();
 
 		void insert_breakpoint(u16 adress);
 		void remove_breakpoint(u16 adress);
@@ -26,27 +28,24 @@ class CPU_Debugger
 		void dump_registers();
 		void dump_memory_region(u16 start, u16 end);
 
-		u32 step();
-		u32 handle_interrupt(INTERRUPTS code); 
-		bool is_interrupt_enabled() const;
-		void fill_tabs();
-		void attach_memory(MMU* memory_controller);
-		void reset();
-		void unhalt();
+	public:
+		Debugger(T& cpu) : cpu(cpu) {}
+		void check_memory_access(u32 adress, u32 value);
+		void step();
 };
 
 template<class T>
-inline bool CPU_Debugger<T>::is_breakpoint()
+inline bool Debugger<T>::is_breakpoint()
 {
 	return !break_points.empty() && std::binary_search(break_points.begin(), break_points.end(), cpu.pc);
 }
 
 template<class T>
-inline void CPU_Debugger<T>::enter_trap()
+inline void Debugger<T>::enter_trap()
 {
-	u8 opcode = cpu.mmu->read_byte(cpu.pc, 0), 
-	   b1 = cpu.mmu->read_byte(cpu.pc + 1, 0),
-	   b2 = cpu.mmu->read_byte(cpu.pc + 2, 0);
+	u8 opcode = cpu.mmu.read_byte(cpu.pc, 0), 
+	   b1 = cpu.mmu.read_byte(cpu.pc + 1, 0),
+	   b2 = cpu.mmu.read_byte(cpu.pc + 2, 0);
 
 	char buffer[32];
 	const char* op = dispatch_opcode(opcode, b1, b2);
@@ -57,6 +56,12 @@ inline void CPU_Debugger<T>::enter_trap()
 	printf("continue - y, dump registers - d, dump memory - m\n");
 	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
 	printf("change pc - p\n");// , change reg value - q\n");
+
+	if (memory_changed)
+	{
+		memory_changed = false;
+		printf("\nmemory on adress %d changed value to %d", change_adress, new_val);
+	}
 
 	char choice = 0;
 	next_instruction = false;
@@ -161,20 +166,14 @@ inline void CPU_Debugger<T>::enter_trap()
 }
 
 template<class T>
-inline T& CPU_Debugger<T>::get_cpu()
-{
-	return cpu;
-}
-
-template<class T>
-inline void CPU_Debugger<T>::insert_breakpoint(u16 adress)
+inline void Debugger<T>::insert_breakpoint(u16 adress)
 {
 	break_points.push_back(adress);
 	std::sort(break_points.begin(), break_points.end());
 }
 
 template<class T>
-inline void CPU_Debugger<T>::remove_breakpoint(u16 adress)
+inline void Debugger<T>::remove_breakpoint(u16 adress)
 {
 	auto it = std::lower_bound(break_points.begin(), break_points.end(), adress);
 
@@ -183,7 +182,7 @@ inline void CPU_Debugger<T>::remove_breakpoint(u16 adress)
 }
 
 template<class T>
-inline void CPU_Debugger<T>::change_register_value(u32 reg, u16 new_val)
+inline void Debugger<T>::change_register_value(u32 reg, u16 new_val)
 {
 	if (new_val < 0x08)
 		cpu.reg_8[reg] = new_val & 0xFF;
@@ -193,7 +192,7 @@ inline void CPU_Debugger<T>::change_register_value(u32 reg, u16 new_val)
 }
 
 template<class T>
-inline void CPU_Debugger<T>::dump_registers()
+inline void Debugger<T>::dump_registers()
 {
 	static const char* regs_16_names[] = { "BC", "DE", "HL", "SP", "AF" };
 	int j = 0;
@@ -210,7 +209,7 @@ inline void CPU_Debugger<T>::dump_registers()
 }
 
 template<class T>
-inline void CPU_Debugger<T>::dump_memory_region(u16 start, u16 end)
+inline void Debugger<T>::dump_memory_region(u16 start, u16 end)
 {
 	u32 in_row = start % 16;
 
@@ -233,7 +232,7 @@ inline void CPU_Debugger<T>::dump_memory_region(u16 start, u16 end)
 		if (in_row == 0)
 			printf("\n0x%04x: ", i & 0xFFF0);
 
-		printf("%02x ", cpu.mmu->read_byte(i, 0));
+		printf("%02x ", cpu.mmu.read_byte(i, 0));
 
 		in_row = (in_row + 1) % 16;
 	}
@@ -242,52 +241,28 @@ inline void CPU_Debugger<T>::dump_memory_region(u16 start, u16 end)
 }
 
 template<class T>
-inline u32 CPU_Debugger<T>::step()
+inline void Debugger<T>::check_memory_access(u32 adress, u32 value)
 {
-	if (next_instruction || is_breakpoint())
+	if (memory_watches.empty())
+		return;
+
+	if (std::binary_search(memory_watches.begin(), memory_watches.end(), adress))
+	{
+		memory_changed = true;
+		new_val = value;
+		change_adress = adress;
+	}
+}
+
+template<class T>
+inline void Debugger<T>::step()
+{
+	if (next_instruction || is_breakpoint() || memory_changed)
 		enter_trap();
-
-	return cpu.step();
 }
 
 template<class T>
-inline u32 CPU_Debugger<T>::handle_interrupt(INTERRUPTS code)
-{
-	return cpu.handle_interrupt(code);
-}
-
-template<class T>
-inline bool CPU_Debugger<T>::is_interrupt_enabled() const
-{
-	return cpu.is_interrupt_enabled();
-}
-
-template<class T>
-inline void CPU_Debugger<T>::fill_tabs()
-{
-	cpu.fill_tabs();
-}
-
-template<class T>
-inline void CPU_Debugger<T>::attach_memory(MMU* memory_controller)
-{
-	cpu.attach_memory(memory_controller);
-}
-
-template<class T>
-inline void CPU_Debugger<T>::reset()
-{
-	cpu.reset();
-}
-
-template<class T>
-inline void CPU_Debugger<T>::unhalt()
-{
-	cpu.unhalt();
-}
-
-template<class T>
-inline const char* CPU_Debugger<T>::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
+inline const char* Debugger<T>::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
 {
 	static const char* opcodes[] = {
 		"NOP", "LD BC,0x%X", "LD (BC),A", "INC BC",
@@ -456,7 +431,7 @@ inline const char* CPU_Debugger<T>::dispatch_opcode(u8 opcode, u8 byte_1, u8 byt
 }
 
 template<class T>
-inline u8 CPU_Debugger<T>::get_opcode_bytes(u8 opcode)
+inline u8 Debugger<T>::get_opcode_bytes(u8 opcode)
 {
 	static const u8 opcodes_length[] = {
 		1,3,1,1,1,1,2,1,3,1,1,1,1,1,2,1,
