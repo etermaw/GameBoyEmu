@@ -1,14 +1,20 @@
 #pragma once
 #include "stdafx.h"
 
-template<class T>
 class Debugger
 {
 	private:
-		T& cpu;
-		
 		std::vector<u16> break_points = { 0x100 };
-		std::vector<u16> memory_watches = { 0xFF79 };
+		std::vector<u16> memory_watches;
+
+		function<u8(u16, u32)> read_byte_callback;
+		function<void(u16, u8, u32)> write_byte_callback;
+
+		u32* bank_num;
+		u16* pc;
+		u16* reg_16;
+		u8* reg_8;
+		bool* interrupts;
 
 		u16 change_adress = 0;
 		u8 new_val = 0;
@@ -24,38 +30,48 @@ class Debugger
 		void insert_breakpoint(u16 adress);
 		void remove_breakpoint(u16 adress);
 
+		void insert_watchpoint(u16 adress);
+		void remove_watchpoint(u16 adress);
+
 		void change_register_value(u32 reg, u16 new_val);
 		void dump_registers();
 		void dump_memory_region(u16 start, u16 end);
 
 	public:
-		Debugger(T& cpu) : cpu(cpu) {}
-		void check_memory_access(u32 adress, u32 value);
+		void attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte);
+		void attach_mbc(u32* bank_num);
+
+		std::tuple<u16**, u16**, u8**, bool**> get_cpu()
+		{
+			return std::make_tuple(&pc, &reg_16, &reg_8, &interrupts);
+		}
+
+		void check_memory_access(u16 adress, u8 value);
 		void step();
 };
 
-template<class T>
-inline bool Debugger<T>::is_breakpoint()
+
+inline bool Debugger::is_breakpoint()
 {
-	return !break_points.empty() && std::binary_search(break_points.begin(), break_points.end(), cpu.pc);
+	return !break_points.empty() && std::binary_search(break_points.begin(), break_points.end(), *pc);
 }
 
-template<class T>
-inline void Debugger<T>::enter_trap()
+
+inline void Debugger::enter_trap()
 {
-	u8 opcode = cpu.mmu.read_byte(cpu.pc, 0), 
-	   b1 = cpu.mmu.read_byte(cpu.pc + 1, 0),
-	   b2 = cpu.mmu.read_byte(cpu.pc + 2, 0);
+	u8 opcode = read_byte_callback(*pc + 0, 0), 
+	   b1 = read_byte_callback(*pc + 1, 0),
+	   b2 = read_byte_callback(*pc + 2, 0);
 
 	char buffer[32];
 	const char* op = dispatch_opcode(opcode, b1, b2);
 	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
 
 	printf("\nBREAK POINT!\n");
-	printf("0x%04x: %s\n", cpu.pc, buffer);
+	printf("0x%04x: %s\n", *pc, buffer);
 	printf("continue - y, dump registers - d, dump memory - m\n");
 	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
-	printf("change pc - p\n");// , change reg value - q\n");
+	printf("change pc - p\, insert memory watch - q\n");
 
 	if (memory_changed)
 	{
@@ -143,7 +159,7 @@ inline void Debugger<T>::enter_trap()
 				scanf("%x", &new_pc);
 
 				if (new_pc <= 0xFFFF)
-					cpu.pc = new_pc;
+					*pc = new_pc;
 
 				else
 					printf("Adress greater than 0xFFFF!\n");
@@ -151,29 +167,33 @@ inline void Debugger<T>::enter_trap()
 				break;
 			}
 
-			/*case 'q':
-			{
-				printf("\nSelect register:\n");
-				printf("B - 0,C - 1,D - 2,E - 3,H - 4,L - 5,A - 6,F - 7\n");
-				printf("BC,DE,HL,SP,AF\n");
+			case 'q':
+				printf("\nMemory watch adress (hex, 16-bit): ");
 
-				change_register_value();
+				if (scanf("%x", &num) && num < 0x10000)
+				{
+					insert_watchpoint(num & 0xFFFF);
+					printf("Memory watch added!\n");
+				}
+
+				else
+					printf("Wrong memory watch adress!\n");
+
 				break;
-			}*/
 		}
 
 	}
 }
 
-template<class T>
-inline void Debugger<T>::insert_breakpoint(u16 adress)
+
+inline void Debugger::insert_breakpoint(u16 adress)
 {
 	break_points.push_back(adress);
 	std::sort(break_points.begin(), break_points.end());
 }
 
-template<class T>
-inline void Debugger<T>::remove_breakpoint(u16 adress)
+
+inline void Debugger::remove_breakpoint(u16 adress)
 {
 	auto it = std::lower_bound(break_points.begin(), break_points.end(), adress);
 
@@ -181,35 +201,49 @@ inline void Debugger<T>::remove_breakpoint(u16 adress)
 		break_points.erase(it);
 }
 
-template<class T>
-inline void Debugger<T>::change_register_value(u32 reg, u16 new_val)
+inline void Debugger::insert_watchpoint(u16 adress)
 {
-	if (new_val < 0x08)
-		cpu.reg_8[reg] = new_val & 0xFF;
-
-	else if (new_val >= 0x10 && new_val <= 0x13)
-		cpu.reg_16[reg - 0x10] = new_val;
+	memory_watches.push_back(adress);
+	std::sort(memory_watches.begin(), memory_watches.end());
 }
 
-template<class T>
-inline void Debugger<T>::dump_registers()
+inline void Debugger::remove_watchpoint(u16 adress)
+{
+	auto it = std::lower_bound(memory_watches.begin(), memory_watches.end(), adress);
+
+	if (it != memory_watches.end())
+		memory_watches.erase(it);
+}
+
+
+inline void Debugger::change_register_value(u32 reg, u16 new_val)
+{
+	if (new_val < 0x08)
+		reg_8[reg] = new_val & 0xFF;
+
+	else if (new_val >= 0x10 && new_val <= 0x13)
+		reg_16[reg - 0x10] = new_val;
+}
+
+
+inline void Debugger::dump_registers()
 {
 	static const char* regs_16_names[] = { "BC", "DE", "HL", "SP", "AF" };
 	int j = 0;
 
-	for (auto i : cpu.reg_16)
-		printf("\n%s: 0x%04x", regs_16_names[j++], i);
+	for (auto i : regs_16_names)
+		printf("\n%s: 0x%04x", i, reg_16[j++]);
 
-	printf("\n\nA: 0x%02x  F: 0x%02x\n", cpu.reg_8[A], cpu.reg_8[F]);
-	printf("B: 0x%02x  C: 0x%02x\n", cpu.reg_8[B], cpu.reg_8[C]);
-	printf("D: 0x%02x  E: 0x%02x\n", cpu.reg_8[D], cpu.reg_8[E]);
-	printf("H: 0x%02x  L: 0x%02x\n", cpu.reg_8[H], cpu.reg_8[L]);
-	printf("\nFlags (F register): Z:%d C:%d H:%d N:%d\n", check_bit(cpu.reg_8[F], F_Z), check_bit(cpu.reg_8[F], F_C), check_bit(cpu.reg_8[F], F_H), check_bit(cpu.reg_8[F], F_N));
-	printf("Interrupts (IME): %s\n", cpu.interrupts ? "enabled" : "disabled");
+	printf("\n\nA: 0x%02x  F: 0x%02x\n", reg_8[A], reg_8[F]);
+	printf("B: 0x%02x  C: 0x%02x\n", reg_8[B], reg_8[C]);
+	printf("D: 0x%02x  E: 0x%02x\n", reg_8[D], reg_8[E]);
+	printf("H: 0x%02x  L: 0x%02x\n", reg_8[H], reg_8[L]);
+	printf("\nFlags (F register): Z:%d C:%d H:%d N:%d\n", check_bit(reg_8[F], F_Z), check_bit(reg_8[F], F_C), check_bit(reg_8[F], F_H), check_bit(reg_8[F], F_N));
+	printf("Interrupts (IME): %s\n", interrupts ? "enabled" : "disabled");
 }
 
-template<class T>
-inline void Debugger<T>::dump_memory_region(u16 start, u16 end)
+
+inline void Debugger::dump_memory_region(u16 start, u16 end)
 {
 	u32 in_row = start % 16;
 
@@ -232,7 +266,7 @@ inline void Debugger<T>::dump_memory_region(u16 start, u16 end)
 		if (in_row == 0)
 			printf("\n0x%04x: ", i & 0xFFF0);
 
-		printf("%02x ", cpu.mmu.read_byte(i, 0));
+		printf("%02x ", read_byte_callback(i + 0, 0));
 
 		in_row = (in_row + 1) % 16;
 	}
@@ -240,8 +274,14 @@ inline void Debugger<T>::dump_memory_region(u16 start, u16 end)
 	printf("\n");
 }
 
-template<class T>
-inline void Debugger<T>::check_memory_access(u32 adress, u32 value)
+
+inline void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte)
+{
+	read_byte_callback = read_byte;
+	write_byte_callback = write_byte;
+}
+
+inline void Debugger::check_memory_access(u16 adress, u8 value)
 {
 	if (memory_watches.empty())
 		return;
@@ -254,15 +294,15 @@ inline void Debugger<T>::check_memory_access(u32 adress, u32 value)
 	}
 }
 
-template<class T>
-inline void Debugger<T>::step()
+
+inline void Debugger::step()
 {
 	if (next_instruction || is_breakpoint() || memory_changed)
 		enter_trap();
 }
 
-template<class T>
-inline const char* Debugger<T>::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
+
+inline const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
 {
 	static const char* opcodes[] = {
 		"NOP", "LD BC,0x%X", "LD (BC),A", "INC BC",
@@ -430,8 +470,8 @@ inline const char* Debugger<T>::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
 		return ext_opcodes[byte_1];
 }
 
-template<class T>
-inline u8 Debugger<T>::get_opcode_bytes(u8 opcode)
+
+inline u8 Debugger::get_opcode_bytes(u8 opcode)
 {
 	static const u8 opcodes_length[] = {
 		1,3,1,1,1,1,2,1,3,1,1,1,1,1,2,1,

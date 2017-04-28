@@ -99,5 +99,4 @@ function_call<R, Args...> make_fun(R(*)(Args...))
 #define GET_MACRO(_1,_2,name,...) name
 #define make_function(...) EXPAND(GET_MACRO(__VA_ARGS__,make_function2,make_function1)(__VA_ARGS__))
 
-
 #endif

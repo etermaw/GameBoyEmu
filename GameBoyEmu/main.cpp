@@ -47,8 +47,11 @@ int main(int argc, char *argv[])
 	Gpu gpu(ints);
 	APU apu;
 
-	Debugger<CPU> debugger(cpu);
-	mmu.attach_debug_callback(make_function(&Debugger<CPU>::check_memory_access, &debugger));
+	Debugger debugger;
+	debugger.attach_mmu(make_function(&MMU::read_byte, &mmu), make_function(&MMU::write_byte, &mmu));
+
+	cpu.attach_debugger(debugger.get_cpu());
+	mmu.attach_debug_callback(make_function(&Debugger::check_memory_access, &debugger));
 
 	SDL_Window* window = SDL_CreateWindow("Test",
 											SDL_WINDOWPOS_UNDEFINED,

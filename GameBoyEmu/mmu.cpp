@@ -28,7 +28,7 @@ u8 MMU::read_byte(u16 adress, u32 cycles_passed)
 
 void MMU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
-	debug_callback((u32)adress, (u32)value);
+	debug_write_callback(adress + 0, value + 0);
 
 	find_chunk(adress)->write_byte(adress, value, cycles_passed);
 }

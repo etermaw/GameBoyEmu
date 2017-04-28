@@ -1,7 +1,6 @@
 #pragma once
 #include "stdafx.h"
 #include "mmu.h"
-#include "debugger.h"
 
 //TODO those enums must be private!
 enum FLAGS { F_C = 4, F_H, F_N, F_Z };
@@ -11,9 +10,7 @@ enum REGISTER_16 { BC, DE, HL, SP, AF, R16_SIZE };
 
 class CPU
 {
-	friend class Debugger<CPU>;
-
-	protected: //internals (cpu_instructions.cpp)
+	private: //internals (cpu_instructions.cpp)
 		using op_fun = u32(CPU::*)(u8);
 
 		op_fun instr_map[256];
@@ -51,6 +48,14 @@ class CPU
 		u32 handle_interrupt(INTERRUPTS code); //it will cost 16~20 cycles!
 		bool is_interrupt_enabled() const;
 		void unhalt();
+
+		void attach_debugger(std::tuple<u16**,u16**,u8**,bool**> params)
+		{
+			*std::get<0>(params) = &pc;
+			*std::get<1>(params) = reg_16;
+			*std::get<2>(params) = reg_8;
+			*std::get<3>(params) = &interrupts;
+		}
 
 	private: //CPU instructions (lots of them, implementations in cpu_instructions.cpp)
 		u32 illegal_op(u8 opcode);
