@@ -135,7 +135,7 @@ void Cartrige::dispatch()
 		memory_interface = std::make_unique<MBC2>(MBC2(rom.get(), ram.get()));
 
 	else if (in_range(type, 0x0F, 0x13))
-		memory_interface = std::make_unique<MBC3>(MBC3(rom.get(), ram.get(), rtc_regs));
+		memory_interface = std::make_unique<MBC3>(MBC3(rom.get(), ram.get(), (type <= 0x10 ? rtc_regs : nullptr)));
 
 	else if (in_range(type, 0x1A, 0x1E))
 		memory_interface = std::make_unique<MBC5>(MBC5(rom.get(), ram.get()));

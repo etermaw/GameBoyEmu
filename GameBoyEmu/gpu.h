@@ -11,7 +11,8 @@ class Gpu final : public IMemory
 		std::unique_ptr<u32[]> screen_buffer;
 		std::unique_ptr<u8[]> vram; 
 		std::unique_ptr<u8[]> oam;
-		
+		const u8* ram_ptr;
+
 		u32 cycles_ahead;
 		u32 cycles;
 		i32 dma_cycles;
@@ -39,8 +40,6 @@ class Gpu final : public IMemory
 		void step_ahead(u32 cycles);
 
 	public:
-		const u8* ram_ptr;
-
 		Gpu(Interrupts& ints);
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
@@ -50,4 +49,6 @@ class Gpu final : public IMemory
 		
 		void step(u32 clock_cycles);
 		const u32* get_frame_buffer() const { return screen_buffer.get(); }
+
+		void set_ram_dma(const u8* src) { ram_ptr = src; }
 };

@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
-	gpu.ram_ptr = ram.get(); //TODO: REMOVE IT IMMEDIATELY!
+	gpu.set_ram_dma(ram.get());
 
 	bool spin = true;
 

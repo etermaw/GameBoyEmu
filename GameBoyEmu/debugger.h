@@ -39,7 +39,7 @@ class Debugger
 
 	public:
 		void attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte);
-		void attach_mbc(u32* bank_num);
+		//void attach_mbc(u32* bank_num);
 
 		std::tuple<u16**, u16**, u8**, bool**> get_cpu()
 		{
