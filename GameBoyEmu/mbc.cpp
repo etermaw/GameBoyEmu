@@ -68,7 +68,7 @@ void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (adress < 0x8000)
 	{
-		ram_mode = static_cast<bool>(value & 1) && (ram != nullptr);
+		ram_mode = check_bit(value, 0) && (ram != nullptr);
 
 		if (ram_mode)
 			swap_rom_bank(rom_num_low & 0x1F);

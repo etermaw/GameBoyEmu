@@ -337,7 +337,7 @@ u32 CPU::rlca(u8 opcode)
 u32 CPU::ld_nn_sp(u8 opcode)
 {
 	u16 adr = fetch16(4);
-	write_word(adr, reg_16[SP], 12); //TODO is it correct value?
+	write_word(adr, reg_16[SP], 12);
 	return 20;
 }
 
@@ -1060,7 +1060,7 @@ u32 CPU::di(u8 opcode)
 	return 4;
 }
 
-u32 CPU::push_af(u8 opcode) //TODO: somewhere is 4 cycle delay...
+u32 CPU::push_af(u8 opcode)
 {
 	push(reg_16[AF], 8);
 	return 16;
@@ -1102,7 +1102,7 @@ u32 CPU::ld_a_nn(u8 opcode)
 
 u32 CPU::ei(u8 opcode)
 {
-	interrupts = true; //TODO: ei has 4 cycles of delay, so ei,di,ei,di won`t trigger any intterupts
+	delayed_ei = true;
 	return 4;
 }
 

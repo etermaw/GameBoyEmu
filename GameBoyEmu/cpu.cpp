@@ -12,6 +12,7 @@ void CPU::reset()
 {
 	is_halted = false;
 	interrupts = false;
+	delayed_ei = false;
 	
 	reg_16[AF] = 0x01B0;
 	reg_16[BC] = 0x0013;
@@ -25,6 +26,12 @@ u32 CPU::step()
 {
 	if (is_halted)
 		return 4;
+
+	if (delayed_ei)
+	{
+		interrupts = true;
+		delayed_ei = false;
+	}
 
 	u32 cycles_passed = 0;
 	u8 opcode = fetch8(0);

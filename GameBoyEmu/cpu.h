@@ -28,6 +28,7 @@ class CPU
 
 		bool interrupts;
 		bool is_halted;
+		bool delayed_ei;
 
 		void push(u16 value, u32 cach_up_cycles);
 		u16 pop(u32 cach_up_cycles);
