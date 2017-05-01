@@ -99,89 +99,30 @@ int main(int argc, char *argv[])
 	gpu.set_ram_dma(ram.get());
 
 	bool spin = true;
+	const u32 key_map[8] = { SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_a, SDLK_b, SDLK_KP_ENTER, SDLK_s };
 
 	while (spin)
 	{
 		while (SDL_PollEvent(&ev))
 		{
-			switch (ev.type)
+			if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
 			{
-				case SDL_KEYDOWN:
-					switch (ev.key.keysym.sym)
-					{
-						case SDLK_LEFT:
-							joypad.push_key(K_LEFT);
-							break;
+				u32 key_code = 0;
 
-						case SDLK_RIGHT:
-							joypad.push_key(K_RIGHT);
-							break;
+				while (key_map[key_code] != ev.key.keysym.sym)
+					++key_code;
 
-						case SDLK_UP:
-							joypad.push_key(K_UP);
-							break;
+				if (key_code < 8)
+				{
+					if (ev.type == SDL_KEYDOWN)
+						joypad.push_key(static_cast<KEYS>(key_code));
 
-						case SDLK_DOWN:
-							joypad.push_key(K_DOWN);
-							break;
-
-						case SDLK_a:
-							joypad.push_key(K_A);
-							break;
-
-						case SDLK_b:
-							joypad.push_key(K_B);
-							break;
-
-						case SDLK_KP_ENTER:
-							joypad.push_key(K_SELECT);
-							break;
-
-						case SDLK_s:
-							joypad.push_key(K_START);
-							break;
-					}
-					break;
-
-				case SDL_KEYUP:
-					switch (ev.key.keysym.sym)
-					{
-					case SDLK_LEFT:
-						joypad.release_key(K_LEFT);
-						break;
-
-					case SDLK_RIGHT:
-						joypad.release_key(K_RIGHT);
-						break;
-
-					case SDLK_UP:
-						joypad.release_key(K_UP);
-						break;
-
-					case SDLK_DOWN:
-						joypad.release_key(K_DOWN);
-						break;
-
-					case SDLK_a:
-						joypad.release_key(K_A);
-						break;
-
-					case SDLK_b:
-						joypad.release_key(K_B);
-						break;
-
-					case SDLK_KP_ENTER:
-						joypad.release_key(K_SELECT);
-						break;
-
-					case SDLK_s:
-						joypad.release_key(K_START);
-						break;
-					}
-					break;
+					else
+						joypad.release_key(static_cast<KEYS>(key_code));
+				}
 			}
-
-			if (ev.type == SDL_QUIT)
+			
+			else if (ev.type == SDL_QUIT)
 				spin = false;
 		}
 

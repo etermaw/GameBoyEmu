@@ -50,12 +50,10 @@ class Debugger
 		void step();
 };
 
-
 inline bool Debugger::is_breakpoint()
 {
 	return !break_points.empty() && std::binary_search(break_points.begin(), break_points.end(), *pc);
 }
-
 
 inline void Debugger::enter_trap()
 {
@@ -185,13 +183,11 @@ inline void Debugger::enter_trap()
 	}
 }
 
-
 inline void Debugger::insert_breakpoint(u16 adress)
 {
 	break_points.push_back(adress);
 	std::sort(break_points.begin(), break_points.end());
 }
-
 
 inline void Debugger::remove_breakpoint(u16 adress)
 {
@@ -215,7 +211,6 @@ inline void Debugger::remove_watchpoint(u16 adress)
 		memory_watches.erase(it);
 }
 
-
 inline void Debugger::change_register_value(u32 reg, u16 new_val)
 {
 	if (new_val < 0x08)
@@ -224,7 +219,6 @@ inline void Debugger::change_register_value(u32 reg, u16 new_val)
 	else if (new_val >= 0x10 && new_val <= 0x13)
 		reg_16[reg - 0x10] = new_val;
 }
-
 
 inline void Debugger::dump_registers()
 {
@@ -241,7 +235,6 @@ inline void Debugger::dump_registers()
 	printf("\nFlags (F register): Z:%d C:%d H:%d N:%d\n", check_bit(reg_8[F], F_Z), check_bit(reg_8[F], F_C), check_bit(reg_8[F], F_H), check_bit(reg_8[F], F_N));
 	printf("Interrupts (IME): %s\n", interrupts ? "enabled" : "disabled");
 }
-
 
 inline void Debugger::dump_memory_region(u16 start, u16 end)
 {
@@ -274,7 +267,6 @@ inline void Debugger::dump_memory_region(u16 start, u16 end)
 	printf("\n");
 }
 
-
 inline void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte)
 {
 	read_byte_callback = read_byte;
@@ -294,13 +286,11 @@ inline void Debugger::check_memory_access(u16 adress, u8 value)
 	}
 }
 
-
 inline void Debugger::step()
 {
 	if (next_instruction || is_breakpoint() || memory_changed)
 		enter_trap();
 }
-
 
 inline const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
 {
@@ -469,7 +459,6 @@ inline const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
 	else
 		return ext_opcodes[byte_1];
 }
-
 
 inline u8 Debugger::get_opcode_bytes(u8 opcode)
 {
