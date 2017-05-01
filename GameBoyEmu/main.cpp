@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 			{
 				u32 key_code = 0;
 
-				while (key_map[key_code] != ev.key.keysym.sym)
+				while (key_map[key_code] != ev.key.keysym.sym && key_code < 8)
 					++key_code;
 
 				if (key_code < 8)
