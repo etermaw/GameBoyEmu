@@ -20,6 +20,7 @@ class Gpu final : public IMemory
 
 		u8 regs[12];
 
+		u32 hdma_cur;
 		u8 cgb_bgp[64];
 		u8 cgb_obp[64];
 		u8 cgb_bgp_index;
@@ -31,6 +32,7 @@ class Gpu final : public IMemory
 		bool cgb_mode;
 		bool cgb_bgp_autoinc;
 		bool cgb_obp_autoinc;
+		bool hdma_active;
 
 		void vb_mode();
 		void hb_mode();
@@ -46,6 +48,8 @@ class Gpu final : public IMemory
 
 		void turn_off_lcd();
 		void turn_on_lcd();
+
+		void launch_gdma();
 
 		void step_ahead(u32 cycles);
 

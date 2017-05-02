@@ -124,12 +124,36 @@ void Gpu::transfer_mode()
 
 		cycles -= 172;
 		regs[IO_LCD_STATUS] &= 0xFC; //go to mode 0
+
+		if (hdma_active)
+		{
+			u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
+			u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
+			u16 len = (hdma_regs[4] & 0x7F) + 1;
+			u16 cur_pos = hdma_cur * 0x10;
+
+			std::memcpy(&vram[vram_bank][dst + cur_pos], &ram_ptr[src + cur_pos], 0x10);
+
+			if ((hdma_regs[4] & 0x7F) == 0)
+			{
+				hdma_active = false;
+				hdma_regs[4] = 0xFF;
+			}
+
+			else
+			{
+				++hdma_cur;
+				--hdma_regs[4];
+			}
+
+			step_ahead(8); //8 cycles passed, catch up
+		}
 	}
 }
 
 void Gpu::step_ahead(u32 clock_cycles)
 {
-	if (dma_cycles > 0)
+	if (dma_cycles > 0) //TODO: now it`s not affected by double speed, but it should!!!!!
 		dma_cycles = std::max(0, dma_cycles - static_cast<int>(clock_cycles));
 
 	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
@@ -391,6 +415,18 @@ void Gpu::turn_on_lcd()
 		enable_delay = 244;
 }
 
+void Gpu::launch_gdma()
+{
+	u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
+	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
+	u16 len = ((hdma_regs[4] & 0x7F) + 1) * 0x10;
+
+	std::memcpy(&vram[vram_bank][dst], &ram_ptr[src], len); //TODO: if we copy during mode 3, vram won`t change!
+
+	step_ahead(len / 2); // len/2 cycles passed, so we need to catch up
+	hdma_regs[4] = 0xFF;
+}
+
 u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 {
 	cycles_passed -= cycles_ahead;
@@ -415,16 +451,19 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 	else if (cgb_mode && adress == 0xFF4F)
 		return vram_bank & 0xFE;
 
-	else if (adress == 0xFF68)
+	else if (cgb_mode && adress >= 0xFF51 && adress < 0xFF56)
+		return hdma_regs[adress - 0xFF51]; //TODO: mask out useless bits?
+
+	else if (cgb_mode && adress == 0xFF68)
 		return change_bit(cgb_bgp_index, cgb_bgp_autoinc, 7);
 
-	else if (adress == 0xFF69)
+	else if (cgb_mode && adress == 0xFF69)
 		return (regs[IO_LCD_STATUS] & 0x3) != 0x3 ? cgb_bgp[cgb_bgp_index & 0x3F] : 0xFF;
 
-	else if (adress == 0xFF6A)
+	else if (cgb_mode && adress == 0xFF6A)
 		return change_bit(cgb_obp_index, cgb_obp_autoinc, 7);
 
-	else if (adress == 0xFF6B)
+	else if (cgb_mode && adress == 0xFF6B)
 		return (regs[IO_LCD_STATUS] & 0x3) != 0x3 ? cgb_obp[cgb_obp_index & 0x3F] : 0xFF;
 }
 
@@ -479,13 +518,36 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	else if (cgb_mode && adress == 0xFF4F)
 		vram_bank = value & 1;
 
-	else if (adress == 0xFF68)
+	else if (cgb_mode && adress >= 0xFF51 && adress < 0xFF55)
+		hdma_regs[adress - 0xFF51] = value;
+
+	else if (cgb_mode && adress == 0xFF55)
+	{
+		hdma_regs[4] = value;
+
+		if (check_bit(value, 7))
+		{
+			hdma_cur = 0;
+			hdma_active = true;
+		}
+
+		else
+		{
+			if (hdma_active)
+				hdma_active = false;
+
+			else
+				launch_gdma();
+		}		
+	}
+
+	else if (cgb_mode && adress == 0xFF68)
 	{
 		cgb_bgp_index = value & 0x3F;
 		cgb_bgp_autoinc = check_bit(value, 7);
 	}
 
-	else if (adress == 0xFF69 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
+	else if (cgb_mode && adress == 0xFF69 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 	{
 		cgb_bgp[cgb_bgp_index] = value;
 
@@ -493,13 +555,13 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			cgb_bgp_index++;
 	}
 
-	else if (adress == 0xFF6A)
+	else if (cgb_mode && adress == 0xFF6A)
 	{
 		cgb_obp_index = value & 0x3F;
 		cgb_obp_autoinc = check_bit(value, 7);
 	}
 
-	else if (adress == 0xFF6B && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
+	else if (cgb_mode && adress == 0xFF6B && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 	{
 		cgb_obp[cgb_obp_index] = value;
 
