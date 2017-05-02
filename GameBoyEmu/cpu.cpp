@@ -13,6 +13,7 @@ void CPU::reset()
 	is_halted = false;
 	interrupts = false;
 	delayed_ei = false;
+	cgb_mode = false;
 	
 	reg_16[AF] = 0x01B0;
 	reg_16[BC] = 0x0013;

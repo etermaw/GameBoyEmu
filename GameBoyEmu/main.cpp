@@ -34,6 +34,41 @@ struct TestReader final : public IMemory
 		}
 };
 
+struct SpeedSwitch : public IMemory
+{
+	bool double_speed = false;
+	bool switch_speed = false;
+
+	u8 read_byte(u16 adress, u32 unused) override
+	{
+		if (adress == 0xFF4D)
+		{
+			auto ret = change_bit(0xFF, double_speed, 7);
+			return change_bit(ret, switch_speed, 0);
+		}
+
+		else
+			return 0xFF;
+	}
+
+	void write_byte(u16 adress, u8 val, u32 key) override
+	{
+		if (adress == 0xFF4D)
+		{
+			if (key == 0xFFFFFFFF && val == 0xFF)
+			{
+				switch_speed = false;
+				double_speed = !double_speed;
+			}
+
+			else
+				switch_speed = check_bit(val, 0);
+		}
+
+		//else ignore
+	}
+};
+
 int main(int argc, char *argv[])
 {
 	Interrupts ints;
@@ -46,6 +81,7 @@ int main(int argc, char *argv[])
 	CPU cpu(mmu);
 	Gpu gpu(ints);
 	APU apu;
+	SpeedSwitch speed;
 
 	Debugger debugger;
 	debugger.attach_mmu(make_function(&MMU::read_byte, &mmu), make_function(&MMU::write_byte, &mmu));
@@ -93,6 +129,7 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFF10, 0xFF3F, &apu); //APU registers + wave RAM 
 
 	mmu.register_chunk(0xFF40, 0xFF4B, &gpu); //gpu control regs
+	mmu.register_chunk(0xFF4D, 0xFF4D, &speed); //speed switch (CGB)
 	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
@@ -142,8 +179,8 @@ int main(int argc, char *argv[])
 			debugger.step();
 
 			sync_cycles += cpu.step();
-			gpu.step(sync_cycles);
-			apu.step(sync_cycles);
+			gpu.step(sync_cycles >> speed.double_speed);
+			apu.step(sync_cycles >> speed.double_speed);
 			timer.step(sync_cycles);
 		}
 

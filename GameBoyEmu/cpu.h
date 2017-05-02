@@ -29,6 +29,7 @@ class CPU
 		bool interrupts;
 		bool is_halted;
 		bool delayed_ei;
+		bool cgb_mode;
 
 		void push(u16 value, u32 cach_up_cycles);
 		u16 pop(u32 cach_up_cycles);
@@ -44,6 +45,7 @@ class CPU
 	public: //cpu.cpp
 		CPU(MMU& memory_controller);
 
+		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
 		void reset();
 		u32 step();
 		u32 handle_interrupt(INTERRUPTS code); //it will cost 16~20 cycles!
