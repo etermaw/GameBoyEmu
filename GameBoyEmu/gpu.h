@@ -20,13 +20,17 @@ class Gpu final : public IMemory
 
 		u8 regs[12];
 
-		u16 cgb_bgp[8];
-		u16 cgb_obp[8];
+		u8 cgb_bgp[64];
+		u8 cgb_obp[64];
+		u8 cgb_bgp_index;
+		u8 cgb_obp_index;
 		u8 hdma_regs[5];
 		u8 vram_bank;
-
+		
 		bool entering_vblank;
 		bool cgb_mode;
+		bool cgb_bgp_autoinc;
+		bool cgb_obp_autoinc;
 
 		void vb_mode();
 		void hb_mode();

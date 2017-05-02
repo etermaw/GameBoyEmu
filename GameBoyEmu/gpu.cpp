@@ -414,6 +414,18 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 
 	else if (cgb_mode && adress == 0xFF4F)
 		return vram_bank & 0xFE;
+
+	else if (adress == 0xFF68)
+		return change_bit(cgb_bgp_index, cgb_bgp_autoinc, 7);
+
+	else if (adress == 0xFF69)
+		return (regs[IO_LCD_STATUS] & 0x3) != 0x3 ? cgb_bgp[cgb_bgp_index & 0x3F] : 0xFF;
+
+	else if (adress == 0xFF6A)
+		return change_bit(cgb_obp_index, cgb_obp_autoinc, 7);
+
+	else if (adress == 0xFF6B)
+		return (regs[IO_LCD_STATUS] & 0x3) != 0x3 ? cgb_obp[cgb_obp_index & 0x3F] : 0xFF;
 }
 
 void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
@@ -466,6 +478,34 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (cgb_mode && adress == 0xFF4F)
 		vram_bank = value & 1;
+
+	else if (adress == 0xFF68)
+	{
+		cgb_bgp_index = value & 0x3F;
+		cgb_bgp_autoinc = check_bit(value, 7);
+	}
+
+	else if (adress == 0xFF69 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
+	{
+		cgb_bgp[cgb_bgp_index] = value;
+
+		if (cgb_bgp_autoinc)
+			cgb_bgp_index++;
+	}
+
+	else if (adress == 0xFF6A)
+	{
+		cgb_obp_index = value & 0x3F;
+		cgb_obp_autoinc = check_bit(value, 7);
+	}
+
+	else if (adress == 0xFF6B && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
+	{
+		cgb_obp[cgb_obp_index] = value;
+
+		if (cgb_obp_autoinc)
+			cgb_obp_index++;
+	}
 }
 
 bool Gpu::is_entering_vblank()
