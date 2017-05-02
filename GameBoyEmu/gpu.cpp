@@ -28,14 +28,15 @@ u32 get_dmg_color(u32 num)
 
 Gpu::Gpu(Interrupts& ints) : 
 	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), 
-	entering_vblank(), cycles_ahead(0)
+	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false)
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
 	regs[IO_OBP_0] = 0xFF;
 	regs[IO_OBP_1] = 0xFF;
 
-	vram = std::make_unique<u8[]>(0x2000);
+	vram[0] = std::make_unique<u8[]>(0x2000);
+	vram[1] = std::make_unique<u8[]>(0x2000);
 	screen_buffer = std::make_unique<u32[]>(144 * 160);
 	oam = std::make_unique<u8[]>(0xA0);
 
@@ -191,8 +192,8 @@ void Gpu::draw_background_row()
 	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
 	const u32 buffer_offset = line * 160;
 	
-	const u8* tile_nums = &vram[offset]; 
-	const u8* tile_data = &vram[data_offset]; //index_corrector * 16 == data_offset
+	const u8* tile_nums = &vram[0][offset]; 
+	const u8* tile_data = &vram[0][data_offset]; //index_corrector * 16 == data_offset
 
 	const u32 line_offset = (((line + sy) / 8) % 32) * 32;
 	const u32 tile_line = (line + sy) % 8;
@@ -232,7 +233,7 @@ struct oam_entry
 // priorities for GBC:  BG0 < OBJL < BGL < OBJH < BGH
 void Gpu::draw_sprite_row()
 {	
-	const u8* tile_data = &vram[0]; //0x8000
+	const u8* tile_data = &vram[0][0]; //0x8000
 	const bool sprite_size = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE);
 	const u32 line = regs[IO_LY];
 	const u32 height = sprite_size ? 16 : 8;
@@ -332,8 +333,8 @@ void Gpu::draw_window_row()
 	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
 	const u32 buffer_offset = line * 160;
 
-	const u8* tile_nums = &vram[offset];
-	const u8* tile_data = &vram[data_offset]; //data_offset == index_corrector * 16
+	const u8* tile_nums = &vram[0][offset];
+	const u8* tile_data = &vram[0][data_offset]; //data_offset == index_corrector * 16
 
 	const u32 window_line = line - wy;
 	const u32 tile_line = window_line % 8;
@@ -402,7 +403,7 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 
 	//if gpu is in mode 3 ignore read (return 0xFF instead)
 	if (adress >= 0x8000 && adress < 0xA000)
-		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? vram[adress - 0x8000] : 0xFF;
+		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? vram[vram_bank][adress - 0x8000] : 0xFF;
 
 	//if gpu is in mode 2,3 or during oam dma, ignore read
 	else if (adress >= 0xFE00 && adress < 0xFEA0)
@@ -410,6 +411,9 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
 		return regs[adress - 0xFF40];
+
+	else if (cgb_mode && adress == 0xFF4F)
+		return vram_bank & 0xFE;
 }
 
 void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
@@ -424,7 +428,7 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	//if gpu is in mode 3 ignore write
 	if (adress >= 0x8000 && adress < 0xA000 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
-		vram[adress - 0x8000] = value;
+		vram[vram_bank][adress - 0x8000] = value;
 
 	//if gpu is in mode 2,3 or during oam dma, ignore write
 	else if (adress >= 0xFE00 && adress < 0xFEA0 && ((regs[IO_LCD_STATUS] & 0x3) < 0x2) && dma_cycles <= 0)
@@ -459,6 +463,9 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		else
 			regs[adress - 0xFF40] = value;
 	}
+
+	else if (cgb_mode && adress == 0xFF4F)
+		vram_bank = value & 1;
 }
 
 bool Gpu::is_entering_vblank()

@@ -9,7 +9,7 @@ class Gpu final : public IMemory
 		Interrupts& interrupts;
 		
 		std::unique_ptr<u32[]> screen_buffer;
-		std::unique_ptr<u8[]> vram; 
+		std::unique_ptr<u8[]> vram[2]; 
 		std::unique_ptr<u8[]> oam;
 		const u8* ram_ptr;
 
@@ -20,7 +20,13 @@ class Gpu final : public IMemory
 
 		u8 regs[12];
 
+		u16 cgb_bgp[8];
+		u16 cgb_obp[8];
+		u8 hdma_regs[5];
+		u8 vram_bank;
+
 		bool entering_vblank;
+		bool cgb_mode;
 
 		void vb_mode();
 		void hb_mode();
@@ -29,9 +35,9 @@ class Gpu final : public IMemory
 
 		void dma_copy(u8 adress);
 
-		void draw_background_row();
-		void draw_sprite_row();
-		void draw_window_row();
+		void draw_background_row(); //DMG 
+		void draw_sprite_row(); //DMG
+		void draw_window_row(); //DMG
 		void draw_line();
 
 		void turn_off_lcd();
@@ -51,4 +57,5 @@ class Gpu final : public IMemory
 		const u32* get_frame_buffer() const { return screen_buffer.get(); }
 
 		void set_ram_dma(const u8* src) { ram_ptr = src; }
+		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
 };
