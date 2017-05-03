@@ -46,108 +46,92 @@ Gpu::Gpu(Interrupts& ints) :
 
 void Gpu::vb_mode()
 {
-	if (cycles >= 456)
-	{
-		cycles -= 456;
-		regs[IO_LY]++;
+	regs[IO_LY]++;
 
+	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
+	{
+		regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
+		interrupts.raise(INT_LCD);
+	}
+
+	if (regs[IO_LY] == 153)
+	{
+		regs[IO_LY] = 0;
+		
 		if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
 		{
 			regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
 			interrupts.raise(INT_LCD);
 		}
 
-		if (regs[IO_LY] == 153)
-		{
-			regs[IO_LY] = 0;
-		
-			if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-			{
-				regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
-				interrupts.raise(INT_LCD);
-			}
+		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
 
-			regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
-
-			if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
-				interrupts.raise(INT_LCD);
-		}
+		if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
+			interrupts.raise(INT_LCD);
 	}
 }
 
 void Gpu::hb_mode()
 {
-	if (cycles >= 204)
+	regs[IO_LY]++;
+
+	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
 	{
-		cycles -= 204;
-		regs[IO_LY]++;
+		regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
+		interrupts.raise(INT_LCD);
+	}
 
-		if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-		{
-			regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
+	if (regs[IO_LY] != 144)
+		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
+
+	else
+	{
+		interrupts.raise(INT_VBLANK);
+
+		if (check_bit(regs[IO_LCD_STATUS], LS_VBLANK))
 			interrupts.raise(INT_LCD);
-		}
 
-		if (regs[IO_LY] != 144)
-			regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
-
-		else
-		{
-			interrupts.raise(INT_VBLANK);
-
-			if (check_bit(regs[IO_LCD_STATUS], LS_VBLANK))
-				interrupts.raise(INT_LCD);
-
-			regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x1; //go to mode 1
-			entering_vblank = true;
-		}
+		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x1; //go to mode 1
+		entering_vblank = true;
 	}
 }
 
 void Gpu::oam_mode()
 {
-	if (cycles >= 80)
-	{
-		cycles -= 80;
-		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //go to mode 3
-	}
+	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //go to mode 3
 }
 
 void Gpu::transfer_mode()
 {
-	if (cycles >= 172)
+	draw_line();
+
+	if (check_bit(regs[IO_LCD_STATUS], LS_HBLANK))
+		interrupts.raise(INT_LCD);
+
+	regs[IO_LCD_STATUS] &= 0xFC; //go to mode 0
+
+	if (hdma_active)
 	{
-		draw_line();
+		u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
+		u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
+		u16 len = (hdma_regs[4] & 0x7F) + 1;
+		u16 cur_pos = hdma_cur * 0x10;
 
-		if (check_bit(regs[IO_LCD_STATUS], LS_HBLANK))
-			interrupts.raise(INT_LCD);
+		std::memcpy(&vram[vram_bank][dst + cur_pos], &ram_ptr[src + cur_pos], 0x10);
 
-		cycles -= 172;
-		regs[IO_LCD_STATUS] &= 0xFC; //go to mode 0
-
-		if (hdma_active)
+		if ((hdma_regs[4] & 0x7F) == 0)
 		{
-			u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
-			u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
-			u16 len = (hdma_regs[4] & 0x7F) + 1;
-			u16 cur_pos = hdma_cur * 0x10;
-
-			std::memcpy(&vram[vram_bank][dst + cur_pos], &ram_ptr[src + cur_pos], 0x10);
-
-			if ((hdma_regs[4] & 0x7F) == 0)
-			{
-				hdma_active = false;
-				hdma_regs[4] = 0xFF;
-			}
-
-			else
-			{
-				++hdma_cur;
-				--hdma_regs[4];
-			}
-
-			step_ahead(8); //8 cycles passed, catch up
+			hdma_active = false;
+			hdma_regs[4] = 0xFF;
 		}
+
+		else
+		{
+			++hdma_cur;
+			--hdma_regs[4];
+		}
+
+		step_ahead(8); //8 cycles passed, catch up
 	}
 }
 
@@ -159,31 +143,33 @@ void Gpu::step_ahead(u32 clock_cycles)
 	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
 		return;
 
-	else if (enable_delay > 0)
+	cycles += std::max(0, static_cast<i32>(clock_cycles) - enable_delay);
+	enable_delay = std::max(0, enable_delay - static_cast<i32>(clock_cycles));
+
+	static const u32 state_cycles[] = { 204, 456, 80, 172 };
+	
+	while (cycles >= state_cycles[regs[IO_LCD_STATUS] & 0x3])
 	{
-		enable_delay = std::max(0, enable_delay - static_cast<int>(clock_cycles));
-		return;
-	}
+		cycles -= state_cycles[regs[IO_LCD_STATUS] & 0x3];
 
-	cycles += clock_cycles;
+		switch (regs[IO_LCD_STATUS] & 0x3)
+		{
+			case 0:
+				hb_mode();
+				break;
 
-	switch (regs[IO_LCD_STATUS] & 0x3)
-	{
-		case 0:
-			hb_mode();
-			break;
+			case 1:
+				vb_mode();
+				break;
 
-		case 1:
-			vb_mode();
-			break;
+			case 2:
+				oam_mode();
+				break;
 
-		case 2:
-			oam_mode();
-			break;
-
-		case 3:
-			transfer_mode();
-			break;
+			case 3:
+				transfer_mode();
+				break;
+		}
 	}
 }
 
