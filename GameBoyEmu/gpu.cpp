@@ -437,8 +437,11 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 	else if (cgb_mode && adress == 0xFF4F)
 		return vram_bank & 0xFE;
 
-	else if (cgb_mode && adress >= 0xFF51 && adress < 0xFF56)
+	else if (cgb_mode && adress >= 0xFF51 && adress < 0xFF55)
 		return hdma_regs[adress - 0xFF51]; //TODO: mask out useless bits?
+
+	else if (cgb_mode && adress == 0xFF55)
+		return change_bit(hdma_regs[4], !hdma_active, 7);
 
 	else if (cgb_mode && adress == 0xFF68)
 		return change_bit(cgb_bgp_index, cgb_bgp_autoinc, 7);

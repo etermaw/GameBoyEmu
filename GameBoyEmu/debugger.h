@@ -66,16 +66,17 @@ inline void Debugger::enter_trap()
 	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
 
 	printf("\nBREAK POINT!\n");
-	printf("0x%04x: %s\n", *pc, buffer);
-	printf("continue - y, dump registers - d, dump memory - m\n");
-	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
-	printf("change pc - p\, insert memory watch - q\n");
 
 	if (memory_changed)
 	{
 		memory_changed = false;
-		printf("\nmemory on adress %d changed value to %d", change_adress, new_val);
+		printf("MEMORY WATCH: memory on adress 0x%04x changed value to 0x%02x\n", change_adress, new_val);
 	}
+
+	printf("0x%04x: %s\n", *pc, buffer);
+	printf("continue - y, dump registers - d, dump memory - m\n");
+	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
+	printf("insert memory watch - q, remove memory watch - x\n");
 
 	char choice = 0;
 	next_instruction = false;
@@ -150,21 +151,6 @@ inline void Debugger::enter_trap()
 
 				break;
 
-			case 'p':
-			{
-				u32 new_pc = 0;
-				printf("\nnew program counter (16bit): ");
-				scanf("%x", &new_pc);
-
-				if (new_pc <= 0xFFFF)
-					*pc = new_pc;
-
-				else
-					printf("Adress greater than 0xFFFF!\n");
-
-				break;
-			}
-
 			case 'q':
 				printf("\nMemory watch adress (hex, 16-bit): ");
 
@@ -176,6 +162,29 @@ inline void Debugger::enter_trap()
 
 				else
 					printf("Wrong memory watch adress!\n");
+
+				break;
+
+			case 'x':
+				printf("\ncurrent memory watches:\n");
+
+				for (auto i : memory_watches)
+				{
+					printf("0x%04x ", i);
+
+					if (in_row == 4)
+						printf("\n");
+
+					in_row = (in_row + 1) % 4;
+				}
+
+				printf("\nadress: ");
+
+				if (scanf("%x", &in_row))
+					remove_watchpoint(in_row);
+
+				else
+					printf("wrong adress!\n");
 
 				break;
 		}

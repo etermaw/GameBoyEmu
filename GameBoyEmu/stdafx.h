@@ -10,6 +10,8 @@
 #include <string>
 #include <functional>
 #include <iostream>
+#include <cstring>
+#include <climits>
 
 #include <SDL.h>
 
