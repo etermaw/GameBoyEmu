@@ -279,7 +279,6 @@ struct oam_entry
 	}
 };
 
-// priorities for GBC:  BG0 < OBJL < BGL < OBJH < BGH
 void Gpu::draw_sprite_row()
 {	
 	const u8* tile_data = &vram[0][0]; //0x8000
@@ -512,6 +511,85 @@ void Gpu::draw_window_row_cgb()
 
 			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
 			//priority_buffer[line_offset + i] = priority;
+		}
+	}
+}
+
+//priorities for GBC:  BG0 < OBJL < BGL < OBJH < BGH
+void Gpu::draw_sprite_row_cgb()
+{
+	const u8* tile_data[2] = { &vram[0][0], &vram[1][0] }; //0x8000
+	const bool sprite_size = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE);
+	const u32 line = regs[IO_LY];
+	const u32 height = sprite_size ? 16 : 8;
+	const u32 line_offset = line * 160;
+	const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3);
+
+	i32 count = 0;
+	oam_entry to_draw[10]; //if we don`t sort, we don`t need to init with 0xFF
+
+	for (u32 i = 0; i < 40 && count < 10; ++i)
+	{
+		i32 y = oam[i * 4] - 16;
+
+		if (y <= line && ((y + height) > line))
+		{
+			to_draw[count].y = oam[i * 4];
+			to_draw[count].x = oam[i * 4 + 1];
+			to_draw[count].tile_num = oam[i * 4 + 2];
+			to_draw[count++].atr = oam[i * 4 + 3];
+		}
+	}
+
+	for (i32 i = count - 1; i >= 0; --i)
+	{
+		i32 sx = to_draw[i].x - 8;
+		i32 sy = to_draw[i].y - 16;
+		u32 tile_num = to_draw[i].tile_num;
+		u32 atr = to_draw[i].atr;
+
+		u32 tile_line = line - sy;
+		const u32 palette_num = atr & 0x7;
+		const u32 bank_num = check_bit(atr, 3);
+
+		if (check_bit(atr, 6)) //Y flip
+			tile_line = height - tile_line - 1;
+
+		if (sprite_size)
+			tile_num = tile_line < 8 ? (tile_num & 0xFE) : (tile_num | 0x1);
+
+		u8 tile_low = tile_data[bank_num][tile_num * 16 + tile_line * 2];
+		u8 tile_high = tile_data[bank_num][tile_num * 16 + tile_line * 2 + 1];
+
+		if (check_bit(atr, 5)) //X flip
+		{
+			tile_low = flip_bits(tile_low);
+			tile_high = flip_bits(tile_high);
+		}
+
+		const u32 begin = std::max(0, sx);
+		const u32 end = std::min(sx + 8, 160);
+
+		//if bit 7 == 1, then sprite will cover ONLY BG color 0
+		//else sprite will cover ONLY if priority_buffer != 1
+
+		for (u32 j = begin; j < end; ++j)
+		{
+			u32 id = end - j - 1;
+			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
+			u32 color = color_obp[palette_num][color_id];
+
+			if (check_bit(atr, 7))
+			{
+				if (color_id != 0 && screen_buffer[line_offset + j] == bg_alpha_color)
+					screen_buffer[line_offset + j] = color;
+			}
+
+			else
+			{
+				if (color_id != 0 /*&& !priority_buffer[line_offset + j]*/)
+					screen_buffer[line_offset + j] = color;
+			}
 		}
 	}
 }
