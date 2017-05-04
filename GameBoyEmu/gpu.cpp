@@ -452,7 +452,7 @@ void Gpu::draw_background_row_cgb()
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 
 			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
-			//priority_buffer[line_offset + i] = priority;
+			priority_buffer[line_offset + i] = priority;
 		}
 	}
 }
@@ -477,14 +477,14 @@ void Gpu::draw_window_row_cgb()
 	
 	const u32 window_line = line - wy;
 	u32 tile_line = window_line % 8;
-	const u32 line_off = (window_line / 8) * 32;
+	const u32 line_offset = (window_line / 8) * 32;
 
 	const u32 start_offset = -std::min(wx, 0);
 
 	for (u32 i = std::max(0, wx); i < 160;)
 	{
-		u32 tile_num = (tile_nums[line_off + (i + start_offset) / 8] + index_corrector) & 0xFF;
-		u8 tile_atr = tile_atrs[line_off + (i + start_offset) / 8];
+		u32 tile_num = (tile_nums[line_offset + (i + start_offset) / 8] + index_corrector) & 0xFF;
+		u8 tile_atr = tile_atrs[line_offset + (i + start_offset) / 8];
 
 		u8 palette_num = tile_atr & 0x7;
 		u8 data_bank = check_bit(tile_atr, 3);
@@ -508,7 +508,7 @@ void Gpu::draw_window_row_cgb()
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 
 			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
-			//priority_buffer[line_offset + i] = priority;
+			priority_buffer[line_offset + i] = priority;
 		}
 	}
 }
@@ -585,7 +585,7 @@ void Gpu::draw_sprite_row_cgb()
 
 			else
 			{
-				if (color_id != 0 /*&& !priority_buffer[line_offset + j]*/)
+				if (color_id != 0 && !priority_buffer[line_offset + j])
 					screen_buffer[line_offset + j] = color;
 			}
 		}
@@ -596,14 +596,31 @@ void Gpu::draw_line()
 {
 	if (check_bit(regs[IO_LCD_CONTROL], LC_POWER))
 	{
-		if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
-			draw_background_row();
+		if (cgb_mode)
+		{
+			priority_buffer.reset();
 
-		if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW))
-			draw_window_row();
+			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
+				draw_background_row_cgb();
 
-		if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
-			draw_sprite_row();
+			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW))
+				draw_window_row_cgb();
+
+			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
+				draw_sprite_row_cgb();
+		}
+
+		else
+		{
+			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
+				draw_background_row();
+
+			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW))
+				draw_window_row();
+
+			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
+				draw_sprite_row();
+		}
 	}
 }
 

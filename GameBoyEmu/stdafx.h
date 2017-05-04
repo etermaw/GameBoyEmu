@@ -12,6 +12,7 @@
 #include <iostream>
 #include <cstring>
 #include <climits>
+#include <bitset>
 
 #include <SDL.h>
 

@@ -20,6 +20,7 @@ class Gpu final : public IMemory
 
 		u8 regs[12];
 
+		std::bitset<160> priority_buffer;
 		u32 hdma_cur;
 		u32 color_bgp[8][4];
 		u32 color_obp[8][4];
