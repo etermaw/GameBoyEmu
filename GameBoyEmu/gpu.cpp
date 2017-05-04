@@ -291,8 +291,6 @@ void Gpu::draw_sprite_row()
 	i32 count = 0;
 	oam_entry to_draw[10];
 
-	std::memset(to_draw, 0xFF, sizeof(oam_entry) * 10);
-
 	//in DMG sort sprites by (x,OAM id), then take first 10 which fits
 	//in CBG, just take first 10 fitting line
 	for (u32 i = 0; i < 40 && count < 10; ++i)
@@ -308,7 +306,7 @@ void Gpu::draw_sprite_row()
 		}
 	}
 
-	std::stable_sort(std::begin(to_draw), std::end(to_draw));
+	std::stable_sort(std::begin(to_draw), std::begin(to_draw) + count);
 	
 	for (i32 i = count - 1; i >= 0; --i)
 	{
