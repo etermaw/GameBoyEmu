@@ -460,6 +460,62 @@ void Gpu::draw_background_row_cgb()
 	}
 }
 
+void Gpu::draw_window_row_cgb()
+{
+	if (regs[IO_LY] < regs[IO_WY] || regs[IO_WX7] > 166)
+		return;
+
+	const u32 line = regs[IO_LY];
+	const u32 wy = regs[IO_WY];
+	const i32 wx = regs[IO_WX7] - 7;
+
+	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
+	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
+	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
+	const u32 buffer_offset = line * 160;
+
+	const u8* tile_nums = &vram[0][offset];
+	const u8* tile_atrs = &vram[1][offset];
+	const u8* tile_data[2] = { &vram[0][data_offset], &vram[1][data_offset] };
+	
+	const u32 window_line = line - wy;
+	u32 tile_line = window_line % 8;
+	const u32 line_off = (window_line / 8) * 32;
+
+	const u32 start_offset = -std::min(wx, 0);
+
+	for (u32 i = std::max(0, wx); i < 160;)
+	{
+		u32 tile_num = (tile_nums[line_off + (i + start_offset) / 8] + index_corrector) & 0xFF;
+		u8 tile_atr = tile_atrs[line_off + (i + start_offset) / 8];
+
+		u8 palette_num = tile_atr & 0x7;
+		u8 data_bank = check_bit(tile_atr, 3);
+		bool priority = check_bit(tile_atr, 7);
+
+		if (check_bit(tile_atr, 6)) //Y flip
+			tile_line = 8 - tile_line;
+
+		u8 tile_low = tile_data[data_bank][tile_num * 16 + tile_line * 2];
+		u8 tile_high = tile_data[data_bank][tile_num * 16 + tile_line * 2 + 1];
+
+		if (check_bit(tile_atr, 5)) //X flip
+		{
+			tile_low = flip_bits(tile_low);
+			tile_high = flip_bits(tile_high);
+		}
+
+		for (u32 j = (start_offset + i) % 8; j < 8 && i < 160; ++j, ++i)
+		{
+			u32 id = 7 - j;
+			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
+
+			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
+			//priority_buffer[line_offset + i] = priority;
+		}
+	}
+}
+
 void Gpu::draw_line()
 {
 	if (check_bit(regs[IO_LCD_CONTROL], LC_POWER))

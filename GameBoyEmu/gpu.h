@@ -46,6 +46,7 @@ class Gpu final : public IMemory
 		void draw_window_row(); //DMG
 
 		void draw_background_row_cgb();
+		void draw_window_row_cgb();
 
 		void draw_line();
 
