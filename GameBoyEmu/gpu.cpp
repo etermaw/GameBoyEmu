@@ -26,6 +26,45 @@ u32 get_dmg_color(u32 num)
 	return color_tab[num]; //0xFFFFFFFF - (0x00555555 * num);
 }
 
+u16 rgb_to_cgb(u32 rgb)
+{
+	u32 r = rgb & 0xFF;
+	u32 g = (rgb & 0xFF00) >> 8;
+	u32 b = (rgb & 0xFF0000) >> 16;
+
+	r = ((r * 249 + 1014) >> 11) & 0x1F;
+	g = ((g * 249 + 1014) >> 11) & 0x1F;
+	b = ((b * 249 + 1014) >> 11) & 0x1F;
+
+	return (b << 10) | (g << 5) | (r);
+}
+
+u32 cgb_to_rgb(u16 cgb)
+{
+	u32 r = cgb & 0x1F;
+	u32 g = (cgb >> 5) & 0x1F;
+	u32 b = (cgb >> 10) & 0x1F;
+
+	r = ((r * 527 + 23) >> 6) & 0xFF;
+	g = ((g * 527 + 23) >> 6) & 0xFF;
+	b = ((b * 527 + 23) >> 6) & 0xFF;
+
+	return 0xFF000000 | (b << 16) | (g << 8) | r;
+}
+
+u32 change_cgb_color(u32 old_color, u8 value, bool low)
+{
+	u16 decoded = rgb_to_cgb(old_color);
+
+	if (low)
+		decoded = (decoded & 0xFF00) | value;
+
+	else
+		decoded = (decoded && 0xFF00) | (value << 8);
+
+	return cgb_to_rgb(decoded);
+}
+
 Gpu::Gpu(Interrupts& ints) : 
 	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), 
 	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false)
@@ -369,6 +408,58 @@ void Gpu::draw_window_row()
 	}
 }
 
+void Gpu::draw_background_row_cgb()
+{
+	const u32 sy = regs[IO_SY];
+	const u32 sx = regs[IO_SX];
+	const u32 line = regs[IO_LY];
+
+	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_BG_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
+	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
+	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
+	const u32 buffer_offset = line * 160;
+
+	const u8* tile_nums = &vram[0][offset];
+	const u8* tile_atrs = &vram[1][offset];
+
+	const u8* tile_data[2] = { &vram[0][data_offset], &vram[1][data_offset] };
+
+	const u32 line_offset = (((line + sy) / 8) % 32) * 32;
+	u32 tile_line = (line + sy) % 8;
+
+	for (u32 i = 0; i < 160;)
+	{
+		//it should work as singed/unsigned u8
+		auto tile_num = (tile_nums[line_offset + (((sx + i) / 8) % 32)] + index_corrector) & 0xFF;
+		auto tile_atr = tile_atrs[line_offset + (((sx + i) / 8) % 32)];
+
+		u8 palette_num = tile_atr & 0x7;
+		u8 data_bank = check_bit(tile_atr, 3);
+		bool priority = check_bit(tile_atr, 7);
+
+		if (check_bit(tile_atr, 6)) //Y flip
+			tile_line = 8 - tile_line;
+
+		u8 tile_low = tile_data[data_bank][tile_num * 16 + tile_line * 2];
+		u8 tile_high = tile_data[data_bank][tile_num * 16 + tile_line * 2 + 1];
+
+		if (check_bit(tile_atr, 5)) //X flip
+		{
+			tile_low = flip_bits(tile_low);
+			tile_high = flip_bits(tile_high);
+		}
+
+		for (u32 j = (sx + i) % 8; j < 8 && i < 160; ++j, ++i)
+		{
+			u32 id = 7 - j;
+			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
+
+			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
+			//priority_buffer[line_offset + i] = priority;
+		}
+	}
+}
+
 void Gpu::draw_line()
 {
 	if (check_bit(regs[IO_LCD_CONTROL], LC_POWER))
@@ -447,13 +538,35 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 		return change_bit(cgb_bgp_index, cgb_bgp_autoinc, 7);
 
 	else if (cgb_mode && adress == 0xFF69)
-		return (regs[IO_LCD_STATUS] & 0x3) != 0x3 ? cgb_bgp[cgb_bgp_index & 0x3F] : 0xFF;
+	{
+		if ((regs[IO_LCD_STATUS] & 0x3) != 0x3)
+		{
+			u32 encoded = color_bgp[cgb_bgp_index / 8][(cgb_bgp_index % 8) / 2];
+			u16 decoded = rgb_to_cgb(encoded);
+
+			return (decoded >> (cgb_bgp_index % 2)) & 0xFF;
+		}
+
+		else
+			return 0xFF;
+	}
 
 	else if (cgb_mode && adress == 0xFF6A)
 		return change_bit(cgb_obp_index, cgb_obp_autoinc, 7);
 
 	else if (cgb_mode && adress == 0xFF6B)
-		return (regs[IO_LCD_STATUS] & 0x3) != 0x3 ? cgb_obp[cgb_obp_index & 0x3F] : 0xFF;
+	{
+		if ((regs[IO_LCD_STATUS] & 0x3) != 0x3)
+		{
+			u32 encoded = color_obp[cgb_obp_index / 8][(cgb_obp_index % 8) / 2];
+			u16 decoded = rgb_to_cgb(encoded);
+
+			return (decoded >> (cgb_obp_index % 2)) & 0xFF;
+		}
+
+		else
+			return 0xFF;
+	}
 }
 
 void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
@@ -538,10 +651,13 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (cgb_mode && adress == 0xFF69 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 	{
-		cgb_bgp[cgb_bgp_index] = value;
+		//convert rgb15 into rgb32
+		auto color = color_bgp[cgb_bgp_index / 8][(cgb_bgp_index % 8) / 2];
+		color = change_cgb_color(color, value, cgb_bgp_index % 2);
+		color_bgp[cgb_bgp_index / 8][(cgb_bgp_index % 8) / 2] = color;
 
 		if (cgb_bgp_autoinc)
-			cgb_bgp_index++;
+			cgb_bgp_index = (cgb_bgp_index + 1) & 0x3F;
 	}
 
 	else if (cgb_mode && adress == 0xFF6A)
@@ -552,10 +668,13 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (cgb_mode && adress == 0xFF6B && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 	{
-		cgb_obp[cgb_obp_index] = value;
+		//convert rgb15 into rgb32
+		auto color = color_obp[cgb_obp_index / 8][cgb_obp_index % 4];
+		color = change_cgb_color(color, value, cgb_obp_index % 2);
+		color_obp[cgb_obp_index / 8][cgb_obp_index % 4] = color;
 
 		if (cgb_obp_autoinc)
-			cgb_obp_index++;
+			cgb_obp_index = (cgb_obp_index + 1) & 0x3F;
 	}
 }
 

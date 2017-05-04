@@ -21,8 +21,8 @@ class Gpu final : public IMemory
 		u8 regs[12];
 
 		u32 hdma_cur;
-		u8 cgb_bgp[64];
-		u8 cgb_obp[64];
+		u32 color_bgp[8][4];
+		u32 color_obp[8][4];
 		u8 cgb_bgp_index;
 		u8 cgb_obp_index;
 		u8 hdma_regs[5];
@@ -44,6 +44,9 @@ class Gpu final : public IMemory
 		void draw_background_row(); //DMG 
 		void draw_sprite_row(); //DMG
 		void draw_window_row(); //DMG
+
+		void draw_background_row_cgb();
+
 		void draw_line();
 
 		void turn_off_lcd();
