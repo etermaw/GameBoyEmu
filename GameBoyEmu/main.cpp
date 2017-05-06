@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
 			debugger.step();
 
 			sync_cycles += cpu.step();
-			gpu.step(sync_cycles >> speed.double_speed); //TODO: add cycles from HDMA/GDMA!
+			sync_cycles += gpu.step(sync_cycles >> speed.double_speed);
 			apu.step(sync_cycles >> speed.double_speed);
 			timer.step(sync_cycles);
 		}

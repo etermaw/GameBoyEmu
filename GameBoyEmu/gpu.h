@@ -22,6 +22,7 @@ class Gpu final : public IMemory
 
 		std::bitset<160> priority_buffer;
 		u32 hdma_cur;
+		u32 new_dma_cycles;
 		u32 color_bgp[8][4];
 		u32 color_obp[8][4];
 		u8 cgb_bgp_index;
@@ -67,7 +68,7 @@ class Gpu final : public IMemory
 
 		bool is_entering_vblank();
 		
-		void step(u32 clock_cycles);
+		u32 step(u32 clock_cycles);
 		const u32* get_frame_buffer() const { return screen_buffer.get(); }
 
 		void set_ram_dma(const u8* src) { ram_ptr = src; }

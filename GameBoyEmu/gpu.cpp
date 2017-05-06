@@ -67,7 +67,7 @@ u32 change_cgb_color(u32 old_color, u8 value, bool low)
 
 Gpu::Gpu(Interrupts& ints) : 
 	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), 
-	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false)
+	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false), new_dma_cycles(0)
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -170,14 +170,14 @@ void Gpu::transfer_mode()
 			--hdma_regs[4];
 		}
 
-		step_ahead(8); //8 cycles passed, catch up
+		new_dma_cycles = 8;
 	}
 }
 
 void Gpu::step_ahead(u32 clock_cycles)
 {
 	if (dma_cycles > 0) //TODO: now it`s not affected by double speed, but it should!!!!!
-		dma_cycles = std::max(0, dma_cycles - static_cast<int>(clock_cycles));
+		dma_cycles = std::max(0, dma_cycles - static_cast<i32>(clock_cycles));
 
 	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
 		return;
@@ -649,7 +649,7 @@ void Gpu::launch_gdma()
 
 	std::memcpy(&vram[vram_bank][dst], &ram_ptr[src], len); //TODO: if we copy during mode 3, vram won`t change!
 
-	step_ahead(len / 2); // len/2 cycles passed, so we need to catch up
+	new_dma_cycles = len / 2;
 	hdma_regs[4] = 0xFF;
 }
 
@@ -835,8 +835,14 @@ bool Gpu::is_entering_vblank()
 	return tmp;
 }
 
-void Gpu::step(u32 clock_cycles)
+u32 Gpu::step(u32 clock_cycles)
 {
-	step_ahead(clock_cycles - cycles_ahead);
+	u32 cycles_passed = new_dma_cycles;
+
+	step_ahead(clock_cycles + new_dma_cycles - cycles_ahead);
+
 	cycles_ahead = 0;
+	new_dma_cycles = 0;
+
+	return cycles_passed;
 }
