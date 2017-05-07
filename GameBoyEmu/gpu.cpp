@@ -67,7 +67,8 @@ u32 change_cgb_color(u32 old_color, u8 value, bool low)
 
 Gpu::Gpu(Interrupts& ints) : 
 	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), 
-	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false), new_dma_cycles(0)
+	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false), new_dma_cycles(0),
+	double_speed(false)
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -156,6 +157,7 @@ void Gpu::transfer_mode()
 		u16 len = (hdma_regs[4] & 0x7F) + 1;
 		u16 cur_pos = hdma_cur * 0x10;
 
+		//TODO: src is cart ROM,RAM + internal RAM
 		std::memcpy(&vram[vram_bank][dst + cur_pos], &ram_ptr[src + cur_pos], 0x10);
 
 		if ((hdma_regs[4] & 0x7F) == 0)
@@ -177,7 +179,7 @@ void Gpu::transfer_mode()
 void Gpu::step_ahead(u32 clock_cycles)
 {
 	if (dma_cycles > 0) //TODO: now it`s not affected by double speed, but it should!!!!!
-		dma_cycles = std::max(0, dma_cycles - static_cast<i32>(clock_cycles));
+		dma_cycles = std::max(0, dma_cycles - static_cast<i32>(clock_cycles << double_speed));
 
 	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
 		return;
@@ -223,11 +225,9 @@ void Gpu::dma_copy(u8 adress)
 	else if(real_adress >= 0xC000 && real_adress < 0xF000)
 		std::memcpy(oam.get(), &ram_ptr[real_adress - 0xC000], sizeof(u8) * 0xA0);
 
-	dma_cycles = 648;
-	//when dma is launched, cpu can only access HRAM!
-	//rumors says that OAM is blocked, but rest can be accessed (with bus conflicts)
-	//but, cpu also can be interrupted
-	//and when cpu is in double-speed mode, oam dma is 2x faster
+	dma_cycles = 648; 
+	//TODO: add memory bus conficts if cpu don`t operate on HRAM during oam dma?
+	//cpu should read last word read by dma
 }
 
 void Gpu::draw_background_row()
@@ -452,7 +452,7 @@ void Gpu::draw_background_row_cgb()
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 
 			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
-			priority_buffer[line_offset + i] = priority;
+			priority_buffer[i] = priority;
 		}
 	}
 }
@@ -508,7 +508,7 @@ void Gpu::draw_window_row_cgb()
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 
 			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
-			priority_buffer[line_offset + i] = priority;
+			priority_buffer[i] = priority;
 		}
 	}
 }
@@ -585,7 +585,7 @@ void Gpu::draw_sprite_row_cgb()
 
 			else
 			{
-				if (color_id != 0 && !priority_buffer[line_offset + j])
+				if (color_id != 0 && !priority_buffer[j])
 					screen_buffer[line_offset + j] = color;
 			}
 		}
@@ -647,6 +647,7 @@ void Gpu::launch_gdma()
 	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
 	u16 len = ((hdma_regs[4] & 0x7F) + 1) * 0x10;
 
+	//TODO: src is cart ROM,RAM + internal RAM
 	std::memcpy(&vram[vram_bank][dst], &ram_ptr[src], len); //TODO: if we copy during mode 3, vram won`t change!
 
 	new_dma_cycles = len / 2;

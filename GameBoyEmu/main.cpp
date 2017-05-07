@@ -129,11 +129,20 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFF10, 0xFF3F, &apu); //APU registers + wave RAM 
 
 	mmu.register_chunk(0xFF40, 0xFF4B, &gpu); //gpu control regs
-	mmu.register_chunk(0xFF4D, 0xFF4D, &speed); //speed switch (CGB)
+	mmu.register_chunk(0xFF4D, 0xFF4D, &speed); //CPU speed switch (CGB)
+	mmu.register_chunk(0xFF4F, 0xFF4F, &gpu); //gpu vram bank reg (CGB)
+	mmu.register_chunk(0xFF51, 0xFF55, &gpu); //gpu HDMA/GDMA regs (CGB)
+	mmu.register_chunk(0xFF68, 0xFF6B, &gpu); //gpu color BGP/OBP regs (CGB)
+	mmu.register_chunk(0xFF70, 0xFF70, &ram); //ram bank register (CGB)
 	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
 	gpu.set_ram_dma(ram.get());
+
+	bool enable_cgb = cart.is_cgb_ready();
+	cpu.enable_cgb_mode(enable_cgb);
+	gpu.enable_cgb_mode(enable_cgb);
+	ram.enable_cgb_mode(enable_cgb);
 
 	bool spin = true;
 	const u32 key_map[8] = { SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_a, SDLK_b, SDLK_KP_ENTER, SDLK_s };
@@ -164,7 +173,7 @@ int main(int argc, char *argv[])
 		}
 
 		//auto start = std::chrono::high_resolution_clock::now();
-		while (!gpu.is_entering_vblank()) //if someone turn off lcd, this loop may spin forever
+		while (!gpu.is_entering_vblank()) //TODO: if someone turn off lcd, this loop may spin forever
 		{
 			u32 sync_cycles = 0;
 
@@ -182,6 +191,8 @@ int main(int argc, char *argv[])
 			sync_cycles += gpu.step(sync_cycles >> speed.double_speed);
 			apu.step(sync_cycles >> speed.double_speed);
 			timer.step(sync_cycles);
+
+			gpu.set_speed(speed.double_speed); //TODO: find some other way to affect oam-dma timing?
 		}
 
 		auto ptr = gpu.get_frame_buffer();

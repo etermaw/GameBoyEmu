@@ -35,6 +35,7 @@ class Gpu final : public IMemory
 		bool cgb_bgp_autoinc;
 		bool cgb_obp_autoinc;
 		bool hdma_active;
+		bool double_speed;
 
 		void vb_mode();
 		void hb_mode();
@@ -73,4 +74,5 @@ class Gpu final : public IMemory
 
 		void set_ram_dma(const u8* src) { ram_ptr = src; }
 		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
+		void set_speed(bool speed) { double_speed = speed; }
 };

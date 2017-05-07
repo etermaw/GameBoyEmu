@@ -24,4 +24,5 @@ class Cartrige
 
 		bool load_cartrige(const std::string& name);
 		IMemory* get_memory_interface() const;
+		bool is_cgb_ready() const;
 };

@@ -7,7 +7,7 @@ struct rom_header
 	u8 nintendo_logo[48];
 	u8 game_title[11];
 	u8 manufacturer_code[4];
-	u8 gbc_flag;
+	u8 cgb_flag;
 	u8 new_license_code[2];
 	u8 sgb_flag;
 	u8 cartrige_type;
@@ -118,6 +118,13 @@ bool Cartrige::load_cartrige(const std::string& name)
 IMemory* Cartrige::get_memory_interface() const
 {
 	return memory_interface.get();
+}
+
+bool Cartrige::is_cgb_ready() const
+{
+	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
+
+	return (header->cgb_flag == 0x80) || (header->cgb_flag == 0xC0);
 }
 
 void Cartrige::dispatch()
