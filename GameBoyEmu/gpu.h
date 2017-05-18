@@ -42,7 +42,9 @@ class Gpu final : public IMemory
 		void oam_mode();
 		void transfer_mode();
 
-		void dma_copy(u8 adress);
+		void launch_dma(u8 adress);
+		void launch_gdma();
+		void launch_hdma();
 
 		void draw_background_row(); //DMG 
 		void draw_sprite_row(); //DMG
@@ -57,8 +59,8 @@ class Gpu final : public IMemory
 		void turn_off_lcd();
 		void turn_on_lcd();
 
-		void launch_gdma();
-
+		const u8* resolve_adress(u16 adress) const;
+		
 		void step_ahead(u32 cycles);
 
 	public:
@@ -72,7 +74,11 @@ class Gpu final : public IMemory
 		u32 step(u32 clock_cycles);
 		const u32* get_frame_buffer() const { return screen_buffer.get(); }
 
-		void set_ram_dma(const u8* src) { ram_ptr = src; }
 		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
 		void set_speed(bool speed) { double_speed = speed; }
+
+		void attach_dma_ptrs(const u8* cart_rom, const u8* cart_ram, const u8* internal_ram)
+		{
+			ram_ptr = internal_ram;
+		}
 };

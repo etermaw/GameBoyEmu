@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
-	gpu.set_ram_dma(ram.get());
+	gpu.attach_dma_ptrs(nullptr, nullptr, ram.get());
 
 	bool enable_cgb = cart.is_cgb_ready();
 	cpu.enable_cgb_mode(enable_cgb);

@@ -151,34 +151,12 @@ void Gpu::transfer_mode()
 	regs[IO_LCD_STATUS] &= 0xFC; //go to mode 0
 
 	if (hdma_active)
-	{
-		u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
-		u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
-		u16 len = (hdma_regs[4] & 0x7F) + 1;
-		u16 cur_pos = hdma_cur * 0x10;
-
-		//TODO: src is cart ROM,RAM + internal RAM
-		std::memcpy(&vram[vram_bank][dst + cur_pos], &ram_ptr[src + cur_pos], 0x10);
-
-		if ((hdma_regs[4] & 0x7F) == 0)
-		{
-			hdma_active = false;
-			hdma_regs[4] = 0xFF;
-		}
-
-		else
-		{
-			++hdma_cur;
-			--hdma_regs[4];
-		}
-
-		new_dma_cycles = 8;
-	}
+		launch_hdma();
 }
 
 void Gpu::step_ahead(u32 clock_cycles)
 {
-	if (dma_cycles > 0) //TODO: now it`s not affected by double speed, but it should!!!!!
+	if (dma_cycles > 0)
 		dma_cycles = std::max(0, dma_cycles - static_cast<i32>(clock_cycles << double_speed));
 
 	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
@@ -214,20 +192,53 @@ void Gpu::step_ahead(u32 clock_cycles)
 	}
 }
 
-void Gpu::dma_copy(u8 adress)
+void Gpu::launch_dma(u8 adress)
 {
-	const u16 real_adress = adress * 0x100;
-
-	//TODO: make it cycle accurant? (split it into per cycle read-write)
-	if (real_adress >= 0x8000 && real_adress < 0xA000)
-		std::memcpy(oam.get(), &vram[real_adress - 0x8000], sizeof(u8) * 0xA0);
-
-	else if(real_adress >= 0xC000 && real_adress < 0xF000)
-		std::memcpy(oam.get(), &ram_ptr[real_adress - 0xC000], sizeof(u8) * 0xA0);
-
+	const u8* src_ptr = resolve_adress(adress * 0x100);
+	
+	std::memcpy(oam.get(), src_ptr, sizeof(u8) * 0xA0);
 	dma_cycles = 648; 
 	//TODO: add memory bus conficts if cpu don`t operate on HRAM during oam dma?
-	//cpu should read last word read by dma
+	//cpu should read last word read by dma (require messing with MMU)
+	//nintendo docs says that oam dma from vram doesn`t need any wait loop in HRAM...
+}
+
+void Gpu::launch_gdma()
+{
+	u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
+	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
+	u16 len = ((hdma_regs[4] & 0x7F) + 1) * 0x10;
+
+	const u8* src_ptr = resolve_adress(src);
+	std::memcpy(&vram[vram_bank][dst], src_ptr, sizeof(u8) * len);
+
+	new_dma_cycles = len / 2;
+	hdma_regs[4] = 0xFF;
+}
+
+void Gpu::launch_hdma()
+{
+	u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
+	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
+	u16 len = (hdma_regs[4] & 0x7F) + 1;
+	u16 cur_pos = hdma_cur * 0x10;
+
+	const u8* src_ptr = resolve_adress(src + cur_pos);
+	std::memcpy(&vram[vram_bank][dst + cur_pos], src_ptr, sizeof(u8) * 0x10);
+
+	if ((hdma_regs[4] & 0x7F) == 0)
+	{
+		hdma_active = false;
+		hdma_regs[4] = 0xFF;
+	}
+
+	else
+	{
+		++hdma_cur;
+		--hdma_regs[4];
+	}
+
+	new_dma_cycles = 8;
 }
 
 void Gpu::draw_background_row()
@@ -641,17 +652,19 @@ void Gpu::turn_on_lcd()
 		enable_delay = 244;
 }
 
-void Gpu::launch_gdma()
+const u8* Gpu::resolve_adress(u16 adress) const
 {
-	u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
-	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
-	u16 len = ((hdma_regs[4] & 0x7F) + 1) * 0x10;
+	if (adress < 0x8000)
+		return get_cart_rom(adress);
 
-	//TODO: src is cart ROM,RAM + internal RAM
-	std::memcpy(&vram[vram_bank][dst], &ram_ptr[src], len); //TODO: if we copy during mode 3, vram won`t change!
+	else if (adress >= 0x8000 && adress < 0xA000)
+		return &vram[vram_bank][adress - 0x8000];
 
-	new_dma_cycles = len / 2;
-	hdma_regs[4] = 0xFF;
+	else if (adress >= 0xA000 && adress < 0xC000)
+		return get_cart_ram(adress);
+
+	else if (adress >= 0xC000 && adress < 0xF000)
+		return get_internal_ram(adress);
 }
 
 u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
@@ -761,7 +774,7 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			regs[IO_LY] = 0;
 
 		else if (adress == 0xFF46)
-			dma_copy(value);
+			launch_dma(value);
 
 		else
 			regs[adress - 0xFF40] = value;
