@@ -188,9 +188,9 @@ int main(int argc, char *argv[])
 			debugger.step();
 
 			sync_cycles += cpu.step();
-			sync_cycles += gpu.step(sync_cycles >> speed.double_speed);
+			sync_cycles += gpu.step(sync_cycles >> speed.double_speed) << speed.double_speed;
 			apu.step(sync_cycles >> speed.double_speed);
-			timer.step(sync_cycles);
+			timer.step(sync_cycles); //TODO: is it correct timing (double speed)?
 
 			gpu.set_speed(speed.double_speed); //TODO: find some other way to affect oam-dma timing?
 		}

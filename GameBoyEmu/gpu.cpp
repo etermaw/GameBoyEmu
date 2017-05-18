@@ -209,6 +209,7 @@ void Gpu::launch_gdma()
 	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
 	u16 len = ((hdma_regs[4] & 0x7F) + 1) * 0x10;
 
+	//TODO: max len is 0x800, so it can overlap 2 mem regions. Detect it and get 2nd ptr
 	const u8* src_ptr = resolve_adress(src);
 	std::memcpy(&vram[vram_bank][dst], src_ptr, sizeof(u8) * len);
 
@@ -654,6 +655,9 @@ void Gpu::turn_on_lcd()
 
 const u8* Gpu::resolve_adress(u16 adress) const
 {
+	//TODO: how to get ptrs? using function<> seems too hacky, also, we just duplicate mmu
+	//mmu would be good, but sloooooooow (finding chunk + virtual call) * every_byte
+
 	if (adress < 0x8000)
 		return get_cart_rom(adress);
 
