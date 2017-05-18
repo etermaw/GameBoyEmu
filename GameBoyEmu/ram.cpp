@@ -8,8 +8,11 @@ u8 Ram::read_byte(u16 adress, u32 cycles_passed)
 	else if (adress >= 0xD000 && adress < 0xE000)
 		return memory[adress - 0xC000 + bank_num * 0x1000];
 
-	else if (adress >= 0xE000 && adress < 0xFE00) //TODO: propably it should read from current bank, not 1
+	else if (adress >= 0xE000 && adress < 0xF000)
 		return memory[adress - 0xE000];
+
+	else if (adress >= 0xF000 && adress < 0xFE00)
+		return memory[adress - 0xF000 + bank_num * 0x1000];
 
 	else if (cgb_mode && adress == 0xFF70)
 		return bank_num;
@@ -29,8 +32,11 @@ void Ram::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	else if (adress >= 0xD000 && adress < 0xE000)
 		memory[adress - 0xC000 + bank_num * 0x1000] = value;
 
-	else if (adress >= 0xE000 && adress < 0xFE00) //TODO: propably it should write to current bank, not 1
+	else if (adress >= 0xE000 && adress < 0xF000)
 		memory[adress - 0xE000] = value;
+
+	else if (adress >= 0xF000 && adress < 0xFE00)
+		memory[adress - 0xF000 + bank_num * 0x1000] = value;
 
 	else if (cgb_mode && adress == 0xFF70)
 		bank_num = std::max(1, value & 0x7);
