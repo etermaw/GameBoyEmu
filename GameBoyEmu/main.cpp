@@ -116,9 +116,9 @@ int main(int argc, char *argv[])
 		std::cout << "Failed to load cartrige!\n";
 	}
 
-	mmu.register_chunk(0, 0x7FFF, cart.get_memory_interface());
+	mmu.register_chunk(0, 0x7FFF, cart.get_memory_controller());
 	mmu.register_chunk(0x8000, 0x9FFF, &gpu); //vram
-	mmu.register_chunk(0xA000, 0xBFFF, cart.get_memory_interface());
+	mmu.register_chunk(0xA000, 0xBFFF, cart.get_memory_controller());
 	mmu.register_chunk(0xC000, 0xFDFF, &ram);
 	mmu.register_chunk(0xFE00, 0xFE9F, &gpu); //oam tables
 	mmu.register_chunk(0xFF00, 0xFF00, &joypad);//input keys register
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
-	gpu.attach_dma_ptrs(cart.get_memory_interface(), &ram);
+	gpu.attach_dma_ptrs(cart.get_dma_controller(), &ram);
 
 	bool enable_cgb = cart.is_cgb_ready();
 	cpu.enable_cgb_mode(enable_cgb);

@@ -11,6 +11,7 @@ class Cartrige
 		std::unique_ptr<u8[]> rom;
 		std::unique_ptr<u8[]> ram;
 		std::unique_ptr<IMemory> memory_interface;
+		IDmaMemory* dma_interface;
 
 		size_t ram_size;
 		u8 rtc_regs[5] = {};
@@ -23,6 +24,7 @@ class Cartrige
 		~Cartrige();
 
 		bool load_cartrige(const std::string& name);
-		IMemory* get_memory_interface() const;
+		IMemory* get_memory_controller() const;
+		IDmaMemory* get_dma_controller() const;
 		bool is_cgb_ready() const;
 };

@@ -115,9 +115,14 @@ bool Cartrige::load_cartrige(const std::string& name)
 	return true;
 }
 
-IMemory* Cartrige::get_memory_interface() const
+IMemory* Cartrige::get_memory_controller() const
 {
 	return memory_interface.get();
+}
+
+IDmaMemory* Cartrige::get_dma_controller() const
+{
+	return dma_interface;
 }
 
 bool Cartrige::is_cgb_ready() const
@@ -133,19 +138,39 @@ void Cartrige::dispatch()
 	u8 type = header->cartrige_type;
 
 	if (type == 0x00 || type == 0x08 || type == 0x09)
-		memory_interface = std::make_unique<NoMBC>(NoMBC(rom.get(), ram.get()));
+	{
+		auto tmp = std::make_unique<NoMBC>(NoMBC(rom.get(), ram.get()));
+		dma_interface = tmp.get();
+		memory_interface = std::move(tmp);
+	}
 
 	else if (in_range(type, 0x01, 0x03))
-		memory_interface = std::make_unique<MBC1>(MBC1(rom.get(), ram.get()));
+	{
+		auto tmp = std::make_unique<MBC1>(MBC1(rom.get(), ram.get()));
+		dma_interface = tmp.get();
+		memory_interface = std::move(tmp);
+	}
 
 	else if (in_range(type, 0x05, 0x06))
-		memory_interface = std::make_unique<MBC2>(MBC2(rom.get(), ram.get()));
+	{
+		auto tmp = std::make_unique<MBC2>(MBC2(rom.get(), ram.get()));
+		dma_interface = tmp.get();
+		memory_interface = std::move(tmp);
+	}
 
 	else if (in_range(type, 0x0F, 0x13))
-		memory_interface = std::make_unique<MBC3>(MBC3(rom.get(), ram.get(), (type <= 0x10 ? rtc_regs : nullptr)));
+	{
+		auto tmp = std::make_unique<MBC3>(MBC3(rom.get(), ram.get(), (type <= 0x10 ? rtc_regs : nullptr)));
+		dma_interface = tmp.get();
+		memory_interface = std::move(tmp);
+	}
 
 	else if (in_range(type, 0x1A, 0x1E))
-		memory_interface = std::make_unique<MBC5>(MBC5(rom.get(), ram.get()));
+	{
+		auto tmp = std::make_unique<MBC5>(MBC5(rom.get(), ram.get()));
+		dma_interface = tmp.get();
+		memory_interface = std::move(tmp);
+	}
 
 	else
 		memory_interface = nullptr;
