@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "IMemory.h"
 
-class Ram final : public IMemory
+class Ram final : public IMemory, public IDmaMemory
 {
 	private:
 		u32 bank_num;
@@ -20,4 +20,6 @@ class Ram final : public IMemory
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
+
+		const u8* get_dma_ptr(u16 adress) override;
 };

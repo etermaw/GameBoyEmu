@@ -47,3 +47,12 @@ void Ram::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	//else ignore it
 }
 
+const u8* Ram::get_dma_ptr(u16 adress)
+{
+	if (adress >= 0xC000 && adress < 0xD000)
+		return &memory[adress - 0xC000];
+
+	else if (adress >= 0xD000 && adress < 0xE000)
+		return &memory[adress - 0xD000 + bank_num * 0x1000];
+}
+
