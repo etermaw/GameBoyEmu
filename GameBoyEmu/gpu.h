@@ -11,7 +11,8 @@ class Gpu final : public IMemory
 		std::unique_ptr<u32[]> screen_buffer;
 		std::unique_ptr<u8[]> vram[2]; 
 		std::unique_ptr<u8[]> oam;
-		const u8* ram_ptr;
+		IDmaMemory* cart;
+		IDmaMemory* ram;
 
 		u32 cycles_ahead;
 		u32 cycles;
@@ -77,8 +78,9 @@ class Gpu final : public IMemory
 		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
 		void set_speed(bool speed) { double_speed = speed; }
 
-		void attach_dma_ptrs(const u8* cart_rom, const u8* cart_ram, const u8* internal_ram)
+		void attach_dma_ptrs(IDmaMemory* cart_memory, IDmaMemory* ram_memory)
 		{
-			ram_ptr = internal_ram;
+			cart = cart_memory;
+			ram = ram_memory;
 		}
 };

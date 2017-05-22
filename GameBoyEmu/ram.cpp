@@ -6,7 +6,7 @@ u8 Ram::read_byte(u16 adress, u32 cycles_passed)
 		return memory[adress - 0xC000];
 
 	else if (adress >= 0xD000 && adress < 0xE000)
-		return memory[adress - 0xC000 + bank_num * 0x1000];
+		return memory[adress - 0xD000 + bank_num * 0x1000];
 
 	else if (adress >= 0xE000 && adress < 0xF000)
 		return memory[adress - 0xE000];
@@ -30,7 +30,7 @@ void Ram::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		memory[adress - 0xC000] = value;
 
 	else if (adress >= 0xD000 && adress < 0xE000)
-		memory[adress - 0xC000 + bank_num * 0x1000] = value;
+		memory[adress - 0xD000 + bank_num * 0x1000] = value;
 
 	else if (adress >= 0xE000 && adress < 0xF000)
 		memory[adress - 0xE000] = value;

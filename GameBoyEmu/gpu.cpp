@@ -348,7 +348,7 @@ void Gpu::draw_sprite_row()
 		const u32 begin = std::max(0, sx);
 		const u32 end = std::min(sx + 8, 160);
 
-		//what if BG+window is turned off? (for now we assume that it`s only enabled)
+		//TODO: what if BG+window is turned off? (for now we assume that it`s only enabled)
 		if (check_bit(atr, 7)) //BG has priority
 		{
 			for (u32 j = begin; j < end; ++j) 
@@ -649,26 +649,23 @@ void Gpu::turn_off_lcd()
 
 void Gpu::turn_on_lcd()
 {
-	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER)) //useless conditional?
+	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER)) //TODO: useless conditional?
 		enable_delay = 244;
 }
 
 const u8* Gpu::resolve_adress(u16 adress) const
 {
-	//TODO: how to get ptrs? using function<> seems too hacky, also, we just duplicate mmu
-	//mmu would be good, but sloooooooow (finding chunk + virtual call) * every_byte
-
 	if (adress < 0x8000)
-		return get_cart_rom(adress);
+		return cart->get_dma_ptr(adress); //ROM
 
 	else if (adress >= 0x8000 && adress < 0xA000)
 		return &vram[vram_bank][adress - 0x8000];
 
 	else if (adress >= 0xA000 && adress < 0xC000)
-		return get_cart_ram(adress);
+		return cart->get_dma_ptr(adress); //RAM
 
 	else if (adress >= 0xC000 && adress < 0xF000)
-		return get_internal_ram(adress);
+		return ram->get_dma_ptr(adress);
 }
 
 u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
