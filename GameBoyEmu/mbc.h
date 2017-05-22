@@ -21,7 +21,7 @@ class MBCBase
 			rom(rom), ram(ram), cur_rom_bank(rom), cur_ram_bank(ram), ram_enabled(false) {}
 };
 
-class NoMBC final : public IMemory
+class NoMBC final : public IMemory, public IDmaMemory
 {
 	private:
 		const u8* rom;
@@ -33,9 +33,11 @@ class NoMBC final : public IMemory
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
+
+		const u8* get_dma_ptr(u16 adress) override;
 };
 
-class MBC1 final : public MBCBase, public IMemory
+class MBC1 final : public MBCBase, public IMemory, public IDmaMemory
 {
 	private:
 		u8 rom_num_high;
@@ -52,18 +54,22 @@ class MBC1 final : public MBCBase, public IMemory
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
+
+		const u8* get_dma_ptr(u16 adress) override;
 };
 
-class MBC2 final : public MBCBase, public IMemory
+class MBC2 final : public MBCBase, public IMemory, public IDmaMemory
 {
 	public:
 		MBC2(const u8* rom, u8* ram) : MBCBase(rom, ram) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
+
+		const u8* get_dma_ptr(u16 adress) override;
 };
 
-class MBC3 final : public MBCBase, public IMemory
+class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 {
 	private:
 		u8* rtc;
@@ -79,9 +85,11 @@ class MBC3 final : public MBCBase, public IMemory
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
+
+		const u8* get_dma_ptr(u16 adress) override;
 };
 
-class MBC5 final : public MBCBase, public IMemory
+class MBC5 final : public MBCBase, public IMemory, public IDmaMemory
 {
 	private:
 		u8 rom_num_high;
@@ -92,5 +100,7 @@ class MBC5 final : public MBCBase, public IMemory
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
+
+		const u8* get_dma_ptr(u16 adress) override;
 };
 

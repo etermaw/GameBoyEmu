@@ -54,5 +54,8 @@ const u8* Ram::get_dma_ptr(u16 adress)
 
 	else if (adress >= 0xD000 && adress < 0xE000)
 		return &memory[adress - 0xD000 + bank_num * 0x1000];
+
+	else
+		return nullptr;
 }
 

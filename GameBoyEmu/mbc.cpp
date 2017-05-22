@@ -31,6 +31,18 @@ void NoMBC::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	//else ignore
 }
 
+const u8* NoMBC::get_dma_ptr(u16 adress)
+{
+	if (adress < 0x8000)
+		return &rom[adress];
+
+	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
+		return &ram[adress - 0xA000];
+
+	else
+		return nullptr;
+}
+
 u8 MBC1::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress < 0x4000)
@@ -84,6 +96,21 @@ void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		cur_ram_bank[adress - 0xA000] = value;
 }
 
+const u8* MBC1::get_dma_ptr(u16 adress)
+{
+	if (adress < 0x4000)
+		return &rom[adress];
+
+	else if (adress < 0x8000)
+		return &cur_rom_bank[adress - 0x4000];
+
+	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
+		return &cur_ram_bank[adress - 0xA000];
+
+	else
+		return nullptr;
+}
+
 u8 MBC2::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress < 0x4000)
@@ -106,6 +133,21 @@ void MBC2::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (adress >= 0xA000 && adress < 0xA200 && ram_enabled)
 		ram[adress - 0xA000] = value & 0xF;
+}
+
+const u8* MBC2::get_dma_ptr(u16 adress)
+{
+	if (adress < 0x4000)
+		return &rom[adress];
+
+	else if (adress < 0x8000)
+		return &cur_rom_bank[adress - 0x4000];
+
+	else if (adress >= 0xA000 && adress < 0xA200 && ram_enabled)
+		return &ram[adress - 0xA000];
+
+	else
+		return nullptr;
 }
 
 void MBC3::latch_rtc()
@@ -162,6 +204,21 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		(reg_used ? rtc[selected_time_reg] : cur_ram_bank[adress - 0xA000]) = value;
 }
 
+const u8* MBC3::get_dma_ptr(u16 adress)
+{
+	if (adress < 0x4000)
+		return &rom[adress];
+
+	else if (adress < 0x8000)
+		return &cur_rom_bank[adress - 0x4000];
+
+	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled && !reg_used)
+		return &cur_ram_bank[adress - 0xA000];
+
+	else
+		return nullptr;
+}
+
 u8 MBC5::read_byte(u16 adress, u32 cycles_passed)
 {
 	if (adress < 0x4000)
@@ -196,6 +253,21 @@ void MBC5::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
 		cur_ram_bank[adress - 0xA000] = value;
+}
+
+const u8* MBC5::get_dma_ptr(u16 adress)
+{
+	if (adress < 0x4000)
+		return &rom[adress];
+
+	else if (adress < 0x8000)
+		return &cur_rom_bank[adress - 0x4000];
+
+	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
+		return &cur_ram_bank[adress - 0xA000];
+
+	else
+		return nullptr;
 }
 
 
