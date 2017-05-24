@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 											0);
 
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, 0);
-	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
+	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
 	SDL_Event ev;
 
 	std::string file_name;

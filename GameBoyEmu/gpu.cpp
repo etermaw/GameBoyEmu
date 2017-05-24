@@ -28,15 +28,15 @@ u32 get_dmg_color(u32 num)
 
 u16 rgb_to_cgb(u32 rgb)
 {
-	u32 r = rgb & 0xFF;
-	u32 g = (rgb & 0xFF00) >> 8;
-	u32 b = (rgb & 0xFF0000) >> 16;
+	u32 b = rgb & 0xFF;
+	u32 g = (rgb >> 8) & 0xFF;
+	u32 r = (rgb >> 16) & 0xFF;
 
 	r = ((r * 249 + 1014) >> 11) & 0x1F;
 	g = ((g * 249 + 1014) >> 11) & 0x1F;
 	b = ((b * 249 + 1014) >> 11) & 0x1F;
 
-	return (b << 10) | (g << 5) | (r);
+	return (b << 10) | (g << 5) | r;
 }
 
 u32 cgb_to_rgb(u16 cgb)
@@ -49,7 +49,7 @@ u32 cgb_to_rgb(u16 cgb)
 	g = ((g * 527 + 23) >> 6) & 0xFF;
 	b = ((b * 527 + 23) >> 6) & 0xFF;
 
-	return 0xFF000000 | (b << 16) | (g << 8) | r;
+	return 0xFF000000 | (r << 16) | (g << 8) | b;
 }
 
 u32 change_cgb_color(u32 old_color, u8 value, bool low)
