@@ -56,11 +56,11 @@ u32 change_cgb_color(u32 old_color, u8 value, bool low)
 {
 	u16 decoded = rgb_to_cgb(old_color);
 
-	if (low)
+	if (!low)
 		decoded = (decoded & 0xFF00) | value;
 
 	else
-		decoded = (decoded && 0xFF00) | (value << 8);
+		decoded = (decoded & 0x00FF) | (value << 8);
 
 	return cgb_to_rgb(decoded);
 }
