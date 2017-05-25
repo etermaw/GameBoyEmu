@@ -336,6 +336,9 @@ void Gpu::draw_sprite_row()
 		if (sprite_size)
 			tile_num = tile_line < 8 ? (tile_num & 0xFE) : (tile_num | 0x1);
 		
+		if(tile_line >= 8)
+			tile_line -= 8;
+
 		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
 		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
 
