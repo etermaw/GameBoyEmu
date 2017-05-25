@@ -833,9 +833,9 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	else if (cgb_mode && adress == 0xFF6B && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 	{
 		//convert rgb15 into rgb32
-		auto color = color_obp[cgb_obp_index / 8][cgb_obp_index % 4];
+		auto color = color_obp[cgb_obp_index / 8][(cgb_obp_index % 8) / 2];
 		color = change_cgb_color(color, value, cgb_obp_index % 2);
-		color_obp[cgb_obp_index / 8][cgb_obp_index % 4] = color;
+		color_obp[cgb_obp_index / 8][(cgb_obp_index % 8) / 2] = color;
 
 		if (cgb_obp_autoinc)
 			cgb_obp_index = (cgb_obp_index + 1) & 0x3F;
