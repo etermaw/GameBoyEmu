@@ -14,10 +14,16 @@ void CPU::reset()
 	delayed_ei = false;
 	cgb_mode = false;
 	
-	reg_16[AF] = 0x1180;//0x01B0;
-	reg_16[BC] = 0x0000;//0x0013;
-	reg_16[DE] = 0xFF56;//0x00D8;
-	reg_16[HL] = 0x000D;//0x014D;
+    //reg_16[AF] = 0x01B0; //DMG
+	//reg_16[BC] = 0x0013;
+	//reg_16[DE] = 0x00D8;
+	//reg_16[HL] = 0x014D;
+
+	reg_16[AF] = 0x1180; //CGB
+	reg_16[BC] = 0x0000;
+	reg_16[DE] = 0xFF56;
+	reg_16[HL] = 0x000D;
+    
 	reg_16[SP] = 0xFFFE;
 	pc = 0x100;
 }

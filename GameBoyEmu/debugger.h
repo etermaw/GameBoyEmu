@@ -9,17 +9,19 @@ class Debugger
 
 		function<u8(u16, u32)> read_byte_callback;
 		function<void(u16, u8, u32)> write_byte_callback;
-
+    
 		u32* bank_num;
 		u16* pc;
 		u16* reg_16;
 		u8* reg_8;
 		bool* interrupts;
 
+        u16 step_over_adress = 0;
 		u16 change_adress = 0;
 		u8 new_val = 0;
 		bool next_instruction = false;
 		bool memory_changed = false;
+        bool step_over = false;
 
 		bool is_breakpoint();
 		void enter_trap();
@@ -76,10 +78,13 @@ inline void Debugger::enter_trap()
 	printf("0x%04x: %s\n", *pc, buffer);
 	printf("continue - y, dump registers - d, dump memory - m\n");
 	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
-	printf("insert memory watch - q, remove memory watch - x\n");
+	printf("insert memory watch - q, remove memory watch - x, step over instruction - l\n");
 
 	char choice = 0;
 	next_instruction = false;
+
+    if(step_over_adress == *pc)
+        step_over = false;
 
 	while (choice != 'y')
 	{
@@ -93,8 +98,12 @@ inline void Debugger::enter_trap()
 		{
 			case 'n':
 				next_instruction = true;
-				printf("\n\n");
 				return;
+
+            case 'l':
+                step_over_adress = *pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
+                step_over = true;
+                return;
 
 			case 'd':
 				dump_registers();
@@ -297,7 +306,7 @@ inline void Debugger::check_memory_access(u16 adress, u8 value)
 
 inline void Debugger::step()
 {
-	if (next_instruction || is_breakpoint() || memory_changed)
+	if (next_instruction || is_breakpoint() || memory_changed || (step_over && *pc == step_over_adress))
 		enter_trap();
 }
 
@@ -309,7 +318,7 @@ inline const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
 		"LD (0x%X),SP", "ADD HL,BC", "LD A,(BC)", "DEC BC",
 		"INC C","DEC C", "LD C,0x%X", "RRCA",
 
-		"STOP 0", "LD DE,0x%X", "LD (DE),A", "INC DE",
+		"STOP", "LD DE,0x%X", "LD (DE),A", "INC DE",
 		"INC D", "DEC D", "LD D,0x%X", "RLA",
 		"JR 0x%X", "ADD HL,DE", "LD A,(DE)", "DEC DE",
 		"INC E", "DEC E", "LD E,0x%X", "RRA",
