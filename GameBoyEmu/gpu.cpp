@@ -336,8 +336,7 @@ void Gpu::draw_sprite_row()
 		if (sprite_size)
 			tile_num = tile_line < 8 ? (tile_num & 0xFE) : (tile_num | 0x1);
 		
-		if(tile_line >= 8)
-			tile_line -= 8;
+		tile_line %= 8;
 
 		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
 		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
@@ -539,7 +538,7 @@ void Gpu::draw_sprite_row_cgb()
 	const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3);
 
 	i32 count = 0;
-	oam_entry to_draw[10]; //if we don`t sort, we don`t need to init with 0xFF
+	oam_entry to_draw[10];
 
 	for (u32 i = 0; i < 40 && count < 10; ++i)
 	{
@@ -570,6 +569,8 @@ void Gpu::draw_sprite_row_cgb()
 
 		if (sprite_size)
 			tile_num = tile_line < 8 ? (tile_num & 0xFE) : (tile_num | 0x1);
+
+		tile_line %= 8;
 
 		u8 tile_low = tile_data[bank_num][tile_num * 16 + tile_line * 2];
 		u8 tile_high = tile_data[bank_num][tile_num * 16 + tile_line * 2 + 1];
