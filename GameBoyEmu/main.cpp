@@ -207,6 +207,8 @@ int main(int argc, char *argv[])
 		SDL_RenderCopy(rend, tex, NULL, NULL);
 		SDL_RenderPresent(rend);
 
+		gpu.clear_frame_buffer();
+
 		//auto end = std::chrono::high_resolution_clock::now();
 		//auto dur = (end - start).count();
 

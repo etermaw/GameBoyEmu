@@ -210,6 +210,7 @@ void Gpu::launch_gdma()
 	u16 len = ((hdma_regs[4] & 0x7F) + 1) * 0x10;
 
 	//TODO: max len is 0x800, so it can overlap 2 mem regions. Detect it and get 2nd ptr
+	//TODO: what if dst + len is bigger then vram?
 	const u8* src_ptr = resolve_adress(src);
 	std::memcpy(&vram[vram_bank][dst], src_ptr, sizeof(u8) * len);
 
@@ -350,7 +351,6 @@ void Gpu::draw_sprite_row()
 		const u32 begin = std::max(0, sx);
 		const u32 end = std::min(sx + 8, 160);
 
-		//TODO: what if BG+window is turned off? (for now we assume that it`s only enabled)
 		if (check_bit(atr, 7)) //BG has priority
 		{
 			for (u32 j = begin; j < end; ++j) 

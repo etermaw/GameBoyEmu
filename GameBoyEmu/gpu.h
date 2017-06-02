@@ -74,6 +74,8 @@ class Gpu final : public IMemory
 		
 		u32 step(u32 clock_cycles);
 		const u32* get_frame_buffer() const { return screen_buffer.get(); }
+		void clear_frame_buffer() { std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 144 * 160); }
+
 
 		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
 		void set_speed(bool speed) { double_speed = speed; }
