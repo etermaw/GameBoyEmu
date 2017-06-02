@@ -467,6 +467,7 @@ void Gpu::draw_background_row_cgb()
 
 			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
 			priority_buffer[i] = priority;
+			alpha_buffer[i] = (color_id != 0);
 		}
 	}
 }
@@ -523,6 +524,7 @@ void Gpu::draw_window_row_cgb()
 
 			screen_buffer[buffer_offset + i] = color_bgp[palette_num][color_id];
 			priority_buffer[i] = priority;
+			alpha_buffer[i] = (color_id != 0);
 		}
 	}
 }
@@ -535,7 +537,7 @@ void Gpu::draw_sprite_row_cgb()
 	const u32 line = regs[IO_LY];
 	const u32 height = sprite_size ? 16 : 8;
 	const u32 line_offset = line * 160;
-	const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3);
+	const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3); //TODO: it`s WRONG!
 
 	i32 count = 0;
 	oam_entry to_draw[10];
@@ -595,7 +597,7 @@ void Gpu::draw_sprite_row_cgb()
 
 			if (check_bit(atr, 7))
 			{
-				if (color_id != 0 && screen_buffer[line_offset + j] == bg_alpha_color)
+				if (color_id != 0 && !alpha_buffer[j])
 					screen_buffer[line_offset + j] = color;
 			}
 
@@ -615,6 +617,7 @@ void Gpu::draw_line()
 		if (cgb_mode)
 		{
 			priority_buffer.reset();
+			alpha_buffer.reset();
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
 				draw_background_row_cgb();
