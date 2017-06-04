@@ -537,7 +537,6 @@ void Gpu::draw_sprite_row_cgb()
 	const u32 line = regs[IO_LY];
 	const u32 height = sprite_size ? 16 : 8;
 	const u32 line_offset = line * 160;
-	const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3); //TODO: it`s WRONG!
 
 	i32 count = 0;
 	oam_entry to_draw[10];

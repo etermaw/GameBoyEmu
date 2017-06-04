@@ -16,12 +16,12 @@ class Debugger
 		u8* reg_8;
 		bool* interrupts;
 
-        u16 step_over_adress = 0;
+        	u16 step_over_adress = 0;
 		u16 change_adress = 0;
 		u8 new_val = 0;
 		bool next_instruction = false;
 		bool memory_changed = false;
-        bool step_over = false;
+        	bool step_over = false;
 
 		bool is_breakpoint();
 		void enter_trap();
@@ -83,8 +83,8 @@ inline void Debugger::enter_trap()
 	char choice = 0;
 	next_instruction = false;
 
-    if(step_over_adress == *pc)
-        step_over = false;
+    	if(step_over_adress == *pc)
+        	step_over = false;
 
 	while (choice != 'y')
 	{
@@ -100,10 +100,10 @@ inline void Debugger::enter_trap()
 				next_instruction = true;
 				return;
 
-            case 'l':
-                step_over_adress = *pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
-                step_over = true;
-                return;
+            		case 'l':
+                		step_over_adress = *pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
+                		step_over = true;
+                		return;
 
 			case 'd':
 				dump_registers();
@@ -323,14 +323,14 @@ inline const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
 		"JR 0x%X", "ADD HL,DE", "LD A,(DE)", "DEC DE",
 		"INC E", "DEC E", "LD E,0x%X", "RRA",
 
-		"JR NZ,0x%X", "LD HL,0x%X", "LD (HL+),A", "INC HL",
+		"JR NZ,0x%X", "LD HL,0x%X", "LD (HL++),A", "INC HL",
 		"INC H", "DEC H", "LD H,0x%X", "DAA",
-		"JR Z,0x%X", "ADD HL,HL", "LD A,(HL+)", "DEC HL",
+		"JR Z,0x%X", "ADD HL,HL", "LD A,(HL++)", "DEC HL",
 		"INC L", "DEC L", "LD L,0x%X", "CPL",
 
-		"JR NC,0x%X", "LD SP,0x%X", "LD (HL-),A", "INC SP",
-		"INC (HL)", "DEC (HL)", "LD (HL),d8", "SCF",
-		"JR C,0x%X", "ADD HL,SP","LD A,(HL-)", "DEC SP",
+		"JR NC,0x%X", "LD SP,0x%X", "LD (HL--),A", "INC SP",
+		"INC (HL)", "DEC (HL)", "LD (HL),0x%X", "SCF",
+		"JR C,0x%X", "ADD HL,SP","LD A,(HL--)", "DEC SP",
 		"INC A", "DEC A", "LD A,0x%X", "CCF",
 
 		"LD B,B", "LD B,C", "LD B,D", "LD B,E",
