@@ -449,7 +449,7 @@ void Gpu::draw_background_row_cgb()
 		bool priority = check_bit(tile_atr, 7);
 
 		if (check_bit(tile_atr, 6)) //Y flip
-			tile_line = 8 - tile_line;
+			tile_line = 7 - tile_line;
 
 		u8 tile_low = tile_data[data_bank][tile_num * 16 + tile_line * 2];
 		u8 tile_high = tile_data[data_bank][tile_num * 16 + tile_line * 2 + 1];
@@ -506,7 +506,7 @@ void Gpu::draw_window_row_cgb()
 		bool priority = check_bit(tile_atr, 7);
 
 		if (check_bit(tile_atr, 6)) //Y flip
-			tile_line = 8 - tile_line;
+			tile_line = 7 - tile_line;
 
 		u8 tile_low = tile_data[data_bank][tile_num * 16 + tile_line * 2];
 		u8 tile_high = tile_data[data_bank][tile_num * 16 + tile_line * 2 + 1];
