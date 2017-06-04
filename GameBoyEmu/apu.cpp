@@ -44,6 +44,7 @@ void APU::step_ahead(u32 cycles)
 
 u8 APU::read_byte(u16 adress, u32 cycles_passed)
 {
+	cycles_passed >>= double_speed;	
 	cycles_passed -= cycles_ahead;
 
 	if (cycles_passed > 0)
@@ -86,6 +87,7 @@ u8 APU::read_byte(u16 adress, u32 cycles_passed)
 
 void APU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	cycles_passed >>= double_speed;	
 	cycles_passed -= cycles_ahead;
 
 	if (cycles_passed > 0)
@@ -137,6 +139,7 @@ void APU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 void APU::step(u32 cycles)
 {
+	cycles >>= double_speed;
 	step_ahead(cycles - cycles_ahead);
 	cycles_ahead = 0;
 }

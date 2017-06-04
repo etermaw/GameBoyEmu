@@ -676,6 +676,7 @@ const u8* Gpu::resolve_adress(u16 adress) const
 
 u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 {
+	cycles_passed >>= double_speed;
 	cycles_passed -= cycles_ahead;
 
 	if (cycles_passed > 0)
@@ -741,6 +742,7 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 
 void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	cycles_passed >>= double_speed;
 	cycles_passed -= cycles_ahead;
 
 	if (cycles_passed > 0)
@@ -858,7 +860,8 @@ bool Gpu::is_entering_vblank()
 
 u32 Gpu::step(u32 clock_cycles)
 {
-	u32 cycles_passed = new_dma_cycles;
+	u32 cycles_passed = new_dma_cycles << double_speed;
+	clock_cycles >>= double_speed;
 
 	step_ahead(clock_cycles + new_dma_cycles - cycles_ahead);
 
