@@ -25,6 +25,10 @@ class Gpu final : public IMemory
 		std::bitset<160> alpha_buffer;
 		u32 hdma_cur;
 		u32 new_dma_cycles;
+		
+		u8 cgb_bgp[64];
+		u8 cgb_obp[64];
+
 		u32 color_bgp[8][4];
 		u32 color_obp[8][4];
 		u8 cgb_bgp_index;

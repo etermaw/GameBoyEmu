@@ -709,35 +709,15 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 		return change_bit(cgb_bgp_index, cgb_bgp_autoinc, 7);
 
 	else if (cgb_mode && adress == 0xFF69)
-	{
-		if ((regs[IO_LCD_STATUS] & 0x3) != 0x3)
-		{
-			u32 encoded = color_bgp[cgb_bgp_index / 8][(cgb_bgp_index % 8) / 2];
-			u16 decoded = rgb_to_cgb(encoded);
-
-			return (decoded >> (cgb_bgp_index % 2)) & 0xFF;
-		}
-
-		else
-			return 0xFF;
-	}
+		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? cgb_bgp[cgb_bgp_index] : 0xFF;
 
 	else if (cgb_mode && adress == 0xFF6A)
 		return change_bit(cgb_obp_index, cgb_obp_autoinc, 7);
 
 	else if (cgb_mode && adress == 0xFF6B)
-	{
-		if ((regs[IO_LCD_STATUS] & 0x3) != 0x3)
-		{
-			u32 encoded = color_obp[cgb_obp_index / 8][(cgb_obp_index % 8) / 2];
-			u16 decoded = rgb_to_cgb(encoded);
+		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? cgb_obp[cgb_obp_index] : 0xFF;
 
-			return (decoded >> (cgb_obp_index % 2)) & 0xFF;
-		}
-
-		else
-			return 0xFF;
-	}
+	//else ignore
 }
 
 void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
@@ -823,6 +803,8 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (cgb_mode && adress == 0xFF69 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 	{
+		cgb_bgp[cgb_bgp_index] = value;
+		
 		//convert rgb15 into rgb32
 		auto color = color_bgp[cgb_bgp_index / 8][(cgb_bgp_index % 8) / 2];
 		color = change_cgb_color(color, value, cgb_bgp_index % 2);
@@ -840,6 +822,8 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (cgb_mode && adress == 0xFF6B && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
 	{
+		cgb_obp[cgb_obp_index] = value;
+		
 		//convert rgb15 into rgb32
 		auto color = color_obp[cgb_obp_index / 8][(cgb_obp_index % 8) / 2];
 		color = change_cgb_color(color, value, cgb_obp_index % 2);
