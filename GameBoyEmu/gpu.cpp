@@ -82,6 +82,11 @@ Gpu::Gpu(Interrupts& ints) :
 
 	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
 	std::memset(oam.get(), 0xFF, sizeof(u8) * 0xA0);
+
+	std::memset(cgb_bgp, 0xFF, sizeof(cgb_bgp));
+	std::memset(cgb_obp, 0xFF, sizeof(cgb_obp));
+	std::memset(color_bgp, 0xFF, sizeof(u32) * 8 * 4);
+	std::memset(color_obp, 0xFF, sizeof(u32) * 8 * 4);
 }
 
 void Gpu::vb_mode()
