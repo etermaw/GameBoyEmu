@@ -8,17 +8,13 @@ class MBCBase
 		const u8* rom;
 		u8* ram;
 
-		const u8* cur_rom_bank;
-		u8* cur_ram_bank;
-
+		u32 rom_bank;
+		u32 ram_bank;
 		bool ram_enabled;
 		
-		void swap_rom_bank(u32 new_bank_num);
-		void swap_ram_bank(u32 new_bank_num);
-
 	public:
 		MBCBase(const u8* rom = nullptr, u8* ram = nullptr) : 
-			rom(rom), ram(ram), cur_rom_bank(rom), cur_ram_bank(ram), ram_enabled(false) {}
+			rom(rom), ram(ram), rom_bank(1), ram_bank(0), ram_enabled(false) {}
 };
 
 class NoMBC final : public IMemory, public IDmaMemory
@@ -47,10 +43,7 @@ class MBC1 final : public MBCBase, public IMemory, public IDmaMemory
 
 	public:
 		MBC1(const u8* rom, u8* ram) : 
-			MBCBase(rom, ram), rom_num_high(0), rom_num_low(1), ram_mode(false) 
-		{
-			swap_rom_bank(1);
-		}
+			MBCBase(rom, ram), rom_num_high(0), rom_num_low(1), ram_mode(false) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
