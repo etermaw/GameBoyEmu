@@ -89,7 +89,7 @@ class MBC5 final : public MBCBase, public IMemory, public IDmaMemory
 		u8 rom_num_low;
 
 	public:
-		MBC5(const u8* rom, u8* ram) : MBCBase(rom, ram) {}
+		MBC5(const u8* rom, u8* ram) : MBCBase(rom, ram), rom_num_high(0), rom_num_low(1) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
