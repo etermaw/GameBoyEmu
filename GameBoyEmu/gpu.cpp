@@ -211,13 +211,13 @@ void Gpu::launch_dma(u8 adress)
 void Gpu::launch_gdma()
 {
 	u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
-	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
+	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0); //0x0000 - 0x1FF0
 	u16 len = ((hdma_regs[4] & 0x7F) + 1) * 0x10;
 
 	//TODO: max len is 0x800, so it can overlap 2 mem regions. Detect it and get 2nd ptr
 	//TODO: what if dst + len is bigger then vram?
 	const u8* src_ptr = resolve_adress(src);
-	std::memcpy(&vram[vram_bank][dst - 0x8000], src_ptr, sizeof(u8) * len);
+	std::memcpy(&vram[vram_bank][dst], src_ptr, sizeof(u8) * len);
 
 	new_dma_cycles = len / 2;
 	hdma_regs[4] = 0xFF;
@@ -226,12 +226,12 @@ void Gpu::launch_gdma()
 void Gpu::launch_hdma()
 {
 	u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
-	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0);
+	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0); //0x0000 - 0x1FF0
 	u16 len = (hdma_regs[4] & 0x7F) + 1;
 	u16 cur_pos = hdma_cur * 0x10;
 
 	const u8* src_ptr = resolve_adress(src + cur_pos);
-	std::memcpy(&vram[vram_bank][dst + cur_pos - 0x8000], src_ptr, sizeof(u8) * 0x10);
+	std::memcpy(&vram[vram_bank][dst + cur_pos], src_ptr, sizeof(u8) * 0x10);
 
 	if ((hdma_regs[4] & 0x7F) == 0)
 	{
