@@ -7,7 +7,7 @@ enum IO_REGS {
 
 enum LCD_CONTROL {
 	LC_BG_ENABLED, LC_SPRITES_ENABLED, LC_SPRITES_SIZE, LC_BG_TMAP,
-	LC_TILESET, LC_WINDOW, LC_WINDOW_TMAP, LC_POWER
+	LC_TILESET, LC_WINDOW_ENABLED, LC_WINDOW_TMAP, LC_POWER
 };
 
 enum LCD_STATUS { LS_CMP_SIG = 2, LS_HBLANK, LS_VBLANK, LS_OAM, LS_LYC_LY };
@@ -626,7 +626,7 @@ void Gpu::draw_line()
 			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
 				draw_background_row_cgb();
 
-			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW))
+			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_ENABLED))
 				draw_window_row_cgb();
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
@@ -638,7 +638,7 @@ void Gpu::draw_line()
 			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
 				draw_background_row();
 
-			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW))
+			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_ENABLED))
 				draw_window_row();
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
