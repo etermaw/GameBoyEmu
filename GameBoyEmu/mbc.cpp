@@ -227,16 +227,10 @@ void MBC5::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);
 
 	else if (adress < 0x3000)
-	{
-		rom_num_low = value;
-		rom_bank = (rom_num_high << 8) | rom_num_low;
-	}
+		rom_bank = (rom_bank & 0x100) | value;
 
 	else if (adress < 0x4000)
-	{
-		rom_num_high = value & 0x01;
-		rom_bank = (rom_num_high << 8) | rom_num_low;
-	}
+		rom_bank = change_bit(rom_bank, value & 1, 9);
 
 	else if (adress < 0x6000)
 		ram_bank = value & 0x0F;
