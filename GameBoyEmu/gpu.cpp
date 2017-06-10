@@ -26,19 +26,6 @@ u32 get_dmg_color(u32 num)
 	return color_tab[num]; //0xFFFFFFFF - (0x00555555 * num);
 }
 
-u16 rgb_to_cgb(u32 rgb)
-{
-	u32 b = rgb & 0xFF;
-	u32 g = (rgb >> 8) & 0xFF;
-	u32 r = (rgb >> 16) & 0xFF;
-
-	r = ((r * 249 + 1014) >> 11) & 0x1F;
-	g = ((g * 249 + 1014) >> 11) & 0x1F;
-	b = ((b * 249 + 1014) >> 11) & 0x1F;
-
-	return (b << 10) | (g << 5) | r;
-}
-
 u32 cgb_to_rgb(u16 cgb)
 {
 	u32 r = cgb & 0x1F;
@@ -50,19 +37,6 @@ u32 cgb_to_rgb(u16 cgb)
 	b = ((b * 527 + 23) >> 6) & 0xFF;
 
 	return 0xFF000000 | (r << 16) | (g << 8) | b;
-}
-
-u32 change_cgb_color(u32 old_color, u8 value, bool low)
-{
-	u16 decoded = rgb_to_cgb(old_color);
-
-	if (!low)
-		decoded = (decoded & 0xFF00) | value;
-
-	else
-		decoded = (decoded & 0x00FF) | (value << 8);
-
-	return cgb_to_rgb(decoded);
 }
 
 Gpu::Gpu(Interrupts& ints) : 
@@ -810,10 +784,15 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	{
 		cgb_bgp[cgb_bgp_index] = value;
 		
-		//convert rgb15 into rgb32
-		auto color = color_bgp[cgb_bgp_index / 8][(cgb_bgp_index % 8) / 2];
-		color = change_cgb_color(color, value, cgb_bgp_index % 2);
-		color_bgp[cgb_bgp_index / 8][(cgb_bgp_index % 8) / 2] = color;
+		u16 rgb15 = 0;
+
+		if (cgb_bgp_index % 2 == 0)
+			rgb15 = (cgb_bgp[cgb_bgp_index + 1] << 8) | value;
+
+		else
+			rgb15 = (value << 8) | cgb_bgp[cgb_bgp_index - 1];
+
+		color_bgp[cgb_bgp_index / 8][(cgb_bgp_index % 8) / 2] = cgb_to_rgb(rgb15);
 
 		if (cgb_bgp_autoinc)
 			cgb_bgp_index = (cgb_bgp_index + 1) & 0x3F;
@@ -829,10 +808,15 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	{
 		cgb_obp[cgb_obp_index] = value;
 		
-		//convert rgb15 into rgb32
-		auto color = color_obp[cgb_obp_index / 8][(cgb_obp_index % 8) / 2];
-		color = change_cgb_color(color, value, cgb_obp_index % 2);
-		color_obp[cgb_obp_index / 8][(cgb_obp_index % 8) / 2] = color;
+		u16 rgb15 = 0;
+
+		if (cgb_obp_index % 2 == 0)
+			rgb15 = (cgb_obp[cgb_obp_index + 1] << 8) | value;
+
+		else
+			rgb15 = (value << 8) | cgb_obp[cgb_obp_index - 1];
+
+		color_obp[cgb_obp_index / 8][(cgb_obp_index % 8) / 2] = cgb_to_rgb(rgb15);
 
 		if (cgb_obp_autoinc)
 			cgb_obp_index = (cgb_obp_index + 1) & 0x3F;
