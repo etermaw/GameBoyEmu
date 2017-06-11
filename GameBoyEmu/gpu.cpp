@@ -275,8 +275,8 @@ void Gpu::draw_sprite_row()
 {	
 	const u8* tile_data = &vram[0][0]; //0x8000
 	const bool sprite_size = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE);
-	const u32 line = regs[IO_LY];
-	const u32 height = sprite_size ? 16 : 8;
+	const i32 line = regs[IO_LY];
+	const i32 height = sprite_size ? 16 : 8;
 	const u32 line_offset = line * 160;
 	const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3);
 
@@ -289,7 +289,7 @@ void Gpu::draw_sprite_row()
 	{
 		i32 y = oam[i*4] - 16;
 
-		if (y <= line && ((y + height) > line))
+		if (y <= line && (y + height) > line)
 		{
 			to_draw[count].y = oam[i * 4];
 			to_draw[count].x = oam[i * 4 + 1];
@@ -513,8 +513,8 @@ void Gpu::draw_sprite_row_cgb()
 {
 	const u8* tile_data[2] = { &vram[0][0], &vram[1][0] }; //0x8000
 	const bool sprite_size = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE);
-	const u32 line = regs[IO_LY];
-	const u32 height = sprite_size ? 16 : 8;
+	const i32 line = regs[IO_LY];
+	const i32 height = sprite_size ? 16 : 8;
 	const u32 line_offset = line * 160;
 
 	i32 count = 0;
@@ -524,7 +524,7 @@ void Gpu::draw_sprite_row_cgb()
 	{
 		i32 y = oam[i * 4] - 16;
 
-		if (y <= line && ((y + height) > line))
+		if (y <= line && (y + height) > line)
 		{
 			to_draw[count].y = oam[i * 4];
 			to_draw[count].x = oam[i * 4 + 1];
