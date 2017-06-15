@@ -15,13 +15,14 @@ class Debugger
 		u16* reg_16;
 		u8* reg_8;
 		bool* interrupts;
-
-        	u16 step_over_adress = 0;
+		
+		u32 vblanks_left;
+		u16 step_over_adress = 0;
 		u16 change_adress = 0;
 		u8 new_val = 0;
 		bool next_instruction = false;
 		bool memory_changed = false;
-        	bool step_over = false;
+		bool step_over = false;
 
 		bool is_breakpoint();
 		void enter_trap();
@@ -50,6 +51,7 @@ class Debugger
 
 		void check_memory_access(u16 adress, u8 value);
 		void step();
+		void after_vblank() { if(vblanks_left == 1) next_instruction = true; --vblanks_left; }
 };
 
 inline bool Debugger::is_breakpoint()
@@ -79,6 +81,7 @@ inline void Debugger::enter_trap()
 	printf("continue - y, dump registers - d, dump memory - m\n");
 	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
 	printf("insert memory watch - q, remove memory watch - x, step over instruction - l\n");
+	printf("run for x vblanks - z\n");
 
 	char choice = 0;
 	next_instruction = false;
@@ -194,6 +197,20 @@ inline void Debugger::enter_trap()
 
 				else
 					printf("wrong adress!\n");
+
+				break;
+
+			case 'z':
+				printf("How many vblanks?\n");
+
+				if (scanf("%d", &num) && num < 10000)
+				{
+					vblanks_left = num;
+					printf("\nNext breakpoint after %d vblanks!", vblanks_left);
+				}
+
+				else
+					printf("\nFailed to add vblank run!");
 
 				break;
 		}

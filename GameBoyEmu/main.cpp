@@ -209,6 +209,7 @@ int main(int argc, char *argv[])
 		SDL_RenderPresent(rend);
 
 		gpu.clear_frame_buffer();
+		debugger.after_vblank();
 
 		//auto end = std::chrono::high_resolution_clock::now();
 		//auto dur = (end - start).count();
