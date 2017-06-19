@@ -169,13 +169,13 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	
 	else if (adress < 0x6000)
 	{
-		if (value < 0x08) 
+		if (value < 0x04) 
 		{
 			reg_used = false;
 			ram_bank = value;
 		}
 
-		else if (rtc != nullptr) //TODO: keep an eye on it
+		else if (rtc != nullptr && value >= 0x08 && value <= 0x0C) //TODO: keep an eye on it
 		{
 			reg_used = true;
 			selected_time_reg = value - 0x08;
@@ -202,7 +202,7 @@ const u8* MBC3::get_dma_ptr(u16 adress)
 	else if (adress < 0x8000)
 		return &rom[adress - 0x4000 + (rom_bank * 0x4000)];
 
-	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled && !reg_used)
+	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled && !reg_used) //TODO:what if someone launch dma with rtc enabled?
 		return &ram[adress - 0xA000 + (ram_bank * 0x2000)];
 
 	else
