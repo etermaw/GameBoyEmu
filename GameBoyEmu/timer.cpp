@@ -9,11 +9,8 @@ void Timer::step_ahead(u32 cycles)
 	divider_cycles += cycles;
 
 	//divider ticks at frequency ~16kHz
-	while (divider_cycles >= 256)
-	{
-		divider++;
-		divider_cycles -= 256;
-	}
+	divider += divider_cycles / 256;
+	divider_cycles %= 256;
 
 	if (enabled)
 	{
