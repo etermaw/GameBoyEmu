@@ -6,9 +6,8 @@ void Timer::step_ahead(u32 cycles)
 	//~4kHz, ~262kHz, ~65,5kHz, ~16kHz
 	static const u32 tick_cycles[] = {1024, 16, 64, 256};
 
-	divider_cycles += cycles;
-
 	//divider ticks at frequency ~16kHz
+	divider_cycles += cycles;
 	divider += divider_cycles / 256;
 	divider_cycles %= 256;
 
@@ -75,6 +74,7 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	{
 		divider = 0;
 		divider_cycles = 0;
+		counter_cycles = 0;
 	}
 
 	else if (adress == 0xFF05)
