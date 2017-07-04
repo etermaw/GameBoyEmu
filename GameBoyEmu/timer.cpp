@@ -4,7 +4,8 @@
 void Timer::step_ahead(u32 cycles)
 {
 	//~4kHz, ~262kHz, ~65,5kHz, ~16kHz
-	static const u32 tick_cycles[] = {1024, 16, 64, 256};
+	static const u16 tick_masks[] = {1023, 15, 63, 255}; //tick cycles {1024, 16, 64, 256}
+	static const u8 tick_shifts[] = {10, 4, 6, 8};
 
 	//divider ticks at frequency ~16kHz
 	divider_cycles += cycles;
@@ -14,20 +15,12 @@ void Timer::step_ahead(u32 cycles)
 	if (enabled)
 	{
 		counter_cycles += cycles;
+		auto ticks = counter_cycles >> tick_shifts[control];
+		counter_cycles &= tick_masks[control];
+		counter += ticks;
 
-		while (counter_cycles >= tick_cycles[control])
-		{
-			if (counter != 0xFF)
-				++counter;
-
-			else
-			{
-				counter = mod;
-				interrupts.raise(INT_TIMER);
-			}
-
-			counter_cycles -= tick_cycles[control];
-		}
+		if ((ticks / (0x100 - mod)) > 0)
+			interrupts.raise(INT_TIMER);
 	}
 }
 
