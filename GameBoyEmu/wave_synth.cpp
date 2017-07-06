@@ -50,12 +50,12 @@ void WaveSynth::step(u32 cycles)
 		timer = (2048 - ((freq_high << 8) | freq_low)) * 2;
 		buffer_pos = (buffer_pos + 1) % 32;
 
-		if (enabled && dac_enabled)
+		if (enabled && dac_enabled && output_level > 0)
 		{
 			u8 sample = wave_ram[buffer_pos / 2];
-			sample = (buffer_pos % 2 == 0 ? sample : (sample >> 4)) & 0x0F;
+			sample = (sample >> (buffer_pos % 2 ? 4 : 0)) & 0x0F;
 
-			out_volume = output_level != 0 ? (sample >> (output_level - 1)) : 0;
+			out_volume = sample >> (output_level - 1);
 		}
 
 		else
