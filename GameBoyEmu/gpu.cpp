@@ -179,7 +179,6 @@ void Gpu::launch_dma(u8 adress)
 	dma_cycles = 648; 
 	//TODO: add memory bus conficts if cpu don`t operate on HRAM during oam dma?
 	//cpu should read last word read by dma (require messing with MMU)
-	//nintendo docs says that oam dma from vram doesn`t need any wait loop in HRAM...
 }
 
 void Gpu::launch_gdma()

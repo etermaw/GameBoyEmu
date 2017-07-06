@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 			sync_cycles += cpu.step();
 			sync_cycles += gpu.step(sync_cycles);
 			apu.step(sync_cycles);
-			timer.step(sync_cycles); //TODO: is it correct timing (double speed)?
+			timer.step(sync_cycles);
 
 			gpu.set_speed(speed.double_speed);
 			apu.set_speed(speed.double_speed); 	
