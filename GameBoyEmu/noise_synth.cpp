@@ -100,10 +100,7 @@ void NoiseSynth::step(u32 cycles)
 
 u8 NoiseSynth::read_reg(u16 reg_num)
 {
-	if (reg_num == 0)
-		return 0xFF; //write only
-
-	else if (reg_num == 1)
+	if (reg_num == 1)
 		return ((volume_load & 0xF) << 4) | (envelope_asc << 3) | (envelope_load & 0x7);
 
 	else if (reg_num == 2)
@@ -113,7 +110,7 @@ u8 NoiseSynth::read_reg(u16 reg_num)
 		return change_bit(0xFF, length_enabled, 6);
 
 	else
-		return 0xFF;
+		return 0xFF; //reg 0 is write only
 }
 
 void NoiseSynth::write_reg(u16 reg_num, u8 value)
