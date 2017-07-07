@@ -149,11 +149,11 @@ u8 SquareSynth::read_reg(u16 reg_num)
 	else if (reg_num == 2)
 		return (volume_load << 4) | (envelope_asc << 3) | (envelope_counter);
 
-	else if (reg_num == 3)
-		return 0xFF; //write only!
-
 	else if (reg_num == 4)
 		return (length_enabled << 6) | 0xBF;
+
+	else
+		return 0xFF; //reg 3 is write-only!
 }
 
 void SquareSynth::write_reg(u16 reg_num, u8 value)
