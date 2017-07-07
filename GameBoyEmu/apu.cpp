@@ -126,8 +126,8 @@ void APU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			channel_4.reset();
 
 			std::memset(dummy_regs, 0, sizeof(dummy_regs));
-			sequencer_frame = TEST_VAL;
-			sequencer_cycles = TEST_CYCLE;
+			sequencer_frame = 0;
+			sequencer_cycles = 0;
 		}
 	}
 

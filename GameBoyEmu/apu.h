@@ -5,20 +5,17 @@
 #include "wave_synth.h"
 #include "noise_synth.h"
 
-#define TEST_VAL 4096
-#define TEST_CYCLE 7
-
 class APU final : public IMemory
 {
 	private:
 		SquareSynth channel_1, 
-			    channel_2;
+					channel_2;
 		WaveSynth channel_3;
 		NoiseSynth channel_4;
 
 		u32 cycles_ahead = 0;
-		u32 sequencer_cycles = TEST_CYCLE;
-		u32 sequencer_frame = TEST_VAL;
+		u32 sequencer_cycles = 0;
+		u32 sequencer_frame = 0;
 		u8 dummy_regs[2] = {};
 
 		bool enabled = false;
