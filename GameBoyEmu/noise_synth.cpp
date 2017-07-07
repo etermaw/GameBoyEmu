@@ -87,7 +87,7 @@ void NoiseSynth::step(u32 cycles)
 		timer = timer_value;
 
 		auto tmp = check_bit(lfsr, 1) ^ check_bit(lfsr, 0);
-		lfsr = change_bit(lfsr >> 1, tmp, 15);
+		lfsr = change_bit(lfsr >> 1, tmp, 14);
 
 		if (width_mode)
 			lfsr = change_bit(lfsr, tmp, 6);
