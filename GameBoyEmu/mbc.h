@@ -64,8 +64,12 @@ class MBC2 final : public MBCBase, public IMemory, public IDmaMemory
 
 class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 {
+	using time_point = std::chrono::time_point<std::chrono::system_clock>;
+
 	private:
+		time_point start_time;
 		u8* rtc;
+		u8 latched_rtc[5];
 		u8 selected_time_reg;
 		u8 last_write;
 		bool reg_used;
@@ -74,7 +78,8 @@ class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 
 	public:
 		MBC3(const u8* rom = nullptr, u8* ram = nullptr, u8* rtc_regs = nullptr) : 
-			MBCBase(rom, ram), rtc(rtc_regs), reg_used(false), selected_time_reg(0) {}
+			MBCBase(rom, ram), rtc(rtc_regs), reg_used(false), selected_time_reg(0),
+			start_time(std::chrono::system_clock::now()) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
