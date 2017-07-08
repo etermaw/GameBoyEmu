@@ -143,7 +143,7 @@ const u8* MBC2::get_dma_ptr(u16 adress)
 void MBC3::latch_rtc()
 {
 	auto cur = std::chrono::system_clock::now();
-	auto delta = cur - start_time;
+	auto delta = std::chrono::duration_cast<std::chrono::seconds>(cur - start_time);
 
 	auto new_seconds = rtc[0] + delta.count();
 	auto new_minutes = rtc[1] + new_seconds / 60;
@@ -155,6 +155,7 @@ void MBC3::latch_rtc()
 	rtc[2] = new_hours % 24;
 	rtc[3] = new_days % 512;
 	rtc[4] = change_bit(rtc[4], (new_days % 512) > 255, 0);
+	rtc[4] = change_bit(rtc[4], new_days > 511, 7);
 	start_time = cur;
 
 	std::memcpy(latched_rtc, rtc, sizeof(u8) * 5);
