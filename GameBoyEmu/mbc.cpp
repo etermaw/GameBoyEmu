@@ -205,7 +205,7 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		}
 	}
 
-	else if (adress < 0x8000)
+	else if (adress < 0x8000 && rtc != nullptr)
 	{
 		if (last_write == 0x00 && value == 0x01)
 			latch_rtc();
