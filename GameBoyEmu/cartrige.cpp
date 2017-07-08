@@ -36,15 +36,25 @@ u32 get_ram_size(u8 val)
 
 Cartrige::~Cartrige()
 {
+	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
+
 	if (battery_ram)
 	{
 		std::ofstream ram_file(file_name + "_ram", std::ios::trunc | std::ios::binary);
-		rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
-
-		if (in_range(header->rom_version, 0x0F, 0x10))
-			ram_file.write(reinterpret_cast<char*>(rtc_regs), 5);
-
 		ram_file.write(reinterpret_cast<char*>(ram.get()), ram_size);
+	}
+
+	if (in_range(header->rom_version, 0x0F, 0x10))
+	{
+		std::ofstream rtc_file(file_name + "_rtc", std::ios::trunc);
+
+		memory_interface.reset(); //make sure that MBC3 update rtc_regs
+
+		auto epoch = std::chrono::system_clock::now().time_since_epoch();
+		auto cur_timestamp = std::chrono::duration_cast<std::chrono::seconds>(epoch);
+
+		rtc_file << cur_timestamp.count();
+		rtc_file.write(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
 	}
 }
 
@@ -85,12 +95,37 @@ void Cartrige::load_ram()
 		std::ifstream ram_file(file_name + "_ram", std::ios::binary);
 
 		if (ram_file.is_open())
-		{
-			//if this is mbc3 cart, we need to read additional time registers
-			if (in_range(header->cartrige_type, 0x0F, 0x10))
-				ram_file.read(reinterpret_cast<char*>(rtc_regs), 5); 
-
 			ram_file.read(reinterpret_cast<char*>(ram.get()), ram_size);
+	}
+
+	if (in_range(header->cartrige_type, 0x0F, 0x10))
+	{
+		std::ifstream rtc_file(file_name + "_rtc");
+
+		if (rtc_file.is_open())
+		{
+			i64 saved_timestamp;
+			rtc_file >> saved_timestamp;
+			rtc_file.read(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
+
+			auto epoch = std::chrono::system_clock::now().time_since_epoch();
+			auto cur_timestamp = std::chrono::duration_cast<std::chrono::seconds>(epoch);
+			auto delta = cur_timestamp.count() - saved_timestamp;
+
+			if (delta <= 0 || !check_bit(rtc_regs[4], 6))
+				return;
+
+			auto ns = rtc_regs[0] + delta;
+			auto nm = rtc_regs[1] + ns / 60;
+			auto nh = rtc_regs[2] + nm / 60;
+			auto nd = (((rtc_regs[4] & 1) << 8) | rtc_regs[3]) + nh / 24;
+
+			rtc_regs[0] = ns % 60;
+			rtc_regs[1] = nm % 60;
+			rtc_regs[2] = nh % 24;
+			rtc_regs[3] = (nd % 512) & 0xFF;
+			rtc_regs[4] = change_bit(rtc_regs[4], (nd % 512) > 255, 0);
+			rtc_regs[4] = change_bit(rtc_regs[4], nd > 511, 7);
 		}
 	}
 }
