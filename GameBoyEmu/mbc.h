@@ -75,11 +75,14 @@ class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 		bool reg_used;
 
 		void latch_rtc();
+		void update_time();
 
 	public:
 		MBC3(const u8* rom = nullptr, u8* ram = nullptr, u8* rtc_regs = nullptr) : 
 			MBCBase(rom, ram), rtc(rtc_regs), reg_used(false), selected_time_reg(0),
 			start_time(std::chrono::system_clock::now()) {}
+
+		~MBC3() { update_time(); }
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
