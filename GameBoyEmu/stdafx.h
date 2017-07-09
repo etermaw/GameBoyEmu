@@ -13,6 +13,7 @@
 #include <cstring>
 #include <climits>
 #include <bitset>
+#include <array>
 
 #include <SDL.h>
 

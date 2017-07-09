@@ -42,6 +42,12 @@ class CPU
 
 		void fill_instruction_maps();
 
+		void get_cpu_state(std::array<u16, 5>& regs, bool& ints)
+		{
+			std::memcpy(regs.data(), reg_16, sizeof(u16) * 5);
+			ints = interrupts;
+		}
+
 	public: //cpu.cpp
 		CPU(MMU& memory_controller);
 
@@ -52,12 +58,10 @@ class CPU
 		bool is_interrupt_enabled() const;
 		void unhalt();
 
-		void attach_debugger(std::tuple<u16**,u16**,u8**,bool**> params)
+		void attach_debugger(std::tuple<u16**, function<void(std::array<u16, 5>&, bool&)>*> params)
 		{
 			*std::get<0>(params) = &pc;
-			*std::get<1>(params) = reg_16;
-			*std::get<2>(params) = reg_8;
-			*std::get<3>(params) = &interrupts;
+			*std::get<1>(params) = make_function(&CPU::get_cpu_state, this);
 		}
 
 	private: //CPU instructions (lots of them, implementations in cpu_instructions.cpp)

@@ -193,34 +193,31 @@ void Debugger::remove_watchpoint(u16 adress)
 		memory_watches.erase(it);
 }
 
-void Debugger::change_register_value(u32 reg, u16 new_val)
-{
-	if (new_val < 0x08)
-		reg_8[reg] = new_val & 0xFF;
-
-	else if (new_val >= 0x10 && new_val <= 0x13)
-		reg_16[reg - 0x10] = new_val;
-}
-
 void Debugger::dump_registers()
 {
 	enum FLAGS2 { F_C = 4, F_H, F_N, F_Z };
 	//enum REGISTER_82 { B, C, D, E, H, L, UNUSED_1, UNUSED_2, A, F, R8_SIZE }; //big endian 
 	enum REGISTER_82 { C, B, E, D, L, H, UNUSED_1, UNUSED_2, F, A, R8_SIZE }; //little endian
-	enum REGISTER_162 { BC, DE, HL, SP, AF, R16_SIZE };
 
 	static const char* regs_16_names[] = { "BC", "DE", "HL", "SP", "AF" };
+	std::array<u16, 5> regs;
+	bool ime;
+
+	cpu_state_callback(regs, ime);
+
 	int j = 0;
 
 	for (auto i : regs_16_names)
-		printf("\n%s: 0x%04x", i, reg_16[j++]);
+		printf("\n%s: 0x%04x", i, regs[j++]);
+
+	const u8* reg_8 = reinterpret_cast<const u8*>(regs.data());
 
 	printf("\n\nA: 0x%02x  F: 0x%02x\n", reg_8[A], reg_8[F]);
 	printf("B: 0x%02x  C: 0x%02x\n", reg_8[B], reg_8[C]);
 	printf("D: 0x%02x  E: 0x%02x\n", reg_8[D], reg_8[E]);
 	printf("H: 0x%02x  L: 0x%02x\n", reg_8[H], reg_8[L]);
 	printf("\nFlags (F register): Z:%d C:%d H:%d N:%d\n", check_bit(reg_8[F], F_Z), check_bit(reg_8[F], F_C), check_bit(reg_8[F], F_H), check_bit(reg_8[F], F_N));
-	printf("Interrupts (IME): %s\n", interrupts ? "enabled" : "disabled");
+	printf("Interrupts (IME): %s\n", ime ? "enabled" : "disabled");
 }
 
 void Debugger::dump_memory_region(u16 start, u16 end)

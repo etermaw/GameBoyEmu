@@ -9,12 +9,10 @@ class Debugger
 
 		function<u8(u16, u32)> read_byte_callback;
 		function<void(u16, u8, u32)> write_byte_callback;
+		function<void(std::array<u16, 5>&, bool&)> cpu_state_callback;
     
 		u32* bank_num;
 		u16* pc;
-		u16* reg_16;
-		u8* reg_8;
-		bool* interrupts;
 		
 		u32 vblanks_left;
 		u16 step_over_adress = 0;
@@ -36,7 +34,6 @@ class Debugger
 		void insert_watchpoint(u16 adress);
 		void remove_watchpoint(u16 adress);
 
-		void change_register_value(u32 reg, u16 new_val);
 		void dump_registers();
 		void dump_memory_region(u16 start, u16 end);
 
@@ -44,9 +41,9 @@ class Debugger
 		void attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte);
 		//void attach_mbc(u32* bank_num);
 
-		std::tuple<u16**, u16**, u8**, bool**> get_cpu()
+		std::tuple<u16**, function<void(std::array<u16, 5>&, bool&)>*> get_cpu()
 		{
-			return std::make_tuple(&pc, &reg_16, &reg_8, &interrupts);
+			return std::make_tuple(&pc, &cpu_state_callback);
 		}
 
 		void check_memory_access(u16 adress, u8 value);
