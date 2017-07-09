@@ -11,6 +11,7 @@ static constexpr char INS_MW = 'q';
 static constexpr char RM_MW = 'x';
 static constexpr char DMP_REGS = 'd';
 static constexpr char DMP_MEM = 'm';
+static constexpr char HELP = 'h';
 
 static const char help[] = "continue - y, run for x vblanks - z\n"
 						   "dump registers - d, memory dump - m\n"
@@ -33,7 +34,7 @@ void Debugger::enter_trap()
 	const char* op = dispatch_opcode(opcode, b1, b2);
 	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
 
-	printf("\nBREAK POINT!\n");
+	printf("\nBREAK POINT! (h - help)\n");
 
 	if (memory_changed)
 	{
@@ -42,8 +43,7 @@ void Debugger::enter_trap()
 	}
 
 	printf("0x%04x: %s\n", *pc, buffer);
-	printf("%s", help);
-
+	
 	char choice = 0;
 	next_instruction = false;
 
@@ -174,7 +174,11 @@ void Debugger::enter_trap()
 					printf("\nFailed to add vblank run!");
 
 				break;
-			}
+
+			case HELP:
+				printf("%s\n", help);
+				break;
+		}
 
 	}
 }
