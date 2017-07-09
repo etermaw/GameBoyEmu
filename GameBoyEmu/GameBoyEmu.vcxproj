@@ -151,6 +151,7 @@
     <ClCompile Include="apu.cpp" />
     <ClCompile Include="cartrige.cpp" />
     <ClCompile Include="cpu.cpp" />
+    <ClCompile Include="debugger.cpp" />
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="interrupts.cpp" />
     <ClCompile Include="joypad.cpp" />
