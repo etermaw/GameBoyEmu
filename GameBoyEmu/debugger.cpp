@@ -1,6 +1,23 @@
 #include "stdafx.h"
 #include "debugger.h"
 
+static constexpr char CONTINUE = 'y';
+static constexpr char NEXT_INSTR = 'n';
+static constexpr char RUN_VB = 'z';
+static constexpr char STEP_INSTR = 'l';
+static constexpr char INS_BP = 'i';
+static constexpr char RM_BP = 'r';
+static constexpr char INS_MW = 'q';
+static constexpr char RM_MW = 'x';
+static constexpr char DMP_REGS = 'd';
+static constexpr char DMP_MEM = 'm';
+
+static const char help[] = "continue - y, run for x vblanks - z\n"
+						   "dump registers - d, memory dump - m\n"
+						   "new breakpoint - i, remove breakpoint - r\n"
+						   "insert memory watch - q, remove memory watch - x\n"
+						   "next instruction - n, step over instruction - l\n";
+
 bool Debugger::is_breakpoint()
 {
 	return !break_points.empty() && std::binary_search(break_points.begin(), break_points.end(), *pc);
@@ -25,10 +42,7 @@ void Debugger::enter_trap()
 	}
 
 	printf("0x%04x: %s\n", *pc, buffer);
-	printf("continue - y, dump registers - d, dump memory - m\n");
-	printf("new breakpoint - i, remove breakpoint - r, next instruction - n\n");
-	printf("insert memory watch - q, remove memory watch - x, step over instruction - l\n");
-	printf("run for x vblanks - z\n");
+	printf("%s", help);
 
 	char choice = 0;
 	next_instruction = false;
@@ -36,7 +50,7 @@ void Debugger::enter_trap()
 	if (step_over_adress == *pc)
 		step_over = false;
 
-	while (choice != 'y')
+	while (choice != CONTINUE)
 	{
 		u32 in_row = 0;
 		u32 begin = 0, end = 0;
@@ -46,121 +60,121 @@ void Debugger::enter_trap()
 
 		switch (choice)
 		{
-		case 'n':
-			next_instruction = true;
-			return;
+			case NEXT_INSTR:
+				next_instruction = true;
+				return;
 
-		case 'l':
-			step_over_adress = *pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
-			step_over = true;
-			return;
+			case STEP_INSTR:
+				step_over_adress = *pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
+				step_over = true;
+				return;
 
-		case 'd':
-			dump_registers();
-			break;
+			case DMP_REGS:
+				dump_registers();
+				break;
 
-		case 'i':
-			printf("\nBreak point adress (hex, 16-bit): ");
+			case INS_BP:
+				printf("\nBreak point adress (hex, 16-bit): ");
 
-			if (scanf("%x", &num) && num < 0x10000)
-			{
-				insert_breakpoint(num & 0xFFFF);
-				printf("Break point added!\n");
+				if (scanf("%x", &num) && num < 0x10000)
+				{
+					insert_breakpoint(num & 0xFFFF);
+					printf("Break point added!\n");
+				}
+
+				else
+					printf("Wrong breakpoint adress!\n");
+
+				break;
+
+			case RM_BP:
+				printf("\ncurrent breakpoints:\n");
+
+				for (auto i : break_points)
+				{
+					printf("0x%04x ", i);
+
+					if (in_row == 4)
+						printf("\n");
+
+					in_row = (in_row + 1) % 4;
+				}
+
+				printf("\nadress: ");
+
+				if (scanf("%x", &in_row))
+					remove_breakpoint(in_row);
+
+				else
+					printf("wrong adress!\n");
+
+				break;
+
+			case DMP_MEM:
+				printf("\nstart adress (hex, 16-bit): ");
+				scanf("%x", &begin);
+				printf("end adress (hex, 16-bit): ");
+				scanf("%x", &end);
+
+				if (begin < 0x10000 && end < 0x10000)
+					dump_memory_region(begin, end);
+
+				else
+					printf("Adress greater than 0xFFFF!\n");
+
+				break;
+
+			case INS_MW:
+				printf("\nMemory watch adress (hex, 16-bit): ");
+
+				if (scanf("%x", &num) && num < 0x10000)
+				{
+					insert_watchpoint(num & 0xFFFF);
+					printf("Memory watch added!\n");
+				}
+
+				else
+					printf("Wrong memory watch adress!\n");
+
+				break;
+
+			case RM_MW:
+				printf("\ncurrent memory watches:\n");
+
+				for (auto i : memory_watches)
+				{
+					printf("0x%04x ", i);
+
+					if (in_row == 4)
+						printf("\n");
+
+					in_row = (in_row + 1) % 4;
+				}
+
+				printf("\nadress: ");
+
+				if (scanf("%x", &in_row))
+					remove_watchpoint(in_row);
+
+				else
+					printf("wrong adress!\n");
+
+				break;
+
+			case RUN_VB:
+				printf("How many vblanks?\n");
+
+				if (scanf("%d", &num) && num < 10000)
+				{
+					vblanks_left = num;
+					printf("\nNext breakpoint after %d vblanks!", vblanks_left);
+				}
+
+				else
+					printf("\nFailed to add vblank run!");
+
+				break;
 			}
-
-			else
-				printf("Wrong breakpoint adress!\n");
-
-			break;
-
-		case 'r':
-			printf("\ncurrent breakpoints:\n");
-
-			for (auto i : break_points)
-			{
-				printf("0x%04x ", i);
-
-				if (in_row == 4)
-					printf("\n");
-
-				in_row = (in_row + 1) % 4;
-			}
-
-			printf("\nadress: ");
-
-			if (scanf("%x", &in_row))
-				remove_breakpoint(in_row);
-
-			else
-				printf("wrong adress!\n");
-
-			break;
-
-		case 'm':
-			printf("\nstart adress (hex, 16-bit): ");
-			scanf("%x", &begin);
-			printf("end adress (hex, 16-bit): ");
-			scanf("%x", &end);
-
-			if (begin < 0x10000 && end < 0x10000)
-				dump_memory_region(begin, end);
-
-			else
-				printf("Adress greater than 0xFFFF!\n");
-
-			break;
-
-		case 'q':
-			printf("\nMemory watch adress (hex, 16-bit): ");
-
-			if (scanf("%x", &num) && num < 0x10000)
-			{
-				insert_watchpoint(num & 0xFFFF);
-				printf("Memory watch added!\n");
-			}
-
-			else
-				printf("Wrong memory watch adress!\n");
-
-			break;
-
-		case 'x':
-			printf("\ncurrent memory watches:\n");
-
-			for (auto i : memory_watches)
-			{
-				printf("0x%04x ", i);
-
-				if (in_row == 4)
-					printf("\n");
-
-				in_row = (in_row + 1) % 4;
-			}
-
-			printf("\nadress: ");
-
-			if (scanf("%x", &in_row))
-				remove_watchpoint(in_row);
-
-			else
-				printf("wrong adress!\n");
-
-			break;
-
-		case 'z':
-			printf("How many vblanks?\n");
-
-			if (scanf("%d", &num) && num < 10000)
-			{
-				vblanks_left = num;
-				printf("\nNext breakpoint after %d vblanks!", vblanks_left);
-			}
-
-			else
-				printf("\nFailed to add vblank run!");
-
-			break;
-		}
 
 	}
 }
