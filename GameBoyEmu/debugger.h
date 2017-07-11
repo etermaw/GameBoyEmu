@@ -11,8 +11,7 @@ class Debugger
 		function<void(u16, u8, u32)> write_byte_callback;
 		function<void(std::array<u16, 5>&, bool&)> cpu_state_callback;
 		function<void(std::array<u8, 12>&)> gpu_state_callback;
-    
-		u32* bank_num;
+
 		u16* pc;
 		
 		u32 vblanks_left;

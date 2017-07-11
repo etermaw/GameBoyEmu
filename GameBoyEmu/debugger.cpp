@@ -282,9 +282,9 @@ void Debugger::dump_gpu_regs()
 	printf("SPRITES: %d ", check_bit(dmg_regs[0], 1));
 	printf("WINDOW: %d\n", check_bit(dmg_regs[0], 5));
 	printf("SPRITE SIZE: 8x%d ", check_bit(dmg_regs[0], 2) ? 16 : 8);
-	printf("BG TILES: %d ", check_bit(dmg_regs[0], 3));
-	printf("WINDOW TILES: %d ", check_bit(dmg_regs[0], 6));
-	printf("TILESET: %d", check_bit(dmg_regs[0], 4));
+	printf("BG MAP: 0x%04x ", check_bit(dmg_regs[0], 3) ? 0x9C00 : 0x9800);
+	printf("WINDOW MAP: 0x%04x ", check_bit(dmg_regs[0], 6) ? 0x9C00 : 0x9800);
+	printf("TILES: 0x%04x", check_bit(dmg_regs[0], 4) ? 0x8000 : 0x8800);
 }
 
 void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte)
