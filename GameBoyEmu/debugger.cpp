@@ -269,22 +269,22 @@ void Debugger::dump_memory_region(u16 start, u16 end)
 
 void Debugger::dump_gpu_regs()
 {
-	static const char* regs[] = { "STAT","SY","SX","LY","LYC","DMA","BGP","OBP0","OBP1","WY","WX" };
+	static const char* regs[] = { "CTRL","STAT","SY","SX","LY","LYC","DMA","BGP","OBP0","OBP1","WY","WX" };
 	std::array<u8, 12> dmg_regs;
 
 	gpu_state_callback(dmg_regs);
 
-	printf("LCD: %d ", check_bit(dmg_regs[0], 7));
+	for (int i = 0; i < 12; i += 4)
+		printf("%s: 0x%02X\t%s: 0x%02X\t%s: 0x%02X\t%s: 0x%02X\n", regs[i], dmg_regs[i], regs[i+1], dmg_regs[i+1], regs[i+2], dmg_regs[i+2], regs[i+3], dmg_regs[i+3]);
+
+	printf("\nLCD: %d ", check_bit(dmg_regs[0], 7));
 	printf("BG: %d ", check_bit(dmg_regs[0], 0));
 	printf("SPRITES: %d ", check_bit(dmg_regs[0], 1));
 	printf("WINDOW: %d\n", check_bit(dmg_regs[0], 5));
 	printf("SPRITE SIZE: 8x%d ", check_bit(dmg_regs[0], 2) ? 16 : 8);
 	printf("BG TILES: %d ", check_bit(dmg_regs[0], 3));
 	printf("WINDOW TILES: %d ", check_bit(dmg_regs[0], 6));
-	printf("TILESET: %d\n", check_bit(dmg_regs[0], 4));
-
-	for (int i = 1; i < 12; ++i)
-		printf("%s: 0x%02X\n", regs[i - 1], dmg_regs[i]);
+	printf("TILESET: %d", check_bit(dmg_regs[0], 4));
 }
 
 void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte)
