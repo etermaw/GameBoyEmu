@@ -219,28 +219,20 @@ void Debugger::remove_watchpoint(u16 adress)
 
 void Debugger::dump_registers()
 {
-	enum FLAGS2 { F_C = 4, F_H, F_N, F_Z };
-	//enum REGISTER_82 { B, C, D, E, H, L, UNUSED_1, UNUSED_2, A, F, R8_SIZE }; //big endian 
-	enum REGISTER_82 { C, B, E, D, L, H, UNUSED_1, UNUSED_2, F, A, R8_SIZE }; //little endian
-
-	static const char* regs_16_names[] = { "BC", "DE", "HL", "SP", "AF" };
 	std::array<u16, 5> regs;
 	bool ime;
 
 	cpu_state_callback(regs, ime);
 
-	int j = 0;
+	auto f = regs[4] & 0xFF;
 
-	for (auto i : regs_16_names)
-		printf("\n%s: 0x%04x", i, regs[j++]);
+	printf("\nBC: 0x%04x    B: 0x%02x    C: 0x%02x", regs[0], (regs[0] >> 8) & 0xFF, regs[0] & 0xFF);
+	printf("\nDE: 0x%04x    D: 0x%02x    E: 0x%02x", regs[1], (regs[1] >> 8) & 0xFF, regs[1] & 0xFF);
+	printf("\nHL: 0x%04x    H: 0x%02x    L: 0x%02x", regs[2], (regs[2] >> 8) & 0xFF, regs[2] & 0xFF);
+	printf("\nSP: 0x%04x", regs[3]);
+	printf("\nAF: 0x%04x    A: 0x%02x    F: 0x%02x", regs[4], (regs[4] >> 8) & 0xFF, regs[4] & 0xFF);
 
-	const u8* reg_8 = reinterpret_cast<const u8*>(regs.data());
-
-	printf("\n\nA: 0x%02x  F: 0x%02x\n", reg_8[A], reg_8[F]);
-	printf("B: 0x%02x  C: 0x%02x\n", reg_8[B], reg_8[C]);
-	printf("D: 0x%02x  E: 0x%02x\n", reg_8[D], reg_8[E]);
-	printf("H: 0x%02x  L: 0x%02x\n", reg_8[H], reg_8[L]);
-	printf("\nFlags (F register): Z:%d C:%d H:%d N:%d\n", check_bit(reg_8[F], F_Z), check_bit(reg_8[F], F_C), check_bit(reg_8[F], F_H), check_bit(reg_8[F], F_N));
+	printf("\n\nFlags (F register): Z:%d N:%d H:%d C:%d\n", check_bit(f, 7), check_bit(f, 6), check_bit(f, 5), check_bit(f, 4));
 	printf("Interrupts (IME): %s\n", ime ? "enabled" : "disabled");
 }
 
@@ -277,10 +269,8 @@ void Debugger::dump_memory_region(u16 start, u16 end)
 
 void Debugger::dump_gpu_regs()
 {
+	static const char* regs[] = { "STAT","SY","SX","LY","LYC","DMA","BGP","OBP0","OBP1","WY","WX" };
 	std::array<u8, 12> dmg_regs;
-	
-	/*LC_BG_ENABLED, LC_SPRITES_ENABLED, LC_SPRITES_SIZE, LC_BG_TMAP,
-		LC_TILESET, LC_WINDOW_ENABLED, LC_WINDOW_TMAP, LC_POWER*/
 
 	gpu_state_callback(dmg_regs);
 
@@ -291,7 +281,10 @@ void Debugger::dump_gpu_regs()
 	printf("SPRITE SIZE: 8x%d ", check_bit(dmg_regs[0], 2) ? 16 : 8);
 	printf("BG TILES: %d ", check_bit(dmg_regs[0], 3));
 	printf("WINDOW TILES: %d ", check_bit(dmg_regs[0], 6));
-	printf("TILESET: %d", check_bit(dmg_regs[0], 4));
+	printf("TILESET: %d\n", check_bit(dmg_regs[0], 4));
+
+	for (int i = 1; i < 12; ++i)
+		printf("%s: 0x%02X\n", regs[i - 1], dmg_regs[i]);
 }
 
 void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte)
