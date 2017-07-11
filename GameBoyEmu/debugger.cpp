@@ -12,12 +12,14 @@ static constexpr char RM_MW = 'x';
 static constexpr char DMP_REGS = 'd';
 static constexpr char DMP_MEM = 'm';
 static constexpr char HELP = 'h';
+static constexpr char GPU_STATUS = 'g';
 
-static const char help[] = "continue - y, run for x vblanks - z\n"
-						   "dump registers - d, memory dump - m\n"
-						   "new breakpoint - i, remove breakpoint - r\n"
-						   "insert memory watch - q, remove memory watch - x\n"
-						   "next instruction - n, step over instruction - l\n";
+static const char help[] = "continue - y, run for x vblanks - z,\n"
+						   "dump registers - d, memory dump - m,\n"
+						   "new breakpoint - i, remove breakpoint - r,\n"
+						   "insert memory watch - q, remove memory watch - x,\n"
+						   "next instruction - n, step over instruction - l,\n"
+						   "dump GPU regs - g\n";
 
 bool Debugger::is_breakpoint()
 {
@@ -175,6 +177,10 @@ void Debugger::enter_trap()
 
 				break;
 
+			case GPU_STATUS:
+				dump_gpu_regs();
+				break;
+
 			case HELP:
 				printf("%s\n", help);
 				break;
@@ -267,6 +273,25 @@ void Debugger::dump_memory_region(u16 start, u16 end)
 	}
 
 	printf("\n");
+}
+
+void Debugger::dump_gpu_regs()
+{
+	std::array<u8, 12> dmg_regs;
+	
+	/*LC_BG_ENABLED, LC_SPRITES_ENABLED, LC_SPRITES_SIZE, LC_BG_TMAP,
+		LC_TILESET, LC_WINDOW_ENABLED, LC_WINDOW_TMAP, LC_POWER*/
+
+	gpu_state_callback(dmg_regs);
+
+	printf("LCD: %d ", check_bit(dmg_regs[0], 7));
+	printf("BG: %d ", check_bit(dmg_regs[0], 0));
+	printf("SPRITES: %d ", check_bit(dmg_regs[0], 1));
+	printf("WINDOW: %d\n", check_bit(dmg_regs[0], 5));
+	printf("SPRITE SIZE: 8x%d ", check_bit(dmg_regs[0], 2) ? 16 : 8);
+	printf("BG TILES: %d ", check_bit(dmg_regs[0], 3));
+	printf("WINDOW TILES: %d ", check_bit(dmg_regs[0], 6));
+	printf("TILESET: %d", check_bit(dmg_regs[0], 4));
 }
 
 void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte)

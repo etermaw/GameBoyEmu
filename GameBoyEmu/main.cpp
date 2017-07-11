@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
 
 	Debugger debugger;
 	debugger.attach_mmu(make_function(&MMU::read_byte, &mmu), make_function(&MMU::write_byte, &mmu));
+	debugger.attach_gpu(gpu.get_debug_func());
 
 	cpu.attach_debugger(debugger.get_cpu());
 	mmu.attach_debug_callback(make_function(&Debugger::check_memory_access, &debugger));

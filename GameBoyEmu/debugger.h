@@ -10,6 +10,7 @@ class Debugger
 		function<u8(u16, u32)> read_byte_callback;
 		function<void(u16, u8, u32)> write_byte_callback;
 		function<void(std::array<u16, 5>&, bool&)> cpu_state_callback;
+		function<void(std::array<u8, 12>&)> gpu_state_callback;
     
 		u32* bank_num;
 		u16* pc;
@@ -36,6 +37,7 @@ class Debugger
 
 		void dump_registers();
 		void dump_memory_region(u16 start, u16 end);
+		void dump_gpu_regs();
 
 	public:
 		void attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte);
@@ -45,6 +47,8 @@ class Debugger
 		{
 			return std::make_tuple(&pc, &cpu_state_callback);
 		}
+
+		void attach_gpu(function<void(std::array<u8, 12>&)> dbg_func) { gpu_state_callback = dbg_func; }
 
 		void check_memory_access(u16 adress, u8 value);
 		void step();
