@@ -189,6 +189,7 @@ void Gpu::launch_gdma()
 
 	//TODO: max len is 0x800, so it can overlap 2 mem regions. Detect it and get 2nd ptr
 	//TODO: what if dst + len is bigger then vram?
+	//TODO: edge case, what if someone launch GMDA not in vblank state? emulate no access
 	const u8* src_ptr = resolve_adress(src);
 	std::memcpy(&vram[vram_bank][dst], src_ptr, sizeof(u8) * len);
 

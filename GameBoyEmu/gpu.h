@@ -69,9 +69,14 @@ class Gpu final : public IMemory
 		
 		void step_ahead(u32 cycles);
 
-		void get_gpu_status(std::array<u8, 12>& out)
+		void get_gpu_status(std::array<u8, 12>& dmg, std::array<u8, 8>& cgb)
 		{
-			std::memcpy(out.data(), regs, sizeof(u8) * 12);
+			std::memcpy(dmg.data(), regs, sizeof(u8) * 12);
+
+			std::memcpy(cgb.data(), hdma_regs, sizeof(u8) * 5);
+			cgb[5] = cgb_bgp_index;
+			cgb[6] = cgb_obp_index;
+			cgb[7] = vram_bank;
 		}
 
 	public:
@@ -95,5 +100,5 @@ class Gpu final : public IMemory
 			ram = ram_memory;
 		}
 
-		function<void(std::array<u8, 12>&)> get_debug_func() { return make_function(&Gpu::get_gpu_status, this); }
+		function<void(std::array<u8, 12>&, std::array<u8, 8>&)> get_debug_func() { return make_function(&Gpu::get_gpu_status, this); }
 };
