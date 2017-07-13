@@ -201,13 +201,13 @@ void Gpu::launch_hdma()
 {
 	u16 src = (hdma_regs[0] << 8) | (hdma_regs[1] & 0xF0);
 	u16 dst = ((hdma_regs[2] & 0x1F) << 8) | (hdma_regs[3] & 0xF0); //0x0000 - 0x1FF0
-	u16 len = (hdma_regs[4] & 0x7F) + 1;
+	u8 len = (hdma_regs[4] & 0x7F) + 1;
 	u16 cur_pos = hdma_cur * 0x10;
 
 	const u8* src_ptr = resolve_adress(src + cur_pos);
 	std::memcpy(&vram[vram_bank][dst + cur_pos], src_ptr, sizeof(u8) * 0x10);
 
-	if ((hdma_regs[4] & 0x7F) == 0)
+	if (--len == 0)
 	{
 		hdma_active = false;
 		hdma_regs[4] = 0xFF;
@@ -216,7 +216,7 @@ void Gpu::launch_hdma()
 	else
 	{
 		++hdma_cur;
-		--hdma_regs[4];
+		hdma_regs[4] = clear_bit(len - 1, 7);
 	}
 
 	new_dma_cycles = 8;
