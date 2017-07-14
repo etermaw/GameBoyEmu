@@ -87,3 +87,15 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		enabled = check_bit(value, 2);
 	}
 }
+
+void Timer::serialize(std::ostream& stream)
+{
+	stream << cycles_ahead << divider_cycles << counter_cycles;
+	stream << control << divider << counter << mod << enabled;
+}
+
+void Timer::deserialize(std::istream& stream)
+{
+	stream >> cycles_ahead >> divider_cycles >> counter_cycles;
+	stream >> control >> divider >> counter >> mod >> enabled;
+}

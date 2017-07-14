@@ -59,3 +59,17 @@ const u8* Ram::get_dma_ptr(u16 adress)
 		return nullptr;
 }
 
+void Ram::serialize(std::ostream& stream)
+{
+	stream.write(reinterpret_cast<char*>(memory.get()), sizeof(u8) * 0x8000);
+	stream.write(reinterpret_cast<char*>(high_ram), sizeof(u8) * 0x80);
+	stream << bank_num << cgb_mode;
+}
+
+void Ram::deserialize(std::istream& stream)
+{
+	stream.read(reinterpret_cast<char*>(memory.get()), sizeof(u8) * 0x8000);
+	stream.read(reinterpret_cast<char*>(high_ram), sizeof(u8) * 0x80);
+	stream >> bank_num >> cgb_mode;
+}
+

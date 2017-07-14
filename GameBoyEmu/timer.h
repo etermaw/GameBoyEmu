@@ -30,4 +30,7 @@ class Timer final : public IMemory
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
+
+		void serialize(std::ostream& stream);
+		void deserialize(std::istream& stream);
 };

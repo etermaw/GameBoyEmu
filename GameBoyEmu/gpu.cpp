@@ -843,3 +843,14 @@ u32 Gpu::step(u32 clock_cycles)
 
 	return cycles_passed;
 }
+
+void Gpu::serialize(std::ostream& save_stream)
+{
+	save_stream.write(reinterpret_cast<char*>(screen_buffer.get()), sizeof(u32) * 160 * 144);
+	save_stream.write(reinterpret_cast<char*>(vram[0].get()), sizeof(u8) * 0x2000);
+	save_stream.write(reinterpret_cast<char*>(vram[1].get()), sizeof(u8) * 0x2000);
+	save_stream.write(reinterpret_cast<char*>(oam.get()), sizeof(u8) * 0xA0);
+	save_stream.write(reinterpret_cast<char*>(cgb_bgp), sizeof(u8) * 64);
+	save_stream.write(reinterpret_cast<char*>(cgb_obp), sizeof(u8) * 64);
+	save_stream.write(reinterpret_cast<char*>(regs), sizeof(u8) * 12);
+}

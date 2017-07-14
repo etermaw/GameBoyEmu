@@ -31,4 +31,7 @@ class APU final : public IMemory
 
 		void step(u32 cycles);
 		void set_speed(bool speed) { double_speed = speed; }
+
+		void serialize(std::ostream& stream);
+		void deserialize(std::istream& stream);
 };

@@ -19,4 +19,7 @@ class Joypad final : public IMemory
 
 		void push_key(KEYS keycode);
 		void release_key(KEYS keycode);
+
+		void serialize(std::ostream& save_stream);
+		void deserialize(std::istream& load_stream);
 };

@@ -118,3 +118,21 @@ void WaveSynth::write_ram(u16 adress, u8 value)
 {
 	wave_ram[adress] = value;
 }
+
+void WaveSynth::serialize(std::ostream& stream)
+{
+	stream.write(reinterpret_cast<char*>(wave_ram), sizeof(u16) * 16);
+
+	stream << length_counter << timer << buffer_pos;
+	stream << freq_low << freq_high << output_level;
+	stream << out_volume << enabled << dac_enabled << length_enabled;
+}
+
+void WaveSynth::deserialize(std::istream & stream)
+{
+	stream.read(reinterpret_cast<char*>(wave_ram), sizeof(u16) * 16);
+
+	stream >> length_counter >> timer >> buffer_pos;
+	stream >> freq_low >> freq_high >> output_level;
+	stream >> out_volume >> enabled >> dac_enabled >> length_enabled;
+}

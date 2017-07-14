@@ -100,5 +100,8 @@ class Gpu final : public IMemory
 			ram = ram_memory;
 		}
 
+		void serialize(std::ostream& stream);
+		void deserialize(std::istream& stream);
+
 		function<void(std::array<u8, 12>&, std::array<u8, 8>&)> get_debug_func() { return make_function(&Gpu::get_gpu_status, this); }
 };

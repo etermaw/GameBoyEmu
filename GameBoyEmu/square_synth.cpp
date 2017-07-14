@@ -197,3 +197,25 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 			start_playing();
 	}
 }
+
+void SquareSynth::serialize(std::ostream& stream)
+{
+	stream << length_counter << timer << duty_pos << duty;
+	stream << envelope_counter << start_envelope << freq;
+	stream << sweep_counter << sweep_shadow << sweep_shift;
+	stream << sweep_load << volume_load << volume << out_vol;
+
+	stream << enabled << length_enabled << envelope_enabled;
+	stream << envelope_asc << dac_enabled << sweep_enabled << sweep_neg;
+}
+
+void SquareSynth::deserialize(std::istream& stream)
+{
+	stream >> length_counter >> timer >> duty_pos >> duty;
+	stream >> envelope_counter >> start_envelope >> freq;
+	stream >> sweep_counter >> sweep_shadow >> sweep_shift;
+	stream >> sweep_load >> volume_load >> volume >> out_vol;
+
+	stream >> enabled >> length_enabled >> envelope_enabled;
+	stream >> envelope_asc >> dac_enabled >> sweep_enabled >> sweep_neg;
+}

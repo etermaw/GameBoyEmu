@@ -143,3 +143,25 @@ void APU::step(u32 cycles)
 	step_ahead(cycles - cycles_ahead);
 	cycles_ahead = 0;
 }
+
+void APU::serialize(std::ostream& stream)
+{
+	channel_1.serialize(stream);
+	channel_2.serialize(stream);
+	channel_3.serialize(stream);
+	channel_4.serialize(stream);
+
+	stream << cycles_ahead << sequencer_cycles << sequencer_frame;
+	stream << dummy_regs[0] << dummy_regs[1] << enabled << double_speed;
+}
+
+void APU::deserialize(std::istream& stream)
+{
+	channel_1.deserialize(stream);
+	channel_2.deserialize(stream);
+	channel_3.deserialize(stream);
+	channel_4.deserialize(stream);
+
+	stream >> cycles_ahead >> sequencer_cycles >> sequencer_frame;
+	stream >> dummy_regs[0] >> dummy_regs[1] >> enabled >> double_speed;
+}

@@ -42,4 +42,7 @@ class SquareSynth
 
 		u8 read_reg(u16 reg_num);
 		void write_reg(u16 reg_num, u8 value);
+
+		void serialize(std::ostream& stream);
+		void deserialize(std::istream& stream);
 };

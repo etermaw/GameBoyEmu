@@ -58,6 +58,9 @@ class CPU
 		bool is_interrupt_enabled() const;
 		void unhalt();
 
+		void serialize(std::ostream& save_stream);
+		void deserialize(std::istream& load_stream);
+
 		void attach_debugger(std::tuple<u16**, function<void(std::array<u16, 5>&, bool&)>*> params)
 		{
 			*std::get<0>(params) = &pc;

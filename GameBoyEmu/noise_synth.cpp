@@ -147,3 +147,21 @@ void NoiseSynth::write_reg(u16 reg_num, u8 value)
 			start_playing();
 	}
 }
+
+void NoiseSynth::serialize(std::ostream& stream)
+{
+	stream << length_counter << envelope_counter << envelope_load;
+	stream << timer << current_divisor << clock_shift;
+	stream << volume_load << lfsr << volume << out_vol;
+	stream << enabled << envelope_asc << length_enabled;
+	stream << envelope_enabled << width_mode << dac_enabled;
+}
+
+void NoiseSynth::deserialize(std::istream& stream)
+{
+	stream >> length_counter >> envelope_counter >> envelope_load;
+	stream >> timer >> current_divisor >> clock_shift;
+	stream >> volume_load >> lfsr >> volume >> out_vol;
+	stream >> enabled >> envelope_asc >> length_enabled;
+	stream >> envelope_enabled >> width_mode >> dac_enabled;
+}

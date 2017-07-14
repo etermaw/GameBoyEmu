@@ -167,6 +167,21 @@ bool Cartrige::is_cgb_ready() const
 	return (header->cgb_flag == 0x80) || (header->cgb_flag == 0xC0);
 }
 
+void Cartrige::serialize(std::ostream& stream)
+{
+	//TODO: update rtc regs before serialization
+	stream << battery_ram << ram_size;
+	stream.write(reinterpret_cast<char*>(ram.get()), sizeof(u8) * ram_size);
+	stream.write(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
+}
+
+void Cartrige::deserialize(std::istream & stream)
+{
+	stream >> battery_ram >> ram_size;
+	stream.read(reinterpret_cast<char*>(ram.get()), sizeof(u8) * ram_size);
+	stream.read(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
+}
+
 void Cartrige::dispatch()
 {
 	rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);

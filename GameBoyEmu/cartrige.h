@@ -27,4 +27,7 @@ class Cartrige
 		IMemory* get_memory_controller() const;
 		IDmaMemory* get_dma_controller() const;
 		bool is_cgb_ready() const;
+
+		void serialize(std::ostream& stream);
+		void deserialize(std::istream& stream);
 };

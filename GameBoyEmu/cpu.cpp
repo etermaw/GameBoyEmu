@@ -63,3 +63,15 @@ void CPU::unhalt()
 {
 	is_halted = false;
 }
+
+void CPU::serialize(std::ostream& save_stream)
+{
+	save_stream.write(reinterpret_cast<char*>(reg_16), sizeof(u16) * REGISTER_16::R16_SIZE);
+	save_stream << pc << interrupts << is_halted << delayed_ei << cgb_mode;
+}
+
+void CPU::deserialize(std::istream& load_stream)
+{
+	load_stream.read(reinterpret_cast<char*>(reg_16), sizeof(u16) * REGISTER_16::R16_SIZE);
+	load_stream >> pc >> interrupts >> is_halted >> delayed_ei >> cgb_mode;
+}
