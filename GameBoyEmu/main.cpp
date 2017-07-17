@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 	ram.enable_cgb_mode(enable_cgb);
 
 	bool spin = true;
-	const u32 key_map[8] = { SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_a, SDLK_b, SDLK_KP_ENTER, SDLK_s };
+	const u32 key_map[8] = { SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_a, SDLK_b, SDLK_RETURN, SDLK_s };
 
 	while (spin)
 	{
