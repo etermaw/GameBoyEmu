@@ -270,6 +270,7 @@ void Debugger::dump_memory_region(u16 start, u16 end)
 void Debugger::dump_gpu_regs()
 {
 	static const char* regs[] = { "CTRL","STAT","SY","SX","LY","LYC","DMA","BGP","OBP0","OBP1","WY","WX" };
+	static const char* gpu_state[] = {"H-BLANK", "V-BLANK", "OAM", "TRANSFER"};
 	std::array<u8, 12> dmg_regs;
 	std::array<u8, 8> cgb_regs;
 
@@ -277,8 +278,14 @@ void Debugger::dump_gpu_regs()
 
 	for (int i = 0; i < 12; i += 4)
 		printf("%s: 0x%02X\t%s: 0x%02X\t%s: 0x%02X\t%s: 0x%02X\n", regs[i], dmg_regs[i], regs[i+1], dmg_regs[i+1], regs[i+2], dmg_regs[i+2], regs[i+3], dmg_regs[i+3]);
+	
+	printf("\nSTAT:\nLYC == LY: %d ", check_bit(dmg_regs[1],6));
+	printf("VB: %d ", check_bit(dmg_regs[1],4));
+	printf("HB: %d ", check_bit(dmg_regs[1],3));
+	printf("OAM: %d ", check_bit(dmg_regs[1],5));
+	printf("GPU state: %s\n", gpu_state[dmg_regs[1] & 0x3]);
 
-	printf("\nLCD: %d ", check_bit(dmg_regs[0], 7));
+	printf("\nCTRL:\nLCD: %d ", check_bit(dmg_regs[0], 7));
 	printf("BG: %d ", check_bit(dmg_regs[0], 0));
 	printf("SPRITES: %d ", check_bit(dmg_regs[0], 1));
 	printf("WINDOW: %d\n", check_bit(dmg_regs[0], 5));

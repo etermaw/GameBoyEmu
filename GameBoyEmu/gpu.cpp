@@ -73,7 +73,7 @@ void Gpu::vb_mode()
 		interrupts.raise(INT_LCD);
 	}
 
-	if (regs[IO_LY] == 153)
+	if (regs[IO_LY] == 154)
 	{
 		regs[IO_LY] = 0;
 		
