@@ -298,7 +298,7 @@ void Gpu::draw_sprite_row()
 		}
 	}
 
-	std::stable_sort(std::begin(to_draw), std::begin(to_draw) + count);
+	std::stable_sort(std::begin(to_draw), std::next(std::begin(to_draw), count));
 	
 	for (i32 i = count - 1; i >= 0; --i)
 	{
