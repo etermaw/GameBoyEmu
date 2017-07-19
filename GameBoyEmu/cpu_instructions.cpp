@@ -913,7 +913,7 @@ u32 CPU::add_a_n(u8 opcode)
 u32 CPU::rst_nn(u8 opcode)
 {
 	u16 adr = (opcode >> 3) & 7;
-	push(pc, 4); 
+	push(pc, 8); 
 	pc = adr * 0x8; 
 
 	return 16;
