@@ -565,7 +565,7 @@ void Gpu::draw_sprite_row_cgb()
 		const u32 end = std::min(sx + 8, 160);
 
 		//if bit 7 == 1, then sprite will cover ONLY BG color 0
-		//else sprite will cover ONLY if priority_buffer != 1
+		//else sprite will cover BG if: priority_buffer != 1 or BG color == 0
 
 		for (u32 j = begin; j < end; ++j)
 		{
@@ -581,7 +581,7 @@ void Gpu::draw_sprite_row_cgb()
 
 			else
 			{
-				if (color_id != 0 && !priority_buffer[j])
+				if (color_id != 0 && !(priority_buffer[j] && alpha_buffer[j]))
 					screen_buffer[line_offset + j] = color;
 			}
 		}
