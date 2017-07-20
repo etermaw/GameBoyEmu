@@ -15,12 +15,17 @@ void Timer::step_ahead(u32 cycles)
 	if (enabled)
 	{
 		counter_cycles += cycles;
-		auto ticks = counter_cycles >> tick_shifts[control];
+		u32 ticks = counter + (counter_cycles >> tick_shifts[control]);
 		counter_cycles &= tick_masks[control];
-		counter += ticks;
 
 		if ((ticks / (0x100 - mod)) > 0)
+		{
 			interrupts.raise(INT_TIMER);
+			counter = mod + ticks % (0x100 - mod);
+		}
+
+		else
+			counter = ticks % (0x100 - mod);
 	}
 }
 
