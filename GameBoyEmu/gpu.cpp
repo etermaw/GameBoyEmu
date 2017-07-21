@@ -414,18 +414,19 @@ void Gpu::draw_background_row_cgb()
 
 	const u8* tile_data[2] = { &vram[0][data_offset], &vram[1][data_offset] };
 
-	const u32 line_offset = (((line + sy) / 8) % 32) * 32;
-	u32 tile_line = (line + sy) % 8;
+	const u32 screen_line = (((line + sy) / 8) % 32) * 32; //which line in "screen" (tile is 8x8 pixels, that`s why we div by 8)
+	const u32 row_tile_line = (line + sy) % 8;
 
 	for (u32 i = 0; i < 160;)
 	{
 		//it should work as singed/unsigned u8
-		auto tile_num = (tile_nums[line_offset + (((sx + i) / 8) % 32)] + index_corrector) & 0xFF;
-		auto tile_atr = tile_atrs[line_offset + (((sx + i) / 8) % 32)];
+		auto tile_num = (tile_nums[screen_line + (((sx + i) / 8) % 32)] + index_corrector) & 0xFF;
+		auto tile_atr = tile_atrs[screen_line + (((sx + i) / 8) % 32)];
 
 		u8 palette_num = tile_atr & 0x7;
 		u8 data_bank = check_bit(tile_atr, 3);
 		bool priority = check_bit(tile_atr, 7);
+        auto tile_line = row_tile_line;        
 
 		if (check_bit(tile_atr, 6)) //Y flip
 			tile_line = 7 - tile_line;
@@ -470,7 +471,7 @@ void Gpu::draw_window_row_cgb()
 	const u8* tile_data[2] = { &vram[0][data_offset], &vram[1][data_offset] };
 	
 	const u32 window_line = line - wy;
-	u32 tile_line = window_line % 8;
+	const u32 row_tile_line = window_line % 8;
 	const u32 line_offset = (window_line / 8) * 32;
 
 	const u32 start_offset = -std::min(wx, 0);
@@ -483,6 +484,7 @@ void Gpu::draw_window_row_cgb()
 		u8 palette_num = tile_atr & 0x7;
 		u8 data_bank = check_bit(tile_atr, 3);
 		bool priority = check_bit(tile_atr, 7);
+        auto tile_line = row_tile_line;        
 
 		if (check_bit(tile_atr, 6)) //Y flip
 			tile_line = 7 - tile_line;
