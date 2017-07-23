@@ -71,6 +71,8 @@ struct SpeedSwitch : public IMemory
 
 int main(int argc, char *argv[])
 {
+	SDL_Init(SDL_INIT_VIDEO);
+
 	Interrupts ints;
 	Timer timer(ints);
 	MMU mmu;
