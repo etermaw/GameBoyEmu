@@ -375,7 +375,10 @@ u32 CPU::rrca(u8 opcode)
 u32 CPU::stop(u8 opcode)
 {
 	if (cgb_mode && check_bit(mmu.read_byte(0xFF4D, 0), 0))
+	{
 		mmu.write_byte(0xFF4D, 0xFF, 0xFFFFFFFF); //0xFF & 0xFFFFFFFF are secret key for speed switch
+		return 4;
+	}
 
 	else
 		return halt(opcode);

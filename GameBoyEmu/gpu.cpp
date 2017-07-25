@@ -698,7 +698,8 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 	else if (cgb_mode && adress == 0xFF6B)
 		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? cgb_obp[cgb_obp_index] : 0xFF;
 
-	//else ignore
+	else
+		return 0xFF;
 }
 
 void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)

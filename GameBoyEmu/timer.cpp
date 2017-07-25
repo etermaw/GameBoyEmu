@@ -56,6 +56,9 @@ u8 Timer::read_byte(u16 adress, u32 cycles_passed)
 
 	else if (adress == 0xFF07)
 		return change_bit(control, enabled, 2);
+
+	else
+		return 0xFF;
 }
 
 void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
