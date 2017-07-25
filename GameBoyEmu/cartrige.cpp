@@ -112,7 +112,7 @@ void Cartrige::load_ram()
 			auto cur_timestamp = std::chrono::duration_cast<std::chrono::seconds>(epoch);
 			auto delta = cur_timestamp.count() - saved_timestamp;
 
-			if (delta <= 0 || !check_bit(rtc_regs[4], 6))
+			if (delta <= 0 || check_bit(rtc_regs[4], 6))
 				return;
 
 			auto ns = rtc_regs[0] + delta;
