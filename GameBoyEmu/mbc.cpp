@@ -8,6 +8,9 @@ u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
 
 	else if (adress >= 0xA000 && adress < 0xC000)
 		return ram_enabled ? ram[adress - 0xA000] : 0xFF;
+
+	else
+		return 0xFF;
 }
 
 void NoMBC::write_byte(u16 adress, u8 value, u32 cycles_passed)
@@ -43,6 +46,9 @@ u8 MBC1::read_byte(u16 adress, u32 cycles_passed)
 
 	else if (adress >= 0xA000 && adress < 0xC000)
 		return (ram_enabled ? ram[adress - 0xA000 + (ram_bank * 0x2000)] : 0xFF);
+
+	else
+		return 0xFF;
 }
 
 void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
@@ -111,6 +117,9 @@ u8 MBC2::read_byte(u16 adress, u32 cycles_passed)
 
 	else if (adress >= 0xA000 && adress < 0xA200)
 		return (ram_enabled ? ram[adress - 0xA000] : 0xFF);
+
+	else
+		return 0xFF;
 }
 
 void MBC2::write_byte(u16 adress, u8 value, u32 cycles_passed)
@@ -242,6 +251,9 @@ u8 MBC5::read_byte(u16 adress, u32 cycles_passed)
 
 	else if (adress >= 0xA000 && adress < 0xC000)
 		return (ram_enabled ? ram[adress - 0xA000 + (ram_bank * 0x2000)] : 0xFF);
+
+	else
+		return 0xFF;
 }
 
 void MBC5::write_byte(u16 adress, u8 value, u32 cycles_passed)
