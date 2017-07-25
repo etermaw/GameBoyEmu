@@ -9,7 +9,7 @@ all: release
 release: CXXFLAGS += -O3 -march=native -flto
 release: executable
 
-debug: CXXFLAGS += -Wall -Wextra -g
+debug: CXXFLAGS += -Wall -Wextra -pedantic -g
 debug: executable
 
 executable: $(OBJ)
