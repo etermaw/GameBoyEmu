@@ -17,3 +17,6 @@ executable: $(OBJ)
 
 $(OBJ): %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+clean:
+	rm $(OBJ)
