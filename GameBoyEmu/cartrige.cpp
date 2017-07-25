@@ -44,7 +44,7 @@ Cartrige::~Cartrige()
 		ram_file.write(reinterpret_cast<char*>(ram.get()), ram_size);
 	}
 
-	if (in_range(header->rom_version, 0x0F, 0x10))
+	if (in_range(header->cartrige_type, 0x0F, 0x10))
 	{
 		std::ofstream rtc_file(file_name + "_rtc", std::ios::trunc);
 
@@ -100,7 +100,7 @@ void Cartrige::load_ram()
 
 	if (in_range(header->cartrige_type, 0x0F, 0x10))
 	{
-		std::ifstream rtc_file(file_name + "_rtc");
+		std::ifstream rtc_file(file_name + "_rtc", std::ios::binary);
 
 		if (rtc_file.is_open())
 		{
