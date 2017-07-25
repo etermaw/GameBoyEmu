@@ -42,7 +42,7 @@ u32 cgb_to_rgb(u16 cgb)
 Gpu::Gpu(Interrupts& ints) : 
 	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), 
 	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false), new_dma_cycles(0),
-	double_speed(false)
+	double_speed(false), unlocked_vram(true), unlocked_oam(true)
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -84,6 +84,7 @@ void Gpu::vb_mode()
 		}
 
 		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
+		unlocked_oam = false;
 
 		if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
 			interrupts.raise(INT_LCD);
@@ -101,7 +102,10 @@ void Gpu::hb_mode()
 	}
 
 	if (regs[IO_LY] != 144)
+	{
 		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
+		unlocked_oam = false;
+	}
 
 	else
 	{
@@ -118,6 +122,7 @@ void Gpu::hb_mode()
 void Gpu::oam_mode()
 {
 	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //go to mode 3
+	unlocked_vram = false;
 }
 
 void Gpu::transfer_mode()
@@ -128,6 +133,8 @@ void Gpu::transfer_mode()
 		interrupts.raise(INT_LCD);
 
 	regs[IO_LCD_STATUS] &= 0xFC; //go to mode 0
+	unlocked_oam = true;
+	unlocked_vram = true;
 
 	if (hdma_active)
 		launch_hdma();
@@ -629,6 +636,8 @@ void Gpu::turn_off_lcd()
 	regs[IO_LY] = 0;
 	regs[IO_LYC] = 0;
 	regs[IO_LCD_STATUS] &= 0xFC; //mode 0
+	unlocked_oam = true;
+	unlocked_vram = true;
 	cycles = 0;
 
 	entering_vblank = true;
@@ -668,11 +677,11 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 
 	//if gpu is in mode 3 ignore read (return 0xFF instead)
 	if (adress >= 0x8000 && adress < 0xA000)
-		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? vram[vram_bank][adress - 0x8000] : 0xFF;
+		return unlocked_vram ? vram[vram_bank][adress - 0x8000] : 0xFF;
 
 	//if gpu is in mode 2,3 or during oam dma, ignore read
 	else if (adress >= 0xFE00 && adress < 0xFEA0)
-		return ((regs[IO_LCD_STATUS] & 0x3) < 0x2 && dma_cycles <= 0) ? oam[adress - 0xFE00] : 0xFF;
+		return (unlocked_oam && dma_cycles <= 0) ? oam[adress - 0xFE00] : 0xFF;
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
 		return regs[adress - 0xFF40];
@@ -690,13 +699,13 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 		return change_bit(cgb_bgp_index, cgb_bgp_autoinc, 7);
 
 	else if (cgb_mode && adress == 0xFF69)
-		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? cgb_bgp[cgb_bgp_index] : 0xFF;
+		return unlocked_vram ? cgb_bgp[cgb_bgp_index] : 0xFF;
 
 	else if (cgb_mode && adress == 0xFF6A)
 		return change_bit(cgb_obp_index, cgb_obp_autoinc, 7);
 
 	else if (cgb_mode && adress == 0xFF6B)
-		return ((regs[IO_LCD_STATUS] & 0x3) != 0x3) ? cgb_obp[cgb_obp_index] : 0xFF;
+		return unlocked_vram ? cgb_obp[cgb_obp_index] : 0xFF;
 
 	else
 		return 0xFF;
@@ -714,11 +723,11 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	}
 
 	//if gpu is in mode 3 ignore write
-	if (adress >= 0x8000 && adress < 0xA000 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
+	if (adress >= 0x8000 && adress < 0xA000 && unlocked_vram)
 		vram[vram_bank][adress - 0x8000] = value;
 
 	//if gpu is in mode 2,3 or during oam dma, ignore write
-	else if (adress >= 0xFE00 && adress < 0xFEA0 && ((regs[IO_LCD_STATUS] & 0x3) < 0x2) && dma_cycles <= 0)
+	else if (adress >= 0xFE00 && adress < 0xFEA0 && unlocked_oam && dma_cycles <= 0)
 		oam[adress - 0xFE00] = value;
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
@@ -783,7 +792,7 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		cgb_bgp_autoinc = check_bit(value, 7);
 	}
 
-	else if (cgb_mode && adress == 0xFF69 && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
+	else if (cgb_mode && adress == 0xFF69 && unlocked_vram)
 	{
 		cgb_bgp[cgb_bgp_index] = value;
 		
@@ -807,7 +816,7 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		cgb_obp_autoinc = check_bit(value, 7);
 	}
 
-	else if (cgb_mode && adress == 0xFF6B && ((regs[IO_LCD_STATUS] & 0x3) != 0x3))
+	else if (cgb_mode && adress == 0xFF6B && unlocked_vram)
 	{
 		cgb_obp[cgb_obp_index] = value;
 		
@@ -864,6 +873,7 @@ void Gpu::serialize(std::ostream& stream)
 	stream << hdma_cur << new_dma_cycles << cgb_bgp_index << cgb_obp_index;
 	stream << vram_bank << entering_vblank << cgb_mode << cgb_bgp_autoinc;
 	stream << cgb_obp_autoinc << hdma_active << double_speed;
+	stream << unlocked_vram << unlocked_oam;
 }
 
 void Gpu::deserialize(std::istream& stream)
@@ -883,4 +893,5 @@ void Gpu::deserialize(std::istream& stream)
 	stream >> hdma_cur >> new_dma_cycles >> cgb_bgp_index >> cgb_obp_index;
 	stream >> vram_bank >> entering_vblank >> cgb_mode >> cgb_bgp_autoinc;
 	stream >> cgb_obp_autoinc >> hdma_active >> double_speed;
+	stream >> unlocked_vram >> unlocked_oam;
 }

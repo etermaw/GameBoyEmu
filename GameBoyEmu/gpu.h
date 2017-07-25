@@ -42,6 +42,8 @@ class Gpu final : public IMemory
 		bool cgb_obp_autoinc;
 		bool hdma_active;
 		bool double_speed;
+		bool unlocked_vram;
+		bool unlocked_oam;
 
 		void vb_mode();
 		void hb_mode();
