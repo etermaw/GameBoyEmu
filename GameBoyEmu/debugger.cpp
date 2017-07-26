@@ -238,10 +238,10 @@ void Debugger::dump_registers()
 
 void Debugger::dump_memory_region(u16 start, u16 end)
 {
-	u32 in_row = start % 16;
-
 	if (end < start)
 		std::swap(start, end);
+
+	u32 in_row = start % 16;
 
 	printf("\t");
 
