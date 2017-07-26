@@ -161,6 +161,7 @@
     <ClCompile Include="mmu.cpp" />
     <ClCompile Include="noise_synth.cpp" />
     <ClCompile Include="ram.cpp" />
+    <ClCompile Include="serial.cpp" />
     <ClCompile Include="square_synth.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="wave_synth.cpp" />
@@ -181,6 +182,7 @@
     <ClInclude Include="mmu.h" />
     <ClInclude Include="noise_synth.h" />
     <ClInclude Include="ram.h" />
+    <ClInclude Include="serial.h" />
     <ClInclude Include="square_synth.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="timer.h" />
