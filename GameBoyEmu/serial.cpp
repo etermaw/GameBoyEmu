@@ -63,3 +63,13 @@ void Serial::step(u32 cycles_passed)
 		}
 	}
 }
+
+void Serial::enable_cgb_mode(bool mode)
+{
+	cgb_mode = mode;
+}
+
+void Serial::attach_callback(function<std::pair<u8, u32>(std::pair<u8, u32>)> callback)
+{
+	send_receive_byte = callback;
+}

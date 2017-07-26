@@ -12,7 +12,7 @@ class Serial : public IMemory
 
 		Interrupts& int_handler;
 		SERIAL_STATE state;
-		u32 transfer_cycles;
+		i32 transfer_cycles;
 		u8 reg, ctrl;
 		bool transfer_enabled;
 		bool cgb_mode;
@@ -24,4 +24,7 @@ class Serial : public IMemory
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
 
 		void step(u32 cycles_passed);
+		void enable_cgb_mode(bool mode);
+
+		void attach_callback(function<std::pair<u8, u32>(std::pair<u8, u32>)> callback);
 };
