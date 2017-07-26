@@ -19,7 +19,7 @@ class function<R(Args...)>
 	public:
 		function(void* object = 0, fun_type function = 0) : obj_ptr(object), fun_ptr(function) {}
 
-		R operator() (Args&&... args) const
+		R operator() (Args... args) const
 		{
 			return (*fun_ptr)(obj_ptr, std::forward<Args>(args)...);
 		}
