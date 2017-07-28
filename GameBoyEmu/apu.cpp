@@ -7,12 +7,15 @@ void APU::step_ahead(u32 cycles)
 	if (!enabled)
 		return;
 
-	sequencer_cycles += cycles;
+	u32 new_cycles = sequencer_cycles + cycles;
 
-	if (sequencer_cycles >= 8192)
+	if (new_cycles >= 8192)
 	{
-		sequencer_cycles -= 8192;
-		
+		channel_1.step(8192 - sequencer_cycles);
+		channel_2.step(8192 - sequencer_cycles);
+		channel_3.step(8192 - sequencer_cycles);
+		channel_4.step(8192 - sequencer_cycles);
+
 		if (sequencer_frame % 2 == 0)
 		{
 			channel_1.update_length();
@@ -32,7 +35,10 @@ void APU::step_ahead(u32 cycles)
 		}
 
 		sequencer_frame = (sequencer_frame + 1) % 8;
+		cycles = new_cycles % 8192;
 	}
+
+	sequencer_cycles = new_cycles % 8192;
 
 	channel_1.step(cycles);
 	channel_2.step(cycles);
