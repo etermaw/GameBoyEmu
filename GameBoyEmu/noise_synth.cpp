@@ -80,8 +80,7 @@ void NoiseSynth::step(u32 cycles)
 {
 	const u32 timer_value = divisor[current_divisor] << clock_shift;
 
-	//TODO: what if in the middle something changes (length, envelope)?
-	while (cycles > timer)
+	while (cycles >= timer)
 	{
 		cycles -= timer;
 		timer = timer_value;

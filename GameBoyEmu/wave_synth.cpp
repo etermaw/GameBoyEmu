@@ -44,7 +44,7 @@ void WaveSynth::update_length()
 
 void WaveSynth::step(u32 cycles)
 {
-	while (cycles > timer)
+	while (cycles >= timer)
 	{
 		cycles -= timer;
 		timer = (2048 - ((freq_high << 8) | freq_low)) * 2;

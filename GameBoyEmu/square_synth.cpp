@@ -125,7 +125,7 @@ void SquareSynth::step(u32 cycles)
 {
 	static const u8 duty_lut[] = { 0x01, 0x81, 0x87, 0x7E };
 
-	while (cycles > timer)
+	while (cycles >= timer)
 	{
 		cycles -= timer;
 
