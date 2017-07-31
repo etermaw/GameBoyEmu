@@ -11,10 +11,12 @@ void APU::step_ahead(u32 cycles)
 
 	if (new_cycles >= 8192)
 	{
-		channel_1.step(8192 - sequencer_cycles);
-		channel_2.step(8192 - sequencer_cycles);
-		channel_3.step(8192 - sequencer_cycles);
-		channel_4.step(8192 - sequencer_cycles);
+		const u32 cycles_before = (8192 - sequencer_cycles) / 2;
+
+		channel_1.step(cycles_before);
+		channel_2.step(cycles_before);
+		channel_3.step(cycles_before);
+		channel_4.step(cycles_before);
 
 		if (sequencer_frame % 2 == 0)
 		{
@@ -40,10 +42,10 @@ void APU::step_ahead(u32 cycles)
 
 	sequencer_cycles = new_cycles % 8192;
 
-	channel_1.step(cycles);
-	channel_2.step(cycles);
-	channel_3.step(cycles);
-	channel_4.step(cycles);
+	channel_1.step(cycles / 2);
+	channel_2.step(cycles / 2);
+	channel_3.step(cycles / 2);
+	channel_4.step(cycles / 2);
 
 	//every ~96 cycles take one sample into final buffer (downsampling)
 }

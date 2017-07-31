@@ -183,7 +183,7 @@ void Gpu::launch_dma(u8 adress)
 	const u8* src_ptr = resolve_adress(adress * 0x100);
 	
 	std::memcpy(oam.get(), src_ptr, sizeof(u8) * 0xA0);
-	dma_cycles = 648; 
+	dma_cycles = 648;
 	//TODO: add memory bus conficts if cpu don`t operate on HRAM during oam dma?
 	//cpu should read last word read by dma (require messing with MMU)
 }

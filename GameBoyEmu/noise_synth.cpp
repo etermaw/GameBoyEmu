@@ -1,6 +1,6 @@
 #include "noise_synth.h"
 
-static const u32 divisor[] = { 8,16,32,48,64,80,96,112 };
+static const u32 divisor[] = { 4,8,16,24,32,40,48,56 };
 
 void NoiseSynth::start_playing()
 {

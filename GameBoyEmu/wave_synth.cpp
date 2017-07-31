@@ -47,7 +47,7 @@ void WaveSynth::step(u32 cycles)
 	while (cycles >= timer)
 	{
 		cycles -= timer;
-		timer = (2048 - ((freq_high << 8) | freq_low)) * 2;
+		timer = (2048 - ((freq_high << 8) | freq_low));
 		buffer_pos = (buffer_pos + 1) % 32;
 
 		if (enabled && dac_enabled && output_level > 0)

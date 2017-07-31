@@ -129,7 +129,7 @@ void SquareSynth::step(u32 cycles)
 	{
 		cycles -= timer;
 
-		timer = (2048 - freq) * 4;
+		timer = (2048 - freq) * 2;
 		duty_pos = (duty_pos + 1) % 8;
 
 		out_vol = enabled && dac_enabled && check_bit(duty_lut[duty], duty_pos) ? volume : 0;
