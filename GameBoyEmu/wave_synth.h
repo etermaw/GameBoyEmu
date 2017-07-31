@@ -4,8 +4,10 @@
 class WaveSynth
 {
 	private:
+		std::unique_ptr<u8[]> sample_buffer;
+
+		u32 pos;
 		u32 length_counter;
-		//u32 sound_length;
 		u32 timer;
 		u32 buffer_pos;
 		u16 wave_ram[16];
@@ -21,12 +23,7 @@ class WaveSynth
 		void start_playing();
 
 	public:
-		WaveSynth() 
-		{
-			static const u8 init_wave_ram[] = { 0x84,0x40,0x43,0xAA,0x2D,0x78,0x92,0x3C,0x60,0x59,0x59,0xB0,0x34,0xB8,0x2E,0xDA };
-			std::memcpy(wave_ram, init_wave_ram, sizeof(u8) * 16);
-			reset();
-		}
+		WaveSynth();
 
 		bool is_enabled() const;
 		void reset();

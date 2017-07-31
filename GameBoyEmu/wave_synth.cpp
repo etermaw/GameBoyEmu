@@ -2,13 +2,22 @@
 
 void WaveSynth::start_playing()
 {
-	timer = (2048 - ((freq_high << 8) | freq_low)) * 2;
+	timer = (2048 - ((freq_high << 8) | freq_low));
 	buffer_pos = 0;
 
 	if (length_counter == 0)
 		length_counter = 256;
 
 	enabled = true;
+}
+
+WaveSynth::WaveSynth()
+{
+	static const u8 init_wave_ram[] = { 0x84,0x40,0x43,0xAA,0x2D,0x78,0x92,0x3C,0x60,0x59,0x59,0xB0,0x34,0xB8,0x2E,0xDA };
+	std::memcpy(wave_ram, init_wave_ram, sizeof(u8) * 16);
+	sample_buffer = std::make_unique<u8[]>(2 * 1024 * 1024);
+
+	reset();
 }
 
 bool WaveSynth::is_enabled() const
@@ -18,6 +27,7 @@ bool WaveSynth::is_enabled() const
 
 void WaveSynth::reset()
 {
+	pos = 0;
 	length_counter = 0;
 	timer = 0;
 	buffer_pos = 0;
@@ -46,6 +56,8 @@ void WaveSynth::step(u32 cycles)
 {
 	while (cycles >= timer)
 	{
+		u32 cycles_spend = timer;
+
 		cycles -= timer;
 		timer = (2048 - ((freq_high << 8) | freq_low));
 		buffer_pos = (buffer_pos + 1) % 32;
@@ -60,9 +72,14 @@ void WaveSynth::step(u32 cycles)
 
 		else
 			out_volume = 0;
+
+		std::memset(&sample_buffer[pos], out_volume, sizeof(u8) * cycles_spend);
+		pos += cycles_spend;
 	}
 
 	timer -= cycles;
+	std::memset(&sample_buffer[pos], out_volume, sizeof(u8) * cycles);
+	pos += cycles;
 }
 
 u8 WaveSynth::read_reg(u16 reg_num)

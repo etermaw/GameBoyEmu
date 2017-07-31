@@ -16,6 +16,12 @@ void NoiseSynth::start_playing()
 	enabled = true;
 }
 
+NoiseSynth::NoiseSynth()
+{
+	sample_buffer = std::make_unique<u8[]>(2 * 1024 * 1024);
+	reset();
+}
+
 bool NoiseSynth::is_enabled() const
 {
 	return enabled && dac_enabled;
@@ -23,6 +29,7 @@ bool NoiseSynth::is_enabled() const
 
 void NoiseSynth::reset()
 {
+	pos = 0;
 	length_counter = 0;
 	envelope_counter = 0;
 	envelope_load = 0;
@@ -82,6 +89,8 @@ void NoiseSynth::step(u32 cycles)
 
 	while (cycles >= timer)
 	{
+		u32 cycles_spend = timer;
+
 		cycles -= timer;
 		timer = timer_value;
 
@@ -92,9 +101,13 @@ void NoiseSynth::step(u32 cycles)
 			lfsr = change_bit(lfsr, tmp, 6);
 
 		out_vol = enabled && dac_enabled && !check_bit(lfsr, 0) ? volume : 0;
+		std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles_spend);
+		pos += cycles_spend;
 	}
 
 	timer -= cycles;
+	std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles);
+	pos += cycles;
 }
 
 u8 NoiseSynth::read_reg(u16 reg_num)

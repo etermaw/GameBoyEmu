@@ -18,7 +18,7 @@ void SquareSynth::start_playing()
 	if (length_counter == 0)
 		length_counter = 64;
 
-	timer = (2048 - freq) * 4;
+	timer = (2048 - freq) * 2;
 	envelope_enabled = true;
 	envelope_counter = start_envelope;
 	volume = volume_load;
@@ -34,6 +34,12 @@ void SquareSynth::start_playing()
 		calculate_freq();
 }
 
+SquareSynth::SquareSynth()
+{
+	sample_buffer = std::make_unique<u8[]>(2 * 1024 * 1024);
+	reset();
+}
+
 bool SquareSynth::is_enabled() const
 {
 	return enabled && dac_enabled;
@@ -41,6 +47,7 @@ bool SquareSynth::is_enabled() const
 
 void SquareSynth::reset()
 {
+	pos = 0;
 	length_counter = 0;
 	timer = 0;
 	duty_pos = 0;
@@ -127,15 +134,20 @@ void SquareSynth::step(u32 cycles)
 
 	while (cycles >= timer)
 	{
-		cycles -= timer;
+		u32 cycles_spend = timer;
 
+		cycles -= timer;
 		timer = (2048 - freq) * 2;
 		duty_pos = (duty_pos + 1) % 8;
 
 		out_vol = enabled && dac_enabled && check_bit(duty_lut[duty], duty_pos) ? volume : 0;
+		std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles_spend);
+		pos += cycles_spend;
 	}
 
 	timer -= cycles;
+	std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles);
+	pos += cycles;
 }
 
 u8 SquareSynth::read_reg(u16 reg_num)
