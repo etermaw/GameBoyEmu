@@ -137,9 +137,7 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFF01, 0xFF02, &tr); //TEST READER!!!!
 	mmu.register_chunk(0xFF04, 0xFF07, &timer);//timer controls
 	mmu.register_chunk(0xFF0F, 0xFF0F, &ints);//interrupts flags
-
 	mmu.register_chunk(0xFF10, 0xFF3F, &apu); //APU registers + wave RAM 
-
 	mmu.register_chunk(0xFF40, 0xFF4B, &gpu); //gpu control regs
 	mmu.register_chunk(0xFF4D, 0xFF4D, &speed); //CPU speed switch (CGB)
 	mmu.register_chunk(0xFF4F, 0xFF4F, &gpu); //gpu vram bank reg (CGB)
@@ -150,6 +148,7 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
 	gpu.attach_dma_ptrs(cart.get_dma_controller(), &ram);
+	//apu.attach_sample_sink(audio_postprocess_function);
 
 	bool enable_cgb = cart.is_cgb_ready();
 	cpu.enable_cgb_mode(enable_cgb);
@@ -184,7 +183,6 @@ int main(int argc, char *argv[])
 				spin = false;
 		}
 
-		//auto start = std::chrono::high_resolution_clock::now();
 		while (!gpu.is_entering_vblank()) //TODO: if someone turn off lcd, this loop may spin forever
 		{
 			u32 sync_cycles = 0;
@@ -205,7 +203,9 @@ int main(int argc, char *argv[])
 			timer.step(sync_cycles);
 
 			gpu.set_speed(speed.double_speed);
-			apu.set_speed(speed.double_speed); 	
+			apu.set_speed(speed.double_speed);
+
+			//audio_sync_callback();
 		}
 
 		auto ptr = gpu.get_frame_buffer();
@@ -222,12 +222,6 @@ int main(int argc, char *argv[])
 
 		gpu.clear_frame_buffer();
 		debugger.after_vblank();
-
-		//auto end = std::chrono::high_resolution_clock::now();
-		//auto dur = (end - start).count();
-
-		/*if ((dur / 1000000) < 16)
-			SDL_Delay(16 - (dur / 1000000));*/
 	}
 
 	SDL_DestroyTexture(tex);
