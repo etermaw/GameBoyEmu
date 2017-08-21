@@ -15,7 +15,6 @@ class Ram final : public IMemory, public IDmaMemory
 	public:
 		Ram() : memory(std::make_unique<u8[]>(0x8000)), bank_num(1), cgb_mode(false) {}
 
-		const u8* get() const { return memory.get(); }
 		void enable_cgb_mode(bool enable_cgb) { cgb_mode = enable_cgb; }
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;

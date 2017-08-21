@@ -90,7 +90,7 @@ void Serial::serialize(std::ostream& stream)
 	stream << transfer_enabled << cgb_mode << double_speed;
 }
 
-void Serial::deserialize(std::istream & stream)
+void Serial::deserialize(std::istream& stream)
 {
 	i32 tmp_state;
 
