@@ -18,5 +18,9 @@ executable: $(OBJ)
 $(OBJ): %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
+.PHONY: clean
+
 clean:
 	rm $(OBJ)
+
+
