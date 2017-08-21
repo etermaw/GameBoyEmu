@@ -28,9 +28,9 @@ bool Debugger::is_breakpoint()
 
 void Debugger::enter_trap()
 {
-	u8 opcode = read_byte_callback(*pc + 0, 0),
-		b1 = read_byte_callback(*pc + 1, 0),
-		b2 = read_byte_callback(*pc + 2, 0);
+	u8 opcode = read_byte_callback(*pc, 0),
+	   b1 = read_byte_callback(*pc + 1, 0),
+	   b2 = read_byte_callback(*pc + 2, 0);
 
 	char buffer[32];
 	const char* op = dispatch_opcode(opcode, b1, b2);
@@ -41,7 +41,7 @@ void Debugger::enter_trap()
 	if (memory_changed)
 	{
 		memory_changed = false;
-		printf("MEMORY WATCH: memory on adress 0x%04x changed value to 0x%02x\n", change_adress, new_val);
+		printf("MEMORY WATCH: CPU wrote 0x%02x on adress 0x%04x\n", change_adress, new_val);
 	}
 
 	printf("0x%04x: %s\n", *pc, buffer);
@@ -259,7 +259,7 @@ void Debugger::dump_memory_region(u16 start, u16 end)
 		if (in_row == 0)
 			printf("\n0x%04x: ", i & 0xFFF0);
 
-		printf("%02x ", read_byte_callback(i + 0, 0));
+		printf("%02x ", read_byte_callback(i, 0));
 
 		in_row = (in_row + 1) % 16;
 	}
