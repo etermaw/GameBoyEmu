@@ -36,7 +36,6 @@ void SquareSynth::start_playing()
 
 SquareSynth::SquareSynth()
 {
-	sample_buffer = std::make_unique<u8[]>(2 * 1024 * 1024);
 	reset();
 }
 
@@ -141,13 +140,13 @@ void SquareSynth::step(u32 cycles)
 		duty_pos = (duty_pos + 1) % 8;
 
 		out_vol = enabled && dac_enabled && check_bit(duty_lut[duty], duty_pos) ? volume : 0;
-		std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles_spend);
-		pos += cycles_spend;
+		//std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles_spend);
+		//pos += cycles_spend;
 	}
 
 	timer -= cycles;
-	std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles);
-	pos += cycles;
+	//std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles);
+	//pos += cycles;
 }
 
 u8 SquareSynth::read_reg(u16 reg_num)

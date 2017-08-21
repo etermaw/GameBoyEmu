@@ -4,9 +4,9 @@
 class WaveSynth
 {
 	private:
-		std::unique_ptr<u8[]> sample_buffer;
-
+		u8* sample_buffer;
 		u32 pos;
+
 		u32 length_counter;
 		u32 timer;
 		u32 buffer_pos;
