@@ -4,9 +4,6 @@
 class WaveSynth
 {
 	private:
-		u8* sample_buffer;
-		u32 pos;
-
 		u32 length_counter;
 		u32 timer;
 		u32 buffer_pos;
@@ -29,7 +26,7 @@ class WaveSynth
 		void reset();
 
 		void update_length();
-		void step(u32 cycles);
+		void step(u32 cycles, u8* sample_buffer = nullptr);
 
 		u8 read_reg(u16 reg_num);
 		void write_reg(u16 reg_num, u8 value);

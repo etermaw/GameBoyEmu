@@ -26,7 +26,6 @@ bool WaveSynth::is_enabled() const
 
 void WaveSynth::reset()
 {
-	pos = 0;
 	length_counter = 0;
 	timer = 0;
 	buffer_pos = 0;
@@ -51,7 +50,7 @@ void WaveSynth::update_length()
 	}
 }
 
-void WaveSynth::step(u32 cycles)
+void WaveSynth::step(u32 cycles, u8* sample_buffer)
 {
 	while (cycles >= timer)
 	{

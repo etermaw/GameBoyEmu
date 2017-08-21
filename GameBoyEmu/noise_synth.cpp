@@ -28,7 +28,6 @@ bool NoiseSynth::is_enabled() const
 
 void NoiseSynth::reset()
 {
-	pos = 0;
 	length_counter = 0;
 	envelope_counter = 0;
 	envelope_load = 0;
@@ -82,7 +81,7 @@ void NoiseSynth::update_envelope()
 	}
 }
 
-void NoiseSynth::step(u32 cycles)
+void NoiseSynth::step(u32 cycles, u8* sample_buffer)
 {
 	const u32 timer_value = divisor[current_divisor] << clock_shift;
 

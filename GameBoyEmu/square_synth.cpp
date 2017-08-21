@@ -46,7 +46,6 @@ bool SquareSynth::is_enabled() const
 
 void SquareSynth::reset()
 {
-	pos = 0;
 	length_counter = 0;
 	timer = 0;
 	duty_pos = 0;
@@ -127,7 +126,7 @@ void SquareSynth::update_envelope()
 	}
 }
 
-void SquareSynth::step(u32 cycles)
+void SquareSynth::step(u32 cycles, u8* sample_buffer)
 {
 	static const u8 duty_lut[] = { 0x01, 0x81, 0x87, 0x7E };
 
