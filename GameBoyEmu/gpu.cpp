@@ -42,6 +42,7 @@ u32 cgb_to_rgb(u16 cgb)
 Gpu::Gpu(Interrupts& ints) : 
 	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), 
 	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false), new_dma_cycles(0),
+	hdma_cur(0), hdma_active(false),
 	double_speed(false), unlocked_vram(true), unlocked_oam(true)
 {
 	regs[IO_LCD_CONTROL] = 0x91;
