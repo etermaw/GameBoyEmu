@@ -66,6 +66,9 @@
     <ClCompile Include="serial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="audio_postprocess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="definitions.h">
@@ -126,6 +129,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="serial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="audio_postprocess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

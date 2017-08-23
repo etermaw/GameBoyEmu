@@ -149,6 +149,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="apu.cpp" />
+    <ClCompile Include="audio_postprocess.cpp" />
     <ClCompile Include="cartrige.cpp" />
     <ClCompile Include="cpu.cpp" />
     <ClCompile Include="debugger.cpp" />
@@ -168,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="apu.h" />
+    <ClInclude Include="audio_postprocess.h" />
     <ClInclude Include="bit_ops.h" />
     <ClInclude Include="cartrige.h" />
     <ClInclude Include="cpu.h" />

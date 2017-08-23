@@ -1,11 +1,16 @@
 #include "apu.h"
 
-APU::APU() : cycles_ahead(0) {}
+constexpr u32 SAMPLE_COUNT_TRIGGER = 512 * 48;
+
+APU::APU() : cycles_ahead(0),cur_pos(0),sample_buffers(nullptr) {}
 
 void APU::step_ahead(u32 cycles)
 {
 	if (!enabled)
 		return;
+
+	//TODO: reorganize channels updates 
+	//(ch1,2,3,4; ch1,2,3,4 -> ch1,ch1,ch1; ch2,ch2,ch2...) 
 
 	u32 new_cycles = sequencer_cycles + cycles;
 
@@ -13,10 +18,11 @@ void APU::step_ahead(u32 cycles)
 	{
 		const u32 cycles_before = (8192 - sequencer_cycles) / 2;
 
-		channel_1.step(cycles_before);
-		channel_2.step(cycles_before);
-		channel_3.step(cycles_before);
-		channel_4.step(cycles_before);
+		channel_1.step(cycles_before, sample_buffers[0] + cur_pos);
+		channel_2.step(cycles_before, sample_buffers[1] + cur_pos);
+		channel_3.step(cycles_before, sample_buffers[2] + cur_pos);
+		channel_4.step(cycles_before, sample_buffers[3] + cur_pos);
+		cur_pos += cycles_before;
 
 		if (sequencer_frame % 2 == 0)
 		{
@@ -42,12 +48,17 @@ void APU::step_ahead(u32 cycles)
 
 	sequencer_cycles = new_cycles % 8192;
 
-	channel_1.step(cycles / 2);
-	channel_2.step(cycles / 2);
-	channel_3.step(cycles / 2);
-	channel_4.step(cycles / 2);
+	channel_1.step(cycles / 2, sample_buffers[0] + cur_pos);
+	channel_2.step(cycles / 2, sample_buffers[1] + cur_pos);
+	channel_3.step(cycles / 2, sample_buffers[2] + cur_pos);
+	channel_4.step(cycles / 2, sample_buffers[3] + cur_pos);
+	cur_pos += cycles / 2;
 
-	//every ~96 cycles take one sample into final buffer (downsampling)
+	if (cur_pos >= SAMPLE_COUNT_TRIGGER)
+	{
+		sample_buffers = swap_buffers_callback(sample_buffers, cur_pos);
+		cur_pos = 0;
+	}
 }
 
 u8 APU::read_byte(u16 adress, u32 cycles_passed)
@@ -137,6 +148,8 @@ void APU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			sequencer_frame = 0;
 			sequencer_cycles = 0;
 		}
+
+		enable_audio_callback(enabled); //true - on, false - off
 	}
 
 	else if (adress >= 0xFF30 && adress <= 0xFF3F)

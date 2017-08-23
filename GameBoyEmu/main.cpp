@@ -9,6 +9,7 @@
 #include "joypad.h"
 #include "apu.h"
 #include "debugger.h"
+#include "audio_postprocess.h"
 
 struct TestReader final : public IMemory
 {
@@ -80,7 +81,7 @@ struct SpeedSwitch : public IMemory
 
 int main(int argc, char *argv[])
 {
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
 	Interrupts ints;
 	Timer timer(ints);
@@ -93,6 +94,8 @@ int main(int argc, char *argv[])
 	Gpu gpu(ints);
 	APU apu;
 	SpeedSwitch speed;
+
+	Audio audio_post;
 
 	Debugger debugger;
 	debugger.attach_mmu(make_function(&MMU::read_byte, &mmu), make_function(&MMU::write_byte, &mmu));
@@ -111,6 +114,8 @@ int main(int argc, char *argv[])
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, 0);
 	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
 	SDL_Event ev;
+
+	apu.test_attach(make_function(&Audio::swap_buffers, &audio_post), make_function(&Audio::dummy, &audio_post), audio_post.get_buffers());
 
 	std::string file_name;
 

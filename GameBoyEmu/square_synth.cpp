@@ -129,6 +129,7 @@ void SquareSynth::update_envelope()
 void SquareSynth::step(u32 cycles, u8* sample_buffer)
 {
 	static const u8 duty_lut[] = { 0x01, 0x81, 0x87, 0x7E };
+	u32 pos = 0;
 
 	while (cycles >= timer)
 	{
@@ -139,13 +140,12 @@ void SquareSynth::step(u32 cycles, u8* sample_buffer)
 		duty_pos = (duty_pos + 1) % 8;
 
 		out_vol = enabled && dac_enabled && check_bit(duty_lut[duty], duty_pos) ? volume : 0;
-		//std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles_spend);
-		//pos += cycles_spend;
+		std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles_spend);
+		pos += cycles_spend;
 	}
 
 	timer -= cycles;
-	//std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles);
-	//pos += cycles;
+	std::memset(&sample_buffer[pos], out_vol, sizeof(u8) * cycles);
 }
 
 u8 SquareSynth::read_reg(u16 reg_num)

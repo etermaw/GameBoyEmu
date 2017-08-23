@@ -52,6 +52,8 @@ void WaveSynth::update_length()
 
 void WaveSynth::step(u32 cycles, u8* sample_buffer)
 {
+	u32 pos = 0;
+
 	while (cycles >= timer)
 	{
 		u32 cycles_spend = timer;
@@ -71,13 +73,12 @@ void WaveSynth::step(u32 cycles, u8* sample_buffer)
 		else
 			out_volume = 0;
 
-		//std::memset(&sample_buffer[pos], out_volume, sizeof(u8) * cycles_spend);
-		//pos += cycles_spend;
+		std::memset(&sample_buffer[pos], out_volume, sizeof(u8) * cycles_spend);
+		pos += cycles_spend;
 	}
 
 	timer -= cycles;
-	//std::memset(&sample_buffer[pos], out_volume, sizeof(u8) * cycles);
-	//pos += cycles;
+	std::memset(&sample_buffer[pos], out_volume, sizeof(u8) * cycles);
 }
 
 u8 WaveSynth::read_reg(u16 reg_num)
