@@ -337,12 +337,13 @@ void Gpu::draw_sprite_row()
 
 		const u32 begin = std::max(0, sx);
 		const u32 end = std::min(sx + 8, 160);
+        const u32 sprite_end = sx + 8;
 
 		if (check_bit(atr, 7)) //BG has priority
 		{
 			for (u32 j = begin; j < end; ++j) 
 			{
-				u32 id = end - j - 1;
+				u32 id = sprite_end - j - 1;
 				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 				u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
 
@@ -355,7 +356,7 @@ void Gpu::draw_sprite_row()
 		{
 			for (u32 j = begin; j < end; ++j)
 			{
-				u32 id = end - j - 1;
+				u32 id = sprite_end - j - 1;
 				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 				u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
 
@@ -573,13 +574,14 @@ void Gpu::draw_sprite_row_cgb()
 
 		const u32 begin = std::max(0, sx);
 		const u32 end = std::min(sx + 8, 160);
+        const u32 sprite_end = sx + 8;
 
 		//if bit 7 == 1, then sprite will cover ONLY BG color 0
 		//else sprite will cover BG if: priority_buffer != 1 or BG color == 0
 
 		for (u32 j = begin; j < end; ++j)
 		{
-			u32 id = end - j - 1;
+			u32 id = sprite_end - j - 1;
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
 			u32 color = color_obp[palette_num][color_id];
 
