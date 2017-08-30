@@ -337,7 +337,7 @@ void Gpu::draw_sprite_row()
 
 		const u32 begin = std::max(0, sx);
 		const u32 end = std::min(sx + 8, 160);
-        const u32 sprite_end = sx + 8;
+		const u32 sprite_end = sx + 8;
 
 		if (check_bit(atr, 7)) //BG has priority
 		{
@@ -574,7 +574,7 @@ void Gpu::draw_sprite_row_cgb()
 
 		const u32 begin = std::max(0, sx);
 		const u32 end = std::min(sx + 8, 160);
-        const u32 sprite_end = sx + 8;
+		const u32 sprite_end = sx + 8;
 
 		//if bit 7 == 1, then sprite will cover ONLY BG color 0
 		//else sprite will cover BG if: priority_buffer != 1 or BG color == 0
