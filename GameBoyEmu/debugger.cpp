@@ -41,7 +41,7 @@ void Debugger::enter_trap()
 	if (memory_changed)
 	{
 		memory_changed = false;
-		printf("MEMORY WATCH: CPU wrote 0x%02x on adress 0x%04x\n", change_adress, new_val);
+		printf("MEMORY WATCH: CPU wrote 0x%02x to adress 0x%04x\n", new_val, change_adress);
 	}
 
 	printf("0x%04x: %s\n", *pc, buffer);
