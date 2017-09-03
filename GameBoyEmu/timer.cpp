@@ -77,7 +77,16 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		static const u8 fault_bits[] = { 9, 3, 5, 7 };
 
 		if (check_bit(counter_cycles, fault_bits[control]))
-			++counter;
+		{
+			if (counter == 0xFF)
+			{
+				interrupts.raise(INT_TIMER);
+				counter = mod;
+			}
+
+			else
+				++counter;			
+		}
 
 		divider = 0;
 		divider_cycles = 0;
