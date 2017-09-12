@@ -30,3 +30,15 @@ void Joypad::release_key(KEYS keycode)
 {
 	keys[keycode] = true;
 }
+
+void Joypad::serialize(std::ostream& stream)
+{
+	stream.write(reinterpret_cast<char*>(keys), sizeof(bool) * 8);
+	stream << dir_keys << sel_keys;
+}
+
+void Joypad::deserialize(std::istream& stream)
+{
+	stream.read(reinterpret_cast<char*>(keys), sizeof(bool) * 8);
+	stream >> dir_keys >> sel_keys;
+}
