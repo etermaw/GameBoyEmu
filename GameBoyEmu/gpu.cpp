@@ -106,6 +106,9 @@ void Gpu::hb_mode()
 	{
 		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
 		unlocked_oam = false;
+
+		if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
+			interrupts.raise(INT_LCD);
 	}
 
 	else
