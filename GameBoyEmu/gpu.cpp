@@ -864,12 +864,9 @@ u32 Gpu::step(u32 clock_cycles)
 
 void Gpu::serialize(std::ostream& stream)
 {
-	stream.write(reinterpret_cast<char*>(screen_buffer.get()), sizeof(u32) * 160 * 144);
 	stream.write(reinterpret_cast<char*>(vram[0].get()), sizeof(u8) * 0x2000);
 	stream.write(reinterpret_cast<char*>(vram[1].get()), sizeof(u8) * 0x2000);
 	stream.write(reinterpret_cast<char*>(oam.get()), sizeof(u8) * 0xA0);
-	stream.write(reinterpret_cast<char*>(color_bgp), sizeof(u32) * 8 * 4); //TODO: not sure is it correct
-	stream.write(reinterpret_cast<char*>(color_obp), sizeof(u32) * 8 * 4); //TODO: same here
 	stream.write(reinterpret_cast<char*>(cgb_bgp), sizeof(u8) * 64);
 	stream.write(reinterpret_cast<char*>(cgb_obp), sizeof(u8) * 64);
 	stream.write(reinterpret_cast<char*>(regs), sizeof(u8) * 12);
@@ -884,12 +881,9 @@ void Gpu::serialize(std::ostream& stream)
 
 void Gpu::deserialize(std::istream& stream)
 {
-	stream.read(reinterpret_cast<char*>(screen_buffer.get()), sizeof(u32) * 160 * 144);
 	stream.read(reinterpret_cast<char*>(vram[0].get()), sizeof(u8) * 0x2000);
 	stream.read(reinterpret_cast<char*>(vram[1].get()), sizeof(u8) * 0x2000);
 	stream.read(reinterpret_cast<char*>(oam.get()), sizeof(u8) * 0xA0);
-	stream.read(reinterpret_cast<char*>(color_bgp), sizeof(u32) * 8 * 4); //TODO: not sure is it correct
-	stream.read(reinterpret_cast<char*>(color_obp), sizeof(u32) * 8 * 4); //TODO: same here
 	stream.read(reinterpret_cast<char*>(cgb_bgp), sizeof(u8) * 64);
 	stream.read(reinterpret_cast<char*>(cgb_obp), sizeof(u8) * 64);
 	stream.read(reinterpret_cast<char*>(regs), sizeof(u8) * 12);
@@ -900,4 +894,11 @@ void Gpu::deserialize(std::istream& stream)
 	stream >> vram_bank >> entering_vblank >> cgb_mode >> cgb_bgp_autoinc;
 	stream >> cgb_obp_autoinc >> hdma_active >> double_speed;
 	stream >> unlocked_vram >> unlocked_oam;
+
+	//recreate color pallette
+	for (u32 i = 0; i < 64; ++i)
+	{
+		color_bgp[i / 8][(i % 8) / 2] = cgb_to_rgb(cgb_bgp[i]);
+		color_obp[i / 8][(i % 8) / 2] = cgb_to_rgb(cgb_obp[i]);
+	}
 }
