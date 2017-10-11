@@ -54,7 +54,7 @@ class CPU
 		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
 		void reset();
 		u32 step();
-		u32 handle_interrupt(INTERRUPTS code); //it will cost 16~20 cycles!
+		u32 handle_interrupt(INTERRUPTS code);
 		bool is_interrupt_enabled() const;
 		void unhalt();
 
