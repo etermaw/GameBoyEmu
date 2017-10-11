@@ -14,7 +14,7 @@ class Debugger
 
 		u16* pc;
 		
-		u32 vblanks_left;
+		u32 vblanks_left = 0;
 		u16 step_over_adress = 0;
 		u16 change_adress = 0;
 		u8 new_val = 0;

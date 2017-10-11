@@ -328,7 +328,8 @@ void Debugger::after_vblank()
 	if (vblanks_left == 1) 
 		next_instruction = true; 
 	
-	--vblanks_left;
+	if (vblanks_left > 0)
+		--vblanks_left;
 }
 
 const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
