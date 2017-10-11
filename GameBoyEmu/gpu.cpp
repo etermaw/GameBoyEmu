@@ -69,20 +69,14 @@ void Gpu::vb_mode()
 	regs[IO_LY]++;
 
 	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-	{
-		regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
 		interrupts.raise(INT_LCD);
-	}
 
 	if (regs[IO_LY] == 154)
 	{
 		regs[IO_LY] = 0;
 		
 		if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-		{
-			regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
 			interrupts.raise(INT_LCD);
-		}
 
 		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
 		unlocked_oam = false;
@@ -97,10 +91,7 @@ void Gpu::hb_mode()
 	regs[IO_LY]++;
 
 	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-	{
-		regs[IO_LCD_STATUS] = set_bit(regs[IO_LCD_STATUS], LS_CMP_SIG);
 		interrupts.raise(INT_LCD);
-	}
 
 	if (regs[IO_LY] != 144)
 	{
@@ -689,7 +680,13 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 		return (unlocked_oam && dma_cycles <= 0) ? oam[adress - 0xFE00] : 0xFF;
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
-		return regs[adress - 0xFF40];
+	{
+		if (adress != 0xFF41)
+			return regs[adress - 0xFF40];
+
+		else
+			return change_bit(regs[1], regs[IO_LY] == regs[IO_LYC], LS_CMP_SIG);
+	}
 
 	else if (cgb_mode && adress == 0xFF4F)
 		return vram_bank & 0xFE;
