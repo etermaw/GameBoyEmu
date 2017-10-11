@@ -30,6 +30,23 @@ void Timer::step_ahead(u32 cycles)
 	}
 }
 
+void Timer::check_fault_bits()
+{
+	static const u8 fault_bits[] = { 9, 3, 5, 7 };
+
+	if (check_bit(counter_cycles, fault_bits[control]))
+	{
+		if (counter == 0xFF)
+		{
+			interrupts.raise(INT_TIMER);
+			counter = mod;
+		}
+
+		else
+			++counter;
+	}
+}
+
 void Timer::step(u32 cycles)
 {
 	step_ahead(cycles - cycles_ahead);
@@ -74,19 +91,7 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	if (adress == 0xFF04)
 	{
-		static const u8 fault_bits[] = { 9, 3, 5, 7 };
-
-		if (check_bit(counter_cycles, fault_bits[control]))
-		{
-			if (counter == 0xFF)
-			{
-				interrupts.raise(INT_TIMER);
-				counter = mod;
-			}
-
-			else
-				++counter;			
-		}
+		check_fault_bits();
 
 		divider = 0;
 		divider_cycles = 0;
@@ -101,6 +106,9 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (adress == 0xFF07)
 	{
+		if (enabled && !check_bit(value, 2))
+			check_fault_bits();
+
 		control = value & 0x3;
 		enabled = check_bit(value, 2);
 	}

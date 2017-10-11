@@ -20,6 +20,7 @@ class Timer final : public IMemory
 		bool enabled;
 
 		void step_ahead(u32 cycles);
+		void check_fault_bits();
 
 	public:
 		Timer(Interrupts& ints) : 
