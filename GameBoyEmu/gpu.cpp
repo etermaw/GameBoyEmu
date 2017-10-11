@@ -640,7 +640,6 @@ void Gpu::turn_off_lcd()
 {
 	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 160 * 140);
 	regs[IO_LY] = 0;
-	regs[IO_LYC] = 0;
 	regs[IO_LCD_STATUS] &= 0xFC; //mode 0
 	unlocked_oam = true;
 	unlocked_vram = true;
