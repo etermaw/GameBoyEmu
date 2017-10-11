@@ -18,6 +18,8 @@ class CPU
 
 		MMU& mmu;
 
+		u32 cycles_ahead;
+
 		union
 		{
 			u16 reg_16[REGISTER_16::R16_SIZE];
@@ -33,6 +35,9 @@ class CPU
 
 		void push(u16 value, u32 cach_up_cycles);
 		u16 pop(u32 cach_up_cycles);
+
+		u8 read_byte(u16 adress, u32 cach_up_cycles);
+		void write_byte(u16 adress, u8 value, u32 cach_up_cycles);
 
 		void write_word(u16 adress, u16 value, u32 cach_up_cycles);
 		u16 read_word(u16 adress, u32 cach_up_cycles);
@@ -53,7 +58,7 @@ class CPU
 
 		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
 		void reset();
-		u32 step();
+		u32 step(u32 cycles);
 		u32 handle_interrupt(INTERRUPTS code);
 		bool is_interrupt_enabled() const;
 		void unhalt();

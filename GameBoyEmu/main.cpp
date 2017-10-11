@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 
 			debugger.step();
 
-			sync_cycles += cpu.step();
+			sync_cycles += cpu.step(sync_cycles);
 			sync_cycles += gpu.step(sync_cycles);
 			apu.step(sync_cycles);
 			timer.step(sync_cycles);

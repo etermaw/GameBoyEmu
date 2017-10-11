@@ -26,12 +26,14 @@ void CPU::reset()
     
 	reg_16[SP] = 0xFFFE;
 	pc = 0x100;
+
+	cycles_ahead = 0;
 }
 
-u32 CPU::step()
+u32 CPU::step(u32 cycles)
 {
 	if (is_halted)
-		return 4;
+		return cycles + 4;
 
 	if (delayed_ei)
 	{
@@ -39,16 +41,17 @@ u32 CPU::step()
 		delayed_ei = false;
 	}
 
-	u32 cycles_passed = 0;
+	cycles_ahead = cycles;
+	u32 cycles_passed = cycles;
 	u8 opcode = fetch8(0);
 
 	if (opcode != 0xCB)
-		cycles_passed = (this->*instr_map[opcode])(opcode);
+		cycles_passed += (this->*instr_map[opcode])(opcode);
 
 	else
 	{
 		u8 ext_opcode = fetch8(4);
-		cycles_passed = (this->*ext_instr_map[ext_opcode])(ext_opcode);
+		cycles_passed += (this->*ext_instr_map[ext_opcode])(ext_opcode);
 	}
 
 	return cycles_passed;
