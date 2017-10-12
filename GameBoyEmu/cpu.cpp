@@ -33,7 +33,7 @@ void CPU::reset()
 u32 CPU::step(u32 cycles)
 {
 	if (is_halted)
-		return cycles + 4;
+		return 4;
 
 	if (delayed_ei)
 	{
@@ -42,16 +42,16 @@ u32 CPU::step(u32 cycles)
 	}
 
 	cycles_ahead = cycles;
-	u32 cycles_passed = cycles;
+	u32 cycles_passed = 0;
 	u8 opcode = fetch8(0);
 
 	if (opcode != 0xCB)
-		cycles_passed += (this->*instr_map[opcode])(opcode);
+		cycles_passed = (this->*instr_map[opcode])(opcode);
 
 	else
 	{
 		u8 ext_opcode = fetch8(4);
-		cycles_passed += (this->*ext_instr_map[ext_opcode])(ext_opcode);
+		cycles_passed = (this->*ext_instr_map[ext_opcode])(ext_opcode);
 	}
 
 	return cycles_passed;
