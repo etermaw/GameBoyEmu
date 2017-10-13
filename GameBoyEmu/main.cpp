@@ -169,18 +169,17 @@ int main(int argc, char *argv[])
 		{
 			if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
 			{
-				u32 key_code = 0;
-
-				while (key_code < 8 && key_map[key_code] != ev.key.keysym.sym)
-					++key_code;
-
-				if (key_code < 8)
+				auto key_code = std::find(std::begin(key_map), std::end(key_map), ev.key.keysym.sym);
+				
+				if (key_code != std::end(key_map))
 				{
+					auto index = std::distance(std::begin(key_map), key_code);
+
 					if (ev.type == SDL_KEYDOWN)
-						joypad.push_key(static_cast<KEYS>(key_code));
+						joypad.push_key(static_cast<KEYS>(index));
 
 					else
-						joypad.release_key(static_cast<KEYS>(key_code));
+						joypad.release_key(static_cast<KEYS>(index));
 				}
 			}
 			
