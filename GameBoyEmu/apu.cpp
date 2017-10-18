@@ -10,11 +10,11 @@ void APU::step_ahead(u32 cycles)
 		return;
 
 	//TODO: reorganize channels updates 
-	//(ch1,2,3,4; ch1,2,3,4 -> ch1,ch1,ch1; ch2,ch2,ch2...) 
+	//(ch1,2,3,4; ch1,2,3,4 -> ch1,ch1,ch1; ch2,ch2,ch2...)
 
-	u32 new_cycles = sequencer_cycles + cycles;
+	const u32 after_update_cycles = (sequencer_cycles + cycles) % 8192;
 
-	if (new_cycles >= 8192)
+	while (sequencer_cycles + cycles >= 8192)
 	{
 		const u32 cycles_before = (8192 - sequencer_cycles) / 2;
 
@@ -43,10 +43,11 @@ void APU::step_ahead(u32 cycles)
 		}
 
 		sequencer_frame = (sequencer_frame + 1) % 8;
-		cycles = new_cycles % 8192;
+		sequencer_cycles = 0;
+		cycles -= cycles_before;
 	}
 
-	sequencer_cycles = new_cycles % 8192;
+	sequencer_cycles = after_update_cycles;
 
 	channel_1.step(cycles / 2, sample_buffers[0] + cur_pos);
 	channel_2.step(cycles / 2, sample_buffers[1] + cur_pos);
