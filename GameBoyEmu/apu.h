@@ -31,7 +31,7 @@ class APU final : public IMemory
 	public:
 		APU();
 
-		void attach_endpoints(function<u8**(u8**, u32)> swap_buf_callback, function<void(bool)> audio_control_func, u8** sample_start_buffers);
+		void attach_endpoints(function<u8**(u8**, u32)> swap_buf_callback, function<void(bool)> audio_control_func);
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;

@@ -28,13 +28,11 @@ Audio::~Audio()
 	SDL_CloseAudio();
 }
 
-u8** Audio::get_buffers()
+u8** Audio::swap_buffers(u8** buffs, u32 count)
 {
-	return buffers;
-}
+	if (buffs == nullptr)
+		return buffers;
 
-u8** Audio::swap_buffers(u8** buffers, u32 count)
-{
 	float buf[SAMPLE_COUNT * 2];
 
 	for (size_t i = 0; i < SAMPLE_COUNT; i++)
@@ -49,5 +47,5 @@ u8** Audio::swap_buffers(u8** buffers, u32 count)
 	while (SDL_GetQueuedAudioSize(1) > SAMPLE_COUNT * 2 * sizeof(float))
 		SDL_Delay(1);
 
-	return buffers;
+	return buffs;
 }

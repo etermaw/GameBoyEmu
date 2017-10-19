@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
 	gpu.attach_dma_ptrs(cart.get_dma_controller(), &ram);
-	apu.attach_endpoints(make_function(&Audio::swap_buffers, &audio_post), make_function(&Audio::dummy, &audio_post), audio_post.get_buffers());
+	apu.attach_endpoints(make_function(&Audio::swap_buffers, &audio_post), make_function(&Audio::dummy, &audio_post));
 
 	bool enable_cgb = cart.is_cgb_ready();
 	cpu.enable_cgb_mode(enable_cgb);

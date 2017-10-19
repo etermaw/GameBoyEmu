@@ -14,7 +14,6 @@ class Audio
 		Audio();
 		~Audio();
 
-		u8** get_buffers();
 		u8** swap_buffers(u8** buffers, u32 count);
 		void dummy(bool) {}
 };
