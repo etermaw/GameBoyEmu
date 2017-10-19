@@ -2,18 +2,11 @@
 #include "Core.h"
 #include "audio_postprocess.h"
 
-
 int main(int argc, char *argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
-	SDL_Window* window = SDL_CreateWindow("Test",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		160 * 3,
-		144 * 3,
-		0);
-
+	SDL_Window* window = SDL_CreateWindow("Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,	160 * 3, 144 * 3, 0);
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, 0);
 	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
 
