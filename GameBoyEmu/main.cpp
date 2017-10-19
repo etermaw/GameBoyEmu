@@ -115,8 +115,6 @@ int main(int argc, char *argv[])
 	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
 	SDL_Event ev;
 
-	apu.test_attach(make_function(&Audio::swap_buffers, &audio_post), make_function(&Audio::dummy, &audio_post), audio_post.get_buffers());
-
 	std::string file_name;
 
 	while (true)
@@ -153,7 +151,7 @@ int main(int argc, char *argv[])
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
 	gpu.attach_dma_ptrs(cart.get_dma_controller(), &ram);
-	//apu.attach_sample_sink(audio_postprocess_function);
+	apu.attach_endpoints(make_function(&Audio::swap_buffers, &audio_post), make_function(&Audio::dummy, &audio_post), audio_post.get_buffers());
 
 	bool enable_cgb = cart.is_cgb_ready();
 	cpu.enable_cgb_mode(enable_cgb);

@@ -187,3 +187,11 @@ void APU::deserialize(std::istream& stream)
 	stream >> cycles_ahead >> sequencer_cycles >> sequencer_frame;
 	stream >> dummy_regs[0] >> dummy_regs[1] >> enabled >> double_speed;
 }
+
+void APU::attach_endpoints(function<u8**(u8**, u32)> swap_buf_callback, function<void(bool)> audio_control_func, u8** sample_start_buffers)
+{
+	swap_buffers_callback = swap_buf_callback;
+	enable_audio_callback = audio_control_func;
+	sample_buffers = sample_start_buffers;
+	cur_pos = 0;
+}
