@@ -2,6 +2,25 @@
 
 Core::Core() : timer(ints), gpu(ints), cpu(mmu)
 {
+	mmu.register_chunk(0, 0x7FFF, cart.get_memory_controller());
+	mmu.register_chunk(0x8000, 0x9FFF, &gpu); //vram
+	mmu.register_chunk(0xA000, 0xBFFF, cart.get_memory_controller());
+	mmu.register_chunk(0xC000, 0xFDFF, &ram);
+	mmu.register_chunk(0xFE00, 0xFE9F, &gpu); //oam tables
+	mmu.register_chunk(0xFF00, 0xFF00, &joypad);//input keys register
+	mmu.register_chunk(0xFF01, 0xFF02, &tr); //TEST READER!!!!
+	mmu.register_chunk(0xFF04, 0xFF07, &timer);//timer controls
+	mmu.register_chunk(0xFF0F, 0xFF0F, &ints);//interrupts flags
+	mmu.register_chunk(0xFF10, 0xFF3F, &apu); //APU registers + wave RAM 
+	mmu.register_chunk(0xFF40, 0xFF4B, &gpu); //gpu control regs
+	mmu.register_chunk(0xFF4D, 0xFF4D, &speed); //CPU speed switch (CGB)
+	mmu.register_chunk(0xFF4F, 0xFF4F, &gpu); //gpu vram bank reg (CGB)
+	mmu.register_chunk(0xFF51, 0xFF55, &gpu); //gpu HDMA/GDMA regs (CGB)
+	mmu.register_chunk(0xFF68, 0xFF6B, &gpu); //gpu color BGP/OBP regs (CGB)
+	mmu.register_chunk(0xFF70, 0xFF70, &ram); //ram bank register (CGB)
+	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
+	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
+
 	debugger.attach_mmu(make_function(&MMU::read_byte, &mmu), make_function(&MMU::write_byte, &mmu));
 	debugger.attach_gpu(gpu.get_debug_func());
 
@@ -22,25 +41,8 @@ bool Core::load_cartrige(std::string file_name)
 	gpu.enable_cgb_mode(enable_cgb);
 	ram.enable_cgb_mode(enable_cgb);
 
-	//TODO: refactor it, move mmu init to constructor
-	mmu.register_chunk(0, 0x7FFF, cart.get_memory_controller());
-	mmu.register_chunk(0x8000, 0x9FFF, &gpu); //vram
-	mmu.register_chunk(0xA000, 0xBFFF, cart.get_memory_controller());
-	mmu.register_chunk(0xC000, 0xFDFF, &ram);
-	mmu.register_chunk(0xFE00, 0xFE9F, &gpu); //oam tables
-	mmu.register_chunk(0xFF00, 0xFF00, &joypad);//input keys register
-	mmu.register_chunk(0xFF01, 0xFF02, &tr); //TEST READER!!!!
-	mmu.register_chunk(0xFF04, 0xFF07, &timer);//timer controls
-	mmu.register_chunk(0xFF0F, 0xFF0F, &ints);//interrupts flags
-	mmu.register_chunk(0xFF10, 0xFF3F, &apu); //APU registers + wave RAM 
-	mmu.register_chunk(0xFF40, 0xFF4B, &gpu); //gpu control regs
-	mmu.register_chunk(0xFF4D, 0xFF4D, &speed); //CPU speed switch (CGB)
-	mmu.register_chunk(0xFF4F, 0xFF4F, &gpu); //gpu vram bank reg (CGB)
-	mmu.register_chunk(0xFF51, 0xFF55, &gpu); //gpu HDMA/GDMA regs (CGB)
-	mmu.register_chunk(0xFF68, 0xFF6B, &gpu); //gpu color BGP/OBP regs (CGB)
-	mmu.register_chunk(0xFF70, 0xFF70, &ram); //ram bank register (CGB)
-	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
-	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
+	mmu.swap_chunk(0, 0x7FFF, cart.get_memory_controller());
+	mmu.swap_chunk(0xA000, 0xBFFF, cart.get_memory_controller());
 
 	return true;
 }
