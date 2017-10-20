@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Core.h"
+#include "core.h"
 #include "audio_postprocess.h"
 
 int main(int argc, char *argv[])

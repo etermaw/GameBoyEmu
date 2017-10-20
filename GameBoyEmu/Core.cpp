@@ -1,4 +1,4 @@
-#include "Core.h"
+#include "core.h"
 
 Core::Core() : timer(ints), gpu(ints), cpu(mmu)
 {

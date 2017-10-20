@@ -157,7 +157,7 @@
     <ClCompile Include="apu.cpp" />
     <ClCompile Include="audio_postprocess.cpp" />
     <ClCompile Include="cartrige.cpp" />
-    <ClCompile Include="Core.cpp" />
+    <ClCompile Include="core.cpp" />
     <ClCompile Include="cpu.cpp" />
     <ClCompile Include="debugger.cpp" />
     <ClCompile Include="gpu.cpp" />
@@ -179,7 +179,7 @@
     <ClInclude Include="audio_postprocess.h" />
     <ClInclude Include="bit_ops.h" />
     <ClInclude Include="cartrige.h" />
-    <ClInclude Include="Core.h" />
+    <ClInclude Include="core.h" />
     <ClInclude Include="cpu.h" />
     <ClInclude Include="debugger.h" />
     <ClInclude Include="function.h" />
