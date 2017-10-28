@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
 
 	endpoints.audio_control = make_function(&Audio::dummy, &audio_post);
 	endpoints.swap_sample_buffer = make_function(&Audio::swap_buffers, &audio_post);
-	endpoints.draw_frame = make_function(&decltype(vblank_handler)::operator(), &vblank_handler);
-	endpoints.update_input = make_function(&decltype(input_handler)::operator(), &input_handler);
+	endpoints.update_input = function<bool(Joypad&)>(input_handler);
+	endpoints.draw_frame = function<void(const u32*)>(vblank_handler);
 
 	emu_core.attach_callbacks(endpoints);
 
