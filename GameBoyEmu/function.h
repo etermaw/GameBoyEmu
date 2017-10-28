@@ -8,7 +8,7 @@ template<class T>
 class function;
 
 template<typename R,typename... Args>
-class function<R(Args...)>
+class function<R(Args...)> final
 {
 	using fun_type = R(*)(void*, Args&&...);
 
@@ -19,6 +19,15 @@ class function<R(Args...)>
 	public:
 		function(void* object = 0, fun_type function = 0) : obj_ptr(object), fun_ptr(function) {}
 
+		template<class F>
+		function(F&& lambda) : obj_ptr(std::addressof(lambda))
+		{
+			fun_ptr = [](void* ptr, Args&&... args) -> R
+			{
+				return (*static_cast<std::add_pointer_t<F>>(ptr))(std::forward<Args>(args)...);
+			};
+		}
+
 		R operator() (Args... args) const
 		{
 			return (*fun_ptr)(obj_ptr, std::forward<Args>(args)...);
@@ -26,7 +35,7 @@ class function<R(Args...)>
 };
 
 template<class R,typename T,typename... Args>
-struct method_call
+struct method_call final
 {
 	template<R(T::*fun)(Args...)>
 	static R call(void* obj, Args&&... args)
@@ -42,7 +51,7 @@ struct method_call
 };
 
 template<class R, typename T, typename... Args>
-struct const_method_call
+struct const_method_call final
 {
 	template<R(T::*fun)(Args...) const>
 	static R call(void* obj, Args&&... args)
@@ -58,7 +67,7 @@ struct const_method_call
 };
 
 template<class R, typename... Args>
-struct function_call
+struct function_call final
 {
 	template<R(*fun)(Args...)>
 	static R call(void* obj, Args&&... args)
