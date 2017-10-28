@@ -1,8 +1,7 @@
 #pragma once
-#ifndef FUNCTION_H
-#define FUNCTION_H
 
 #include <utility>
+#include <type_traits>
 
 template<class T>
 class function;
@@ -100,12 +99,9 @@ function_call<R, Args...> make_fun(R(*)(Args...))
 	return function_call<R, Args...>();
 }
 
-
 #define make_function1(function_ptr) make_fun(function_ptr).bind<function_ptr>()
 #define make_function2(method_ptr,object_ptr) make_fun(method_ptr).bind<method_ptr>(object_ptr)
 
 #define EXPAND(x) x
 #define GET_MACRO(_1,_2,name,...) name
 #define make_function(...) EXPAND(GET_MACRO(__VA_ARGS__,make_function2,make_function1)(__VA_ARGS__))
-
-#endif
