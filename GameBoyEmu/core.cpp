@@ -41,8 +41,8 @@ bool Core::load_cartrige(std::string file_name)
 	gpu.enable_cgb_mode(enable_cgb);
 	ram.enable_cgb_mode(enable_cgb);
 
-	mmu.swap_chunk(0, 0x7FFF, cart.get_memory_controller());
-	mmu.swap_chunk(0xA000, 0xBFFF, cart.get_memory_controller());
+	mmu.swap_chunk(0, 0x8000, cart.get_memory_controller()); //TODO: it`s inconsistent with register_chunk scheme of adressing
+	mmu.swap_chunk(0xA000, 0xC000, cart.get_memory_controller());
 
 	return true;
 }
