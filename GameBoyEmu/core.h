@@ -14,6 +14,7 @@
 struct external_callbacks
 {
 	function<void(const u8*, u32)> save_ram;
+	function<void(std::chrono::seconds, const u8*, u32)> save_rtc;
 
 	function<void(const u32*)> draw_frame;
 	function<bool(Joypad&)> update_input;
@@ -118,7 +119,7 @@ class Core
 		//~Core();
 
 		//void reset();
-		bool load_cartrige(std::string file_name); //TODO: refator it, instead it should take rom & ram (& rtc) file_streams/istreams
+		bool load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file);
 		void load_state(std::istream& load_stream);
 		void save_state(std::ostream& save_stream);
 		void run();

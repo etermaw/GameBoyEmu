@@ -39,28 +39,48 @@ Cartrige::~Cartrige()
 	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
 
 	if (battery_ram)
-	{
-		std::ofstream ram_file(file_name + "_ram", std::ios::trunc | std::ios::binary);
-		ram_file.write(reinterpret_cast<char*>(ram.get()), ram_size);
-	}
+		save_ram_callback(ram.get(), ram_size);
 
 	if (in_range(header->cartrige_type, 0x0F, 0x10))
 	{
-		std::ofstream rtc_file(file_name + "_rtc", std::ios::trunc);
-
 		memory_interface.reset(); //make sure that MBC3 update rtc_regs
 
 		auto epoch = std::chrono::system_clock::now().time_since_epoch();
 		auto cur_timestamp = std::chrono::duration_cast<std::chrono::seconds>(epoch);
 
-		rtc_file << cur_timestamp.count();
-		rtc_file.write(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
+		save_rtc_callback(cur_timestamp, rtc_regs, 5);
 	}
 }
 
-void Cartrige::load_ram()
+bool Cartrige::load_cartrige(std::ifstream& cart, std::ifstream& ram, std::ifstream& rtc)
 {
-	rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
+	if (!cart.is_open())
+		return false;
+
+	cart.seekg(0, std::ios_base::end);
+	size_t size = cart.tellg();
+	cart.seekg(0, std::ios_base::beg);
+
+	rom = std::make_unique<u8[]>(size);
+	cart.read(reinterpret_cast<char*>(rom.get()), size);
+
+	load_or_create_ram(ram);
+	load_rtc(rtc);
+
+	dispatch();
+
+	return true;
+}
+
+void Cartrige::attach_endpoints(function<void(const u8*, u32)> ram_save, function<void(std::chrono::seconds, const u8*, u32)> rtc_save)
+{
+	save_ram_callback = ram_save;
+	save_rtc_callback = rtc_save;
+}
+
+void Cartrige::load_or_create_ram(std::ifstream& ram_file)
+{
+	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
 
 	//MBC2 has always header->ram_size == 0, but it has 512 bytes actually!
 	if (in_range(header->cartrige_type, 0x05, 0x06))
@@ -90,64 +110,39 @@ void Cartrige::load_ram()
 			break;
 	}
 
-	if (battery_ram)
-	{
-		std::ifstream ram_file(file_name + "_ram", std::ios::binary);
-
-		if (ram_file.is_open())
-			ram_file.read(reinterpret_cast<char*>(ram.get()), ram_size);
-	}
-
-	if (in_range(header->cartrige_type, 0x0F, 0x10))
-	{
-		std::ifstream rtc_file(file_name + "_rtc", std::ios::binary);
-
-		if (rtc_file.is_open())
-		{
-			i64 saved_timestamp;
-			rtc_file >> saved_timestamp;
-			rtc_file.read(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
-
-			auto epoch = std::chrono::system_clock::now().time_since_epoch();
-			auto cur_timestamp = std::chrono::duration_cast<std::chrono::seconds>(epoch);
-			auto delta = cur_timestamp.count() - saved_timestamp;
-
-			if (delta <= 0 || check_bit(rtc_regs[4], 6))
-				return;
-
-			auto ns = rtc_regs[0] + delta;
-			auto nm = rtc_regs[1] + ns / 60;
-			auto nh = rtc_regs[2] + nm / 60;
-			auto nd = (((rtc_regs[4] & 1) << 8) | rtc_regs[3]) + nh / 24;
-
-			rtc_regs[0] = ns % 60;
-			rtc_regs[1] = nm % 60;
-			rtc_regs[2] = nh % 24;
-			rtc_regs[3] = (nd % 512) & 0xFF;
-			rtc_regs[4] = change_bit(rtc_regs[4], (nd % 512) > 255, 0);
-			rtc_regs[4] = change_bit(rtc_regs[4], nd > 511, 7);
-		}
-	}
+	if (battery_ram && ram_file.is_open())
+		ram_file.read(reinterpret_cast<char*>(ram.get()), ram_size);
 }
 
-bool Cartrige::load_cartrige(const std::string& name)
+void Cartrige::load_rtc(std::ifstream& rtc_file)
 {
-	std::ifstream cart_file(name, std::ios::binary | std::ios::ate);
+	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
 
-	if (!cart_file.is_open())
-		return false;
+	if (in_range(header->cartrige_type, 0x0F, 0x10) && rtc_file.is_open())
+	{
+		i64 saved_timestamp;
+		rtc_file >> saved_timestamp;
+		rtc_file.read(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
 
-	size_t size = cart_file.tellg();
-	cart_file.seekg(0, std::ios_base::beg);
+		auto epoch = std::chrono::system_clock::now().time_since_epoch();
+		auto cur_timestamp = std::chrono::duration_cast<std::chrono::seconds>(epoch);
+		auto delta = cur_timestamp.count() - saved_timestamp;
 
-	rom = std::make_unique<u8[]>(size);
-	cart_file.read(reinterpret_cast<char*>(rom.get()), size);
+		if (delta <= 0 || check_bit(rtc_regs[4], 6))
+			return;
 
-	file_name = name;
-	load_ram();
-	dispatch();
+		auto ns = rtc_regs[0] + delta;
+		auto nm = rtc_regs[1] + ns / 60;
+		auto nh = rtc_regs[2] + nm / 60;
+		auto nd = (((rtc_regs[4] & 1) << 8) | rtc_regs[3]) + nh / 24;
 
-	return true;
+		rtc_regs[0] = ns % 60;
+		rtc_regs[1] = nm % 60;
+		rtc_regs[2] = nh % 24;
+		rtc_regs[3] = (nd % 512) & 0xFF;
+		rtc_regs[4] = change_bit(rtc_regs[4], (nd % 512) > 255, 0);
+		rtc_regs[4] = change_bit(rtc_regs[4], nd > 511, 7);
+	}
 }
 
 IMemory* Cartrige::get_memory_controller() const

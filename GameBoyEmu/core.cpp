@@ -28,10 +28,9 @@ Core::Core() : timer(ints), gpu(ints), cpu(mmu)
 	mmu.attach_debug_callback(make_function(&Debugger::check_memory_access, &debugger));
 }
 
-bool Core::load_cartrige(std::string file_name)
+bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file)
 {
-	//load ROM from file
-	if (!cart.load_cartrige(file_name))
+	if (!cart.load_cartrige(rom_file, ram_file, rtc_file));
 		return false;
 
 	gpu.attach_dma_ptrs(cart.get_dma_controller(), &ram);
@@ -120,6 +119,7 @@ void Core::run()
 
 void Core::attach_callbacks(const external_callbacks& endpoints)
 {
+	cart.attach_endpoints(endpoints.save_ram, endpoints.save_rtc);
 	apu.attach_endpoints(endpoints.swap_sample_buffer, endpoints.audio_control);
 
 	draw_frame_callback = endpoints.draw_frame;

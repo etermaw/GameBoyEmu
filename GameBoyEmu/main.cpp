@@ -54,11 +54,28 @@ int main(int argc, char *argv[])
 		return true;
 	};
 
+	std::string file_name;
+
+	auto ram_saver = [&](const u8* data, u32 size)
+	{
+		std::ofstream to_save(file_name + "_ram", std::ios_base::trunc);
+		to_save.write(reinterpret_cast<const char*>(data), size * sizeof(u8));
+	};
+
+	auto rtc_saver = [&](std::chrono::seconds epoch, const u8* data, u32 size)
+	{
+		std::ofstream to_save(file_name + "_rtc", std::ios_base::trunc);
+		to_save << epoch.count();
+		to_save.write(reinterpret_cast<const char*>(data), size * sizeof(u8));
+	};
+
 	Core emu_core;
 	Audio audio_post;
 
 	external_callbacks endpoints;
 
+	endpoints.save_ram = function<void(const u8*, u32)>(ram_saver);
+	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
 	endpoints.audio_control = make_function(&Audio::dummy, &audio_post);
 	endpoints.swap_sample_buffer = make_function(&Audio::swap_buffers, &audio_post);
 	endpoints.update_input = function<bool(Joypad&)>(input_handler);
@@ -66,15 +83,16 @@ int main(int argc, char *argv[])
 
 	emu_core.attach_callbacks(endpoints);
 
-	std::string file_name;
-
 	while (true)
 	{
 		std::cout << "Insert cartrige path:\n";
 		std::cin >> file_name;
 
-		if (emu_core.load_cartrige(file_name))
+		std::ifstream rom(file_name);
+
+		if (rom.is_open())
 		{
+			emu_core.load_cartrige(rom, std::ifstream(file_name + "_ram"), std::ifstream(file_name + "_rtc"));
 			std::cout << "Cartrige loaded!\n";
 			break;
 		}
