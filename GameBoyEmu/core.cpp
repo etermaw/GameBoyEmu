@@ -8,7 +8,7 @@ Core::Core() : timer(ints), gpu(ints), cpu(mmu)
 	mmu.register_chunk(0xC000, 0xFDFF, &ram);
 	mmu.register_chunk(0xFE00, 0xFE9F, &gpu); //oam tables
 	mmu.register_chunk(0xFF00, 0xFF00, &joypad);//input keys register
-	mmu.register_chunk(0xFF01, 0xFF02, &tr); //TEST READER!!!!
+	mmu.register_chunk(0xFF01, 0xFF02, &tr); //TODO: test reader, there should be serial port
 	mmu.register_chunk(0xFF04, 0xFF07, &timer);//timer controls
 	mmu.register_chunk(0xFF0F, 0xFF0F, &ints);//interrupts flags
 	mmu.register_chunk(0xFF10, 0xFF3F, &apu); //APU registers + wave RAM 
@@ -114,6 +114,8 @@ void Core::run()
 		draw_frame_callback(gpu.get_frame_buffer());
 		gpu.clear_frame_buffer();
 		debugger.after_vblank();
+
+		//TODO: if save state request, we should do it now
 	}
 }
 
