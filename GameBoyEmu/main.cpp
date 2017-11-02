@@ -92,7 +92,9 @@ int main(int argc, char *argv[])
 
 		if (rom.is_open())
 		{
-			emu_core.load_cartrige(rom, std::ifstream(file_name + "_ram"), std::ifstream(file_name + "_rtc"));
+            std::ifstream ram(file_name + "_ram"), rtc(file_name + "_rtc");
+            
+			emu_core.load_cartrige(rom, ram, rtc);
 			std::cout << "Cartrige loaded!\n";
 			break;
 		}

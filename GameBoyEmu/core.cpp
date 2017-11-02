@@ -30,7 +30,7 @@ Core::Core() : timer(ints), gpu(ints), cpu(mmu)
 
 bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file)
 {
-	if (!cart.load_cartrige(rom_file, ram_file, rtc_file));
+	if (!cart.load_cartrige(rom_file, ram_file, rtc_file))
 		return false;
 
 	gpu.attach_dma_ptrs(cart.get_dma_controller(), &ram);
