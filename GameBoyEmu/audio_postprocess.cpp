@@ -2,12 +2,10 @@
 
 Audio::Audio()
 {
-	constexpr double ratio = (1 << 21) / 44100.0;
-	constexpr u32 t = static_cast<int>(ratio + 0.5);
-	sample_threshold = t * 512;
+    internal_memory = std::make_unique<u8[]>(BUFFER_SIZE * 4);
 
-	for (auto& i : buffers)
-		i = new u8[BUFFER_SIZE];
+	for (u32 i = 0; i < 4; ++i)
+		buffers[i] = &internal_memory[BUFFER_SIZE * i];
 
 	SDL_AudioSpec opt = {}, tmp = {};
 
@@ -22,9 +20,6 @@ Audio::Audio()
 
 Audio::~Audio()
 {
-	for (auto& i : buffers)
-		delete[] i;
-
 	SDL_CloseAudio();
 }
 
@@ -33,16 +28,20 @@ u8** Audio::swap_buffers(u8** buffs, u32 count)
 	if (buffs == nullptr)
 		return buffers;
 
-	float buf[SAMPLE_COUNT * 2];
+	float buf[2048];
+    const u32 sample_count = (count + offset) / 48;
 
-	for (size_t i = 0; i < SAMPLE_COUNT; i++)
+	for (size_t i = 0; i < sample_count; i++)
 	{
-		u8 total = buffers[0][i * 48] + buffers[1][i * 48] + buffers[2][i * 48] + buffers[3][i * 48];
+        const u32 index = i * 48 + offset;
+		u8 total = buffers[0][index] + buffers[1][index] + buffers[2][index] + buffers[3][index];
 		buf[i * 2] = total * 0.05f;
 		buf[i * 2 + 1] = total * 0.05f;
 	}
 
-	SDL_QueueAudio(1, buf, SAMPLE_COUNT * 2 * sizeof(float));
+    offset = (count + offset) % 48;
+
+	SDL_QueueAudio(1, buf, sample_count * 2 * sizeof(float));
 
 	while (SDL_GetQueuedAudioSize(1) > SAMPLE_COUNT * 2 * sizeof(float))
 		SDL_Delay(1);

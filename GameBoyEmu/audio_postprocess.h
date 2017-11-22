@@ -7,8 +7,9 @@ class Audio
 	static const u32 BUFFER_SIZE = 1 << 15;
 
 	private:
+        std::unique_ptr<u8[]> internal_memory;
 		u8* buffers[4];
-		u32 sample_threshold;
+        u32 offset = 0;
 
 	public:
 		Audio();
