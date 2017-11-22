@@ -45,6 +45,25 @@ int main(int argc, char *argv[])
 					else
 						input.release_key(static_cast<KEYS>(index));
 				}
+
+                else if(ev.key.keysym.sym == SDLK_ESCAPE)
+                {
+                    if(ev.type == SDL_KEYDOWN)
+                    {
+                        input.push_key(K_A);
+                        input.push_key(K_B);
+                        input.push_key(K_SELECT);
+                        input.push_key(K_START);
+                    }
+
+                    else
+                    {
+                        input.release_key(K_A);
+                        input.release_key(K_B);
+                        input.release_key(K_SELECT);
+                        input.release_key(K_START);
+                    }
+                }
 			}
 
 			else if (ev.type == SDL_QUIT)
