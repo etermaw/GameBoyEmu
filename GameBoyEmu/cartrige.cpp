@@ -72,6 +72,12 @@ bool Cartrige::load_cartrige(std::ifstream& cart, std::ifstream& ram, std::ifstr
 	return true;
 }
 
+std::string Cartrige::get_name() const
+{
+    const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
+    return std::string(std::begin(header->game_title), std::end(header->game_title));
+}
+
 void Cartrige::attach_endpoints(function<void(const u8*, u32)> ram_save, function<void(std::chrono::seconds, const u8*, u32)> rtc_save)
 {
 	save_ram_callback = ram_save;

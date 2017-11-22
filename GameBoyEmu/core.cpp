@@ -46,6 +46,11 @@ bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::
 	return true;
 }
 
+std::string Core::get_cart_name()
+{
+   return cart.get_name(); 
+}
+
 void Core::load_state(std::istream& load_stream)
 {
 	ints.deserialize(load_stream);

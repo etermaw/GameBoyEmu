@@ -114,6 +114,9 @@ int main(int argc, char *argv[])
             std::ifstream ram(file_name + "_ram"), rtc(file_name + "_rtc");
             
 			emu_core.load_cartrige(rom, ram, rtc);
+            std::string cart_name = emu_core.get_cart_name();
+            SDL_SetWindowTitle(window, cart_name.c_str());
+
 			std::cout << "Cartrige loaded!\n";
 			break;
 		}
