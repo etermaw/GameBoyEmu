@@ -38,8 +38,8 @@ u8** Audio::swap_buffers(u8** buffs, u32 count)
 	for (size_t i = 0; i < SAMPLE_COUNT; i++)
 	{
 		u8 total = buffers[0][i * 48] + buffers[1][i * 48] + buffers[2][i * 48] + buffers[3][i * 48];
-		buf[i * 2] = total * 0.01f;
-		buf[i * 2 + 1] = total * 0.01f;
+		buf[i * 2] = total * 0.05f;
+		buf[i * 2 + 1] = total * 0.05f;
 	}
 
 	SDL_QueueAudio(1, buf, SAMPLE_COUNT * 2 * sizeof(float));
