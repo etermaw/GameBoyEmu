@@ -158,6 +158,8 @@ void Gpu::step_ahead(u32 clock_cycles)
 	if (current_state == GS_LCD_OFF)
 		return;
 
+    cycles += clock_cycles;
+
 	while (cycles >= cycles_to_next_state)
 	{
 		cycles -= cycles_to_next_state;
