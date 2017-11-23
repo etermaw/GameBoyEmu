@@ -63,8 +63,8 @@ Gpu::Gpu(Interrupts& ints) :
 	std::memset(color_bgp, 0xFF, sizeof(u32) * 8 * 4);
 	std::memset(color_obp, 0xFF, sizeof(u32) * 8 * 4);
 
-	current_state = GS_VBLANK; //LY = 0, so it`s 1 frame delay
-	cycles_to_next_state = 456; //TODO: what`s GPU status immediately after BIOS launch?
+	current_state = GS_HBLANK;
+	cycles_to_next_state = 204; //TODO: what`s GPU status immediately after BIOS launch?
 }
 
 void Gpu::vb_mode()
