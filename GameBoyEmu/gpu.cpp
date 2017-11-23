@@ -118,6 +118,11 @@ void Gpu::oam_mode()
 {
 	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //go to mode 3
 	unlocked_vram = false;
+
+	lsx = regs[IO_SX];
+	lsy = regs[IO_SY];
+	lwx = regs[IO_WX7];
+	lwy = regs[IO_WY];
 }
 
 void Gpu::transfer_mode()
@@ -226,8 +231,8 @@ void Gpu::launch_hdma()
 
 void Gpu::draw_background_row()
 {
-	const u32 sy = regs[IO_SY];
-	const u32 sx = regs[IO_SX];
+	const u32 sy = lsy;//regs[IO_SY];
+	const u32 sx = lsx;//regs[IO_SX];
 	const u32 line = regs[IO_LY];
 	
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_BG_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
@@ -360,8 +365,8 @@ void Gpu::draw_window_row()
 		return;
 
 	const u32 line = regs[IO_LY];
-	const u32 wy = regs[IO_WY];
-	const i32 wx = regs[IO_WX7] - 7;
+	const u32 wy = lwy;//regs[IO_WY];
+	const i32 wx = lwx - 7;// regs[IO_WX7] - 7;
 	
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
@@ -396,8 +401,8 @@ void Gpu::draw_window_row()
 
 void Gpu::draw_background_row_cgb()
 {
-	const u32 sy = regs[IO_SY];
-	const u32 sx = regs[IO_SX];
+	const u32 sy = lsy;// regs[IO_SY];
+	const u32 sx = lsx;//regs[IO_SX];
 	const u32 line = regs[IO_LY];
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_BG_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
@@ -454,8 +459,8 @@ void Gpu::draw_window_row_cgb()
 		return;
 
 	const u32 line = regs[IO_LY];
-	const u32 wy = regs[IO_WY];
-	const i32 wx = regs[IO_WX7] - 7;
+	const u32 wy = lwy;//regs[IO_WY];
+	const i32 wx = lwx - 7;//regs[IO_WX7] - 7;
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
