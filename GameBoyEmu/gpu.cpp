@@ -62,6 +62,9 @@ Gpu::Gpu(Interrupts& ints) :
 	std::memset(cgb_obp, 0xFF, sizeof(cgb_obp));
 	std::memset(color_bgp, 0xFF, sizeof(u32) * 8 * 4);
 	std::memset(color_obp, 0xFF, sizeof(u32) * 8 * 4);
+
+	current_state = GS_VBLANK; //LY = 0, so it`s 1 frame delay
+	cycles_to_next_state = 456; //TODO: what`s GPU status immediately after BIOS launch?
 }
 
 void Gpu::vb_mode()
@@ -71,18 +74,13 @@ void Gpu::vb_mode()
 	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
 		interrupts.raise(INT_LCD);
 
-	if (regs[IO_LY] == 154)
+	if (regs[IO_LY] < 153)
+		cycles_to_next_state = 456;
+
+	else
 	{
-		regs[IO_LY] = 0;
-		
-		if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-			interrupts.raise(INT_LCD);
-
-		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
-		unlocked_oam = false;
-
-		if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
-			interrupts.raise(INT_LCD);
+		current_state = GS_LY_153;
+		cycles_to_next_state = 92;
 	}
 }
 
@@ -93,13 +91,16 @@ void Gpu::hb_mode()
 	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
 		interrupts.raise(INT_LCD);
 
-	if (regs[IO_LY] != 144)
+	if (regs[IO_LY] < 144)
 	{
-		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //go to mode 2
+		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //OAM mode
 		unlocked_oam = false;
 
 		if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
 			interrupts.raise(INT_LCD);
+
+		current_state = GS_OAM;
+		cycles_to_next_state = 80;
 	}
 
 	else
@@ -109,20 +110,26 @@ void Gpu::hb_mode()
 		if (check_bit(regs[IO_LCD_STATUS], LS_VBLANK))
 			interrupts.raise(INT_LCD);
 
-		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x1; //go to mode 1
+		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x1; //VBLANK mode
 		entering_vblank = true;
+
+		current_state = GS_VBLANK;
+		cycles_to_next_state = 456;
 	}
 }
 
 void Gpu::oam_mode()
 {
-	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //go to mode 3
+	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //transfer mode
 	unlocked_vram = false;
 
 	lsx = regs[IO_SX];
 	lsy = regs[IO_SY];
 	lwx = regs[IO_WX7];
 	lwy = regs[IO_WY];
+
+	current_state = GS_TRANSFER;
+	cycles_to_next_state = 172;
 }
 
 void Gpu::transfer_mode()
@@ -132,12 +139,15 @@ void Gpu::transfer_mode()
 	if (check_bit(regs[IO_LCD_STATUS], LS_HBLANK))
 		interrupts.raise(INT_LCD);
 
-	regs[IO_LCD_STATUS] &= 0xFC; //go to mode 0
+	regs[IO_LCD_STATUS] &= 0xFC; //HBLANK mode
 	unlocked_oam = true;
 	unlocked_vram = true;
 
 	if (hdma_active)
 		launch_hdma();
+
+	current_state = GS_HBLANK;
+	cycles_to_next_state = 204;
 }
 
 void Gpu::step_ahead(u32 clock_cycles)
@@ -145,34 +155,55 @@ void Gpu::step_ahead(u32 clock_cycles)
 	if (dma_cycles > 0)
 		dma_cycles = std::max(0, dma_cycles - static_cast<i32>(clock_cycles << double_speed));
 
-	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER))
+	if (current_state == GS_LCD_OFF)
 		return;
 
-	cycles += std::max(0, static_cast<i32>(clock_cycles) - enable_delay);
-	enable_delay = std::max(0, enable_delay - static_cast<i32>(clock_cycles));
-
-	static const u32 state_cycles[] = { 204, 456, 80, 172 };
-	
-	while (cycles >= state_cycles[regs[IO_LCD_STATUS] & 0x3])
+	while (cycles >= cycles_to_next_state)
 	{
-		cycles -= state_cycles[regs[IO_LCD_STATUS] & 0x3];
+		cycles -= cycles_to_next_state;
 
-		switch (regs[IO_LCD_STATUS] & 0x3)
+		switch (current_state)
 		{
-			case 0:
-				hb_mode();
-				break;
-
-			case 1:
+			case GS_VBLANK:
 				vb_mode();
 				break;
 
-			case 2:
+			case GS_LY_153:
+				regs[IO_LY] = 0;
+
+				if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
+					interrupts.raise(INT_LCD);
+
+				current_state = GS_LY_153_0;
+				cycles_to_next_state = 456 - 92;
+				break;
+
+			case GS_LY_153_0:
+				regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //OAM mode
+				unlocked_oam = false;
+
+				if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
+					interrupts.raise(INT_LCD);
+
+				current_state = GS_OAM;
+				cycles_to_next_state = 80;
+				break;
+
+			case GS_HBLANK:
+				hb_mode();
+				break;
+
+			case GS_OAM:
 				oam_mode();
 				break;
 
-			case 3:
+			case GS_TRANSFER:
 				transfer_mode();
+				break;
+
+			case GS_TURNING_ON:
+				current_state = GS_HBLANK;
+				cycles_to_next_state = 204;
 				break;
 		}
 	}
@@ -641,13 +672,15 @@ void Gpu::turn_off_lcd()
 	unlocked_vram = true;
 	cycles = 0;
 
-	entering_vblank = true;
+	entering_vblank = true; //display white screen
+	current_state = GS_LCD_OFF;
+	cycles_to_next_state = 0;
 }
 
 void Gpu::turn_on_lcd()
 {
-	if (!check_bit(regs[IO_LCD_CONTROL], LC_POWER)) //TODO: useless conditional?
-		enable_delay = 244;
+	current_state = GS_TURNING_ON;
+	cycles_to_next_state = 70224;
 }
 
 const u8* Gpu::resolve_adress(u16 adress) const

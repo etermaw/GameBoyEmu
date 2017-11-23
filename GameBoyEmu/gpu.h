@@ -5,6 +5,8 @@
 
 class Gpu final : public IMemory
 {
+	enum GPU_STATE { GS_VBLANK, GS_LY_153, GS_LY_153_0, GS_HBLANK, GS_OAM, GS_TRANSFER, GS_LCD_OFF, GS_TURNING_ON };
+
 	private:
 		Interrupts& interrupts;
 		
@@ -13,6 +15,9 @@ class Gpu final : public IMemory
 		std::unique_ptr<u8[]> oam;
 		IDmaMemory* cart;
 		IDmaMemory* ram;
+
+		GPU_STATE current_state;
+		u32 cycles_to_next_state;
 
 		u32 cycles_ahead;
 		u32 cycles;
