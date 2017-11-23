@@ -279,7 +279,7 @@ void Gpu::draw_background_row(u32 start, u32 end)
 	const u32 line_offset = (((line + sy) / 8) % 32) * 32;
 	const u32 tile_line = (line + sy) % 8;
 
-	for (u32 i = 0; i < 160;) 
+	for (u32 i = start; i < end;) 
 	{
 		//it should work as singed/unsigned u8
 		auto tile_num = (tile_nums[line_offset + (((sx + i) / 8) % 32)] + index_corrector) & 0xFF;
@@ -287,7 +287,7 @@ void Gpu::draw_background_row(u32 start, u32 end)
 		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2]; 
 		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
 
-		for (u32 j = (sx + i) % 8; j < 8 && i < 160; ++j, ++i)
+		for (u32 j = (sx + i) % 8; j < 8 && i < end; ++j, ++i)
 		{
 			u32 id = 7 - j;
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
@@ -451,7 +451,7 @@ void Gpu::draw_background_row_cgb(u32 start, u32 end)
 	const u32 screen_line = (((line + sy) / 8) % 32) * 32; //which line in "screen" (tile is 8x8 pixels, that`s why we div by 8)
 	const u32 row_tile_line = (line + sy) % 8;
 
-	for (u32 i = 0; i < 160;)
+	for (u32 i = start; i < end;)
 	{
 		//it should work as singed/unsigned u8
 		auto tile_num = (tile_nums[screen_line + (((sx + i) / 8) % 32)] + index_corrector) & 0xFF;
@@ -474,7 +474,7 @@ void Gpu::draw_background_row_cgb(u32 start, u32 end)
 			tile_high = flip_bits(tile_high);
 		}
 
-		for (u32 j = (sx + i) % 8; j < 8 && i < 160; ++j, ++i)
+		for (u32 j = (sx + i) % 8; j < 8 && i < end; ++j, ++i)
 		{
 			u32 id = 7 - j;
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
