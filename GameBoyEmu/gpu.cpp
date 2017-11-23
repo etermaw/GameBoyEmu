@@ -333,28 +333,21 @@ void Gpu::draw_sprite_row()
 		const u32 end = std::min(sx + 8, 160);
 		const u32 sprite_end = sx + 8;
 
-		if (check_bit(atr, 7)) //BG has priority
+		for (u32 j = begin; j < end; ++j)
 		{
-			for (u32 j = begin; j < end; ++j) 
+			u32 id = sprite_end - j - 1;
+			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
+			u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
+
+			if (color_id != 0)
 			{
-				u32 id = sprite_end - j - 1;
-				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
-				u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
+				if (check_bit(atr, 7)) //BG has priority
+				{
+					if (screen_buffer[line_offset + j] == bg_alpha_color)
+						screen_buffer[line_offset + j] = color;
+				}
 
-				if (color_id != 0 && screen_buffer[line_offset + j] == bg_alpha_color)
-					screen_buffer[line_offset + j] = color;
-			}
-		}
-
-		else //sprite has priority
-		{
-			for (u32 j = begin; j < end; ++j)
-			{
-				u32 id = sprite_end - j - 1;
-				u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
-				u32 color = get_dmg_color((regs[palette_num] >> (color_id * 2)) & 0x3);
-
-				if (color_id != 0)
+				else //sprite has priority
 					screen_buffer[line_offset + j] = color;
 			}
 		}
