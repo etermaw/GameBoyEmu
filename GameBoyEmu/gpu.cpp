@@ -262,7 +262,7 @@ void Gpu::launch_hdma()
 	new_dma_cycles = 8;
 }
 
-void Gpu::draw_background_row()
+void Gpu::draw_background_row(u32 start, u32 end)
 {
 	const u32 sy = lsy;
 	const u32 sx = lsx;
@@ -298,6 +298,46 @@ void Gpu::draw_background_row()
 	}
 }
 
+void Gpu::draw_window_row(u32 start, u32 end)
+{
+	if (regs[IO_LY] < lwy || lwx > 166)
+		return;
+
+	const u32 line = regs[IO_LY];
+	const u32 wy = lwy;
+	const i32 wx = lwx - 7;
+
+	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
+	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
+	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
+	const u32 buffer_offset = line * 160;
+
+	const u8* tile_nums = &vram[0][offset];
+	const u8* tile_data = &vram[0][data_offset]; //data_offset == index_corrector * 16
+
+	const u32 window_line = line - wy;
+	const u32 tile_line = window_line % 8;
+	const u32 line_off = (window_line / 8) * 32;
+
+	const u32 start_offset = -std::min(wx, 0);
+
+	for (u32 i = std::max(0, wx); i < 160;)
+	{
+		u32 tile_num = (tile_nums[line_off + (i + start_offset) / 8] + index_corrector) & 0xFF;
+		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
+		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
+
+		for (u32 j = (start_offset + i) % 8; j < 8 && i < 160; ++j, ++i)
+		{
+			u32 id = 7 - j;
+			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
+			u32 shade_num = (regs[IO_BGP] >> (color_id * 2)) & 0x3;
+
+			screen_buffer[buffer_offset + i] = get_dmg_color(shade_num);
+		}
+	}
+}
+
 struct oam_entry
 {
 	u8 x;
@@ -311,7 +351,7 @@ struct oam_entry
 	}
 };
 
-void Gpu::draw_sprite_row()
+void Gpu::draw_sprite_row(u32 start, u32 end)
 {	
 	const u8* tile_data = &vram[0][0]; //0x8000
 	const bool sprite_size = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE);
@@ -392,47 +432,7 @@ void Gpu::draw_sprite_row()
 	}
 }
 
-void Gpu::draw_window_row() 
-{
-	if (regs[IO_LY] < lwy || lwx > 166) 
-		return;
-
-	const u32 line = regs[IO_LY];
-	const u32 wy = lwy;
-	const i32 wx = lwx - 7;
-	
-	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
-	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
-	const u32 index_corrector = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 128;
-	const u32 buffer_offset = line * 160;
-
-	const u8* tile_nums = &vram[0][offset];
-	const u8* tile_data = &vram[0][data_offset]; //data_offset == index_corrector * 16
-
-	const u32 window_line = line - wy;
-	const u32 tile_line = window_line % 8;
-	const u32 line_off = (window_line / 8) * 32;
-
-	const u32 start_offset = -std::min(wx, 0);
-
-	for (u32 i = std::max(0, wx); i < 160;) 
-	{
-		u32 tile_num = (tile_nums[line_off + (i + start_offset) / 8] + index_corrector) & 0xFF;
-		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
-		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
-
-		for (u32 j = (start_offset + i) % 8; j < 8 && i < 160; ++j, ++i)
-		{
-			u32 id = 7 - j;
-			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
-			u32 shade_num = (regs[IO_BGP] >> (color_id * 2)) & 0x3;
-
-			screen_buffer[buffer_offset + i] = get_dmg_color(shade_num);
-		}
-	}
-}
-
-void Gpu::draw_background_row_cgb()
+void Gpu::draw_background_row_cgb(u32 start, u32 end)
 {
 	const u32 sy = lsy;
 	const u32 sx = lsx;
@@ -486,7 +486,7 @@ void Gpu::draw_background_row_cgb()
 	}
 }
 
-void Gpu::draw_window_row_cgb()
+void Gpu::draw_window_row_cgb(u32 start, u32 end)
 {
 	if (regs[IO_LY] < lwy || lwx > 166)
 		return;
@@ -545,7 +545,7 @@ void Gpu::draw_window_row_cgb()
 }
 
 //priorities for GBC:  BG0 < OBJL < BGL < OBJH < BGH
-void Gpu::draw_sprite_row_cgb()
+void Gpu::draw_sprite_row_cgb(u32 start, u32 end)
 {
 	const u8* tile_data[2] = { &vram[0][0], &vram[1][0] }; //0x8000
 	const bool sprite_size = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE);
@@ -642,25 +642,25 @@ void Gpu::draw_line()
 			alpha_buffer.reset();
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
-				draw_background_row_cgb();
+				draw_background_row_cgb(0, 160);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_ENABLED))
-				draw_window_row_cgb();
+				draw_window_row_cgb(0, 160);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
-				draw_sprite_row_cgb();
+				draw_sprite_row_cgb(0, 160);
 		}
 
 		else
 		{
 			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
-				draw_background_row();
+				draw_background_row(0, 160);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_ENABLED))
-				draw_window_row();
+				draw_window_row(0, 160);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
-				draw_sprite_row();
+				draw_sprite_row(0, 160);
 		}
 	}
 }

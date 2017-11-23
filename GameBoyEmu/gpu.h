@@ -60,13 +60,13 @@ class Gpu final : public IMemory
 		void launch_gdma();
 		void launch_hdma();
 
-		void draw_background_row(); //DMG 
-		void draw_sprite_row(); //DMG
-		void draw_window_row(); //DMG
+		void draw_background_row(u32 start, u32 end); //DMG
+		void draw_window_row(u32 start, u32 end); //DMG
+		void draw_sprite_row(u32 start, u32 end); //DMG
 
-		void draw_background_row_cgb();
-		void draw_window_row_cgb();
-		void draw_sprite_row_cgb();
+		void draw_background_row_cgb(u32 start, u32 end);
+		void draw_window_row_cgb(u32 start, u32 end);
+		void draw_sprite_row_cgb(u32 start, u32 end);
 
 		void draw_line();
 
