@@ -361,7 +361,7 @@ void Gpu::draw_sprite_row()
 
 void Gpu::draw_window_row() 
 {
-	if (regs[IO_LY] < regs[IO_WY] || regs[IO_WX7] > 166) 
+	if (regs[IO_LY] < lwy || lwx > 166) 
 		return;
 
 	const u32 line = regs[IO_LY];
@@ -455,7 +455,7 @@ void Gpu::draw_background_row_cgb()
 
 void Gpu::draw_window_row_cgb()
 {
-	if (regs[IO_LY] < regs[IO_WY] || regs[IO_WX7] > 166)
+	if (regs[IO_LY] < lwy || lwx > 166)
 		return;
 
 	const u32 line = regs[IO_LY];
