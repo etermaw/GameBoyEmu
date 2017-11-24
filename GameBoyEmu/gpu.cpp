@@ -793,7 +793,9 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			regs[IO_LCD_STATUS] = (value & 0xF8) | (regs[IO_LCD_STATUS] & 0x3);
 
 		else if (adress == 0xFF44)
-			regs[IO_LY] = 0;
+		{
+			//it`s read-only register
+		}
 
 		else if (adress == 0xFF46)
 			launch_dma(value);
