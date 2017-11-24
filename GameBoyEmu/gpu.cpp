@@ -123,11 +123,6 @@ void Gpu::oam_mode()
 	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //transfer mode
 	unlocked_vram = false;
 
-	lsx = regs[IO_SX];
-	lsy = regs[IO_SY];
-	lwx = regs[IO_WX7];
-	lwy = regs[IO_WY];
-
 	current_state = GS_TRANSFER;
 	cycles_to_next_state = 172;
 }
@@ -264,8 +259,8 @@ void Gpu::launch_hdma()
 
 void Gpu::draw_background_row(u32 start, u32 end)
 {
-	const u32 sy = lsy;
-	const u32 sx = lsx;
+	const u32 sy = regs[IO_SY];
+	const u32 sx = regs[IO_SX];
 	const u32 line = regs[IO_LY];
 	
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_BG_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
@@ -300,12 +295,12 @@ void Gpu::draw_background_row(u32 start, u32 end)
 
 void Gpu::draw_window_row(u32 start, u32 end)
 {
-	if (regs[IO_LY] < lwy || lwx > 166)
+	if (regs[IO_LY] < regs[IO_WY] || regs[IO_WX7] > 166)
 		return;
 
 	const u32 line = regs[IO_LY];
-	const u32 wy = lwy;
-	const i32 wx = lwx - 7;
+	const u32 wy = regs[IO_WY];
+	const i32 wx = regs[IO_WX7] - 7;
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
@@ -434,8 +429,8 @@ void Gpu::draw_sprite_row(u32 start, u32 end)
 
 void Gpu::draw_background_row_cgb(u32 start, u32 end)
 {
-	const u32 sy = lsy;
-	const u32 sx = lsx;
+	const u32 sy = regs[IO_SY];
+	const u32 sx = regs[IO_SX];
 	const u32 line = regs[IO_LY];
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_BG_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
@@ -488,12 +483,12 @@ void Gpu::draw_background_row_cgb(u32 start, u32 end)
 
 void Gpu::draw_window_row_cgb(u32 start, u32 end)
 {
-	if (regs[IO_LY] < lwy || lwx > 166)
+	if (regs[IO_LY] < regs[IO_WY] || regs[IO_WX7] > 166)
 		return;
 
 	const u32 line = regs[IO_LY];
-	const u32 wy = lwy;
-	const i32 wx = lwx - 7;
+	const u32 wy = regs[IO_WY];
+	const i32 wx = regs[IO_WX7] - 7;
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800

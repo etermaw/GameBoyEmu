@@ -25,7 +25,6 @@ class Gpu final : public IMemory
 		i32 enable_delay;
 
 		u8 regs[12];
-		u8 lwx, lwy, lsx, lsy;
 
 		std::bitset<160> priority_buffer;
 		std::bitset<160> alpha_buffer;
