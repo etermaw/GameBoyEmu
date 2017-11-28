@@ -295,7 +295,7 @@ void Gpu::draw_background_row(u32 start, u32 end)
 
 void Gpu::draw_window_row(u32 start, u32 end)
 {
-	if (regs[IO_LY] < regs[IO_WY] || regs[IO_WX7] > 166)
+	if (regs[IO_LY] < regs[IO_WY] || regs[IO_WX7] > 166 || end <= regs[IO_WX7])
 		return;
 
 	const u32 line = regs[IO_LY];
@@ -316,13 +316,13 @@ void Gpu::draw_window_row(u32 start, u32 end)
 
 	const u32 start_offset = -std::min(wx, 0);
 
-	for (u32 i = std::max(0, wx); i < 160;)
+	for (u32 i = std::max((i32)start, wx); i < end;)
 	{
 		u32 tile_num = (tile_nums[line_off + (i + start_offset) / 8] + index_corrector) & 0xFF;
 		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
 		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
 
-		for (u32 j = (start_offset + i) % 8; j < 8 && i < 160; ++j, ++i)
+		for (u32 j = (start_offset + i) % 8; j < 8 && i < end; ++j, ++i)
 		{
 			u32 id = 7 - j;
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
