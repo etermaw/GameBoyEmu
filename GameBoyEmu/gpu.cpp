@@ -363,8 +363,9 @@ void Gpu::draw_sprite_row(u32 start, u32 end)
 	for (u32 i = 0; i < 40 && count < 10; ++i)
 	{
 		i32 y = oam[i*4] - 16;
+		i32 x = to_draw[i].x - 8;
 
-		if (y <= line && (y + height) > line)
+		if (y <= line && (y + height) > line && (x < (i32)end && ((x + 8) >= (i32)start)))
 		{
 			to_draw[count].y = oam[i * 4];
 			to_draw[count].x = oam[i * 4 + 1];
@@ -402,8 +403,8 @@ void Gpu::draw_sprite_row(u32 start, u32 end)
 			tile_high = flip_bits(tile_high);
 		}
 
-		const u32 begin = std::max(0, sx);
-		const u32 end = std::min(sx + 8, 160);
+		const u32 begin = std::max((i32)start, sx);
+		const u32 end = std::min(sx + 8, (i32)end);
 		const u32 sprite_end = sx + 8;
 
 		for (u32 j = begin; j < end; ++j)
