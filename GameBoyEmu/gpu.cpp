@@ -228,7 +228,7 @@ void Gpu::launch_gdma()
 	const u8* src_ptr = resolve_adress(src);
 	std::memcpy(&vram[vram_bank][dst], src_ptr, sizeof(u8) * len);
 
-	new_dma_cycles = len / 2;
+	new_dma_cycles = len * 2;
 	hdma_regs[4] = 0xFF;
 }
 
@@ -254,7 +254,7 @@ void Gpu::launch_hdma()
 		hdma_regs[4] = clear_bit(len - 1, 7);
 	}
 
-	new_dma_cycles = 8;
+	new_dma_cycles = 32;
 }
 
 void Gpu::draw_background_row(u32 start, u32 end)
