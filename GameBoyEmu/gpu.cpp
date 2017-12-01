@@ -346,7 +346,7 @@ struct oam_entry
 	}
 };
 
-void Gpu::draw_sprite_row(u32 start, u32 end)
+void Gpu::draw_sprite_row(u32 pixel_start, u32 pixel_end)
 {	
 	const u8* tile_data = &vram[0][0]; //0x8000
 	const bool sprite_size = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE);
@@ -402,8 +402,8 @@ void Gpu::draw_sprite_row(u32 start, u32 end)
 			tile_high = flip_bits(tile_high);
 		}
 
-		const u32 begin = std::max(0, sx);
-		const u32 end = std::min(sx + 8, 160);
+		const u32 begin = std::max(static_cast<i32>(pixel_start), sx);
+		const u32 end = std::min(sx + 8, static_cast<i32>(pixel_end));
 		const u32 sprite_end = sx + 8;
 
 		for (u32 j = begin; j < end; ++j)
