@@ -125,6 +125,8 @@ void Gpu::oam_mode()
 
 	current_state = GS_TRANSFER;
 	cycles_to_next_state = 172;
+
+	prepare_sprites();
 }
 
 void Gpu::transfer_mode()
@@ -257,6 +259,30 @@ void Gpu::launch_hdma()
 	new_dma_cycles = 32;
 }
 
+void Gpu::prepare_sprites()
+{ 
+	const i32 line = regs[IO_LY];
+	const i32 height = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE) ? 16 : 8;
+
+	for (u32 i = 0; i < 40 && sprite_count < 10; ++i)
+	{
+		i32 y = oam[i * 4] - 16;
+
+		if (y <= line && (y + height) > line)
+		{
+			sorted_sprites[sprite_count].y = oam[i * 4];
+			sorted_sprites[sprite_count].x = oam[i * 4 + 1];
+			sorted_sprites[sprite_count].tile_num = oam[i * 4 + 2];
+			sorted_sprites[sprite_count].atr = oam[i * 4 + 3];
+
+			++sprite_count;
+		}
+	}
+
+	if (!cgb_mode)
+		std::stable_sort(std::begin(sorted_sprites), std::next(std::begin(sorted_sprites), sprite_count));
+}
+
 void Gpu::draw_background_row(u32 start, u32 end)
 {
 	const u32 sy = regs[IO_SY];
@@ -333,19 +359,6 @@ void Gpu::draw_window_row(u32 start, u32 end)
 	}
 }
 
-struct oam_entry
-{
-	u8 x;
-	u8 y;
-	u8 tile_num;
-	u8 atr;
-
-	bool operator< (const oam_entry& other) const
-	{
-		return x < other.x;
-	}
-};
-
 void Gpu::draw_sprite_row(u32 pixel_start, u32 pixel_end)
 {	
 	const u8* tile_data = &vram[0][0]; //0x8000
@@ -355,32 +368,12 @@ void Gpu::draw_sprite_row(u32 pixel_start, u32 pixel_end)
 	const u32 line_offset = line * 160;
 	const u32 bg_alpha_color = get_dmg_color(regs[IO_BGP] & 0x3);
 
-	i32 count = 0;
-	oam_entry to_draw[10];
-
-	//in DMG sort sprites by (x,OAM id), then take first 10 which fits
-	//in CBG, just take first 10 fitting line
-	for (u32 i = 0; i < 40 && count < 10; ++i)
+	for (i32 i = sprite_count - 1; i >= 0; --i)
 	{
-		i32 y = oam[i*4] - 16;
-
-		if (y <= line && (y + height) > line)
-		{
-			to_draw[count].y = oam[i * 4];
-			to_draw[count].x = oam[i * 4 + 1];
-			to_draw[count].tile_num = oam[i * 4 + 2];
-			to_draw[count++].atr = oam[i * 4 + 3];
-		}
-	}
-
-	std::stable_sort(std::begin(to_draw), std::next(std::begin(to_draw), count));
-	
-	for (i32 i = count - 1; i >= 0; --i)
-	{
-		i32 sx = to_draw[i].x - 8;
-		i32 sy = to_draw[i].y - 16;
-		u32 tile_num = to_draw[i].tile_num;
-		u32 atr = to_draw[i].atr;
+		i32 sx = sorted_sprites[i].x - 8;
+		i32 sy = sorted_sprites[i].y - 16;
+		u32 tile_num = sorted_sprites[i].tile_num;
+		u32 atr = sorted_sprites[i].atr;
 
 		u32 tile_line = line - sy;
 		const u32 palette_num = IO_OBP_0 + check_bit(atr, 4); //0 - OBP[0], 1 - OBP[1]
@@ -548,28 +541,12 @@ void Gpu::draw_sprite_row_cgb(u32 start, u32 end)
 	const i32 height = sprite_size ? 16 : 8;
 	const u32 line_offset = line * 160;
 
-	i32 count = 0;
-	oam_entry to_draw[10];
-
-	for (u32 i = 0; i < 40 && count < 10; ++i)
+	for (i32 i = sprite_count - 1; i >= 0; --i)
 	{
-		i32 y = oam[i * 4] - 16;
-
-		if (y <= line && (y + height) > line)
-		{
-			to_draw[count].y = oam[i * 4];
-			to_draw[count].x = oam[i * 4 + 1];
-			to_draw[count].tile_num = oam[i * 4 + 2];
-			to_draw[count++].atr = oam[i * 4 + 3];
-		}
-	}
-
-	for (i32 i = count - 1; i >= 0; --i)
-	{
-		i32 sx = to_draw[i].x - 8;
-		i32 sy = to_draw[i].y - 16;
-		u32 tile_num = to_draw[i].tile_num;
-		u32 atr = to_draw[i].atr;
+		i32 sx = sorted_sprites[i].x - 8;
+		i32 sy = sorted_sprites[i].y - 16;
+		u32 tile_num = sorted_sprites[i].tile_num;
+		u32 atr = sorted_sprites[i].atr;
 
 		u32 tile_line = line - sy;
 		const u32 palette_num = atr & 0x7;

@@ -7,6 +7,19 @@ class Gpu final : public IMemory
 {
 	enum GPU_STATE { GS_VBLANK, GS_LY_153, GS_LY_153_0, GS_HBLANK, GS_OAM, GS_TRANSFER, GS_LCD_OFF, GS_TURNING_ON };
 
+	struct oam_entry
+	{
+		u8 x;
+		u8 y;
+		u8 tile_num;
+		u8 atr;
+
+		bool operator< (const oam_entry& other) const
+		{
+			return x < other.x;
+		}
+	};
+
 	private:
 		Interrupts& interrupts;
 		
@@ -25,6 +38,9 @@ class Gpu final : public IMemory
 		i32 enable_delay;
 
 		u8 regs[12];
+
+		oam_entry sorted_sprites[10];
+		i32 sprite_count;
 
 		std::bitset<160> priority_buffer;
 		std::bitset<160> alpha_buffer;
@@ -58,6 +74,8 @@ class Gpu final : public IMemory
 		void launch_dma(u8 adress);
 		void launch_gdma();
 		void launch_hdma();
+
+		void prepare_sprites();
 
 		void draw_background_row(u32 start, u32 end); //DMG
 		void draw_window_row(u32 start, u32 end); //DMG
