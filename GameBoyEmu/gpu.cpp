@@ -264,6 +264,8 @@ void Gpu::prepare_sprites()
 	const i32 line = regs[IO_LY];
 	const i32 height = check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_SIZE) ? 16 : 8;
 
+    sprite_count = 0;
+
 	for (u32 i = 0; i < 40 && sprite_count < 10; ++i)
 	{
 		i32 y = oam[i * 4] - 16;
