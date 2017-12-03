@@ -39,6 +39,7 @@ class Gpu final : public IMemory
 
 		u8 regs[12];
 
+		u32 current_pixels_drawn;
 		oam_entry sorted_sprites[10];
 		i32 sprite_count;
 
@@ -85,7 +86,7 @@ class Gpu final : public IMemory
 		void draw_window_row_cgb(u32 start, u32 end);
 		void draw_sprite_row_cgb(u32 start, u32 end);
 
-		void draw_line();
+		void draw_line(u32 pixel_start, u32 pixel_end);
 
 		void turn_off_lcd();
 		void turn_on_lcd();

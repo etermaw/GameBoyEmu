@@ -127,11 +127,13 @@ void Gpu::oam_mode()
 	cycles_to_next_state = 172;
 
 	prepare_sprites();
+	current_pixels_drawn = 0;
 }
 
 void Gpu::transfer_mode()
 {
-	draw_line();
+	if (current_pixels_drawn < 160U)
+		draw_line(current_pixels_drawn, 160U);
 
 	if (check_bit(regs[IO_LCD_STATUS], LS_HBLANK))
 		interrupts.raise(INT_LCD);
@@ -606,7 +608,7 @@ void Gpu::draw_sprite_row_cgb(u32 pixel_start, u32 pixel_end)
 	}
 }
 
-void Gpu::draw_line()
+void Gpu::draw_line(u32 pixel_start, u32 pixel_end)
 {
 	if (check_bit(regs[IO_LCD_CONTROL], LC_POWER))
 	{
@@ -616,25 +618,25 @@ void Gpu::draw_line()
 			alpha_buffer.reset();
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
-				draw_background_row_cgb(0, 160);
+				draw_background_row_cgb(pixel_start, pixel_end);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_ENABLED))
-				draw_window_row_cgb(0, 160);
+				draw_window_row_cgb(pixel_start, pixel_end);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
-				draw_sprite_row_cgb(0, 160);
+				draw_sprite_row_cgb(pixel_start, pixel_end);
 		}
 
 		else
 		{
 			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
-				draw_background_row(0, 160);
+				draw_background_row(pixel_start, pixel_end);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_ENABLED))
-				draw_window_row(0, 160);
+				draw_window_row(pixel_start, pixel_end);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
-				draw_sprite_row(0, 160);
+				draw_sprite_row(pixel_start, pixel_end);
 		}
 	}
 }
@@ -748,6 +750,12 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
 	{
+		if ((adress == 0xFF42 || adress == 0xFF47) && current_state == GS_TRANSFER)
+		{
+			draw_line(current_pixels_drawn, std::min(cycles, 160U));
+			current_pixels_drawn = std::min(cycles, 160U);
+		}
+
 		if (adress == 0xFF40)
 		{
 			bool lcd_power = check_bit(value, LC_POWER);
