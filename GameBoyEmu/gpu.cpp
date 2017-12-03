@@ -498,9 +498,9 @@ void Gpu::draw_window_row_cgb(u32 start, u32 end)
 	const u32 row_tile_line = window_line % 8;
 	const u32 line_offset = (window_line / 8) * 32;
 
-	const u32 start_offset = -std::min(wx, 0);
+	const u32 start_offset = -std::min(wx, (i32)start);
 
-	for (u32 i = std::max(0, wx); i < 160;)
+	for (u32 i = std::max((i32)start, wx); i < end;)
 	{
 		u32 tile_num = (tile_nums[line_offset + (i + start_offset) / 8] + index_corrector) & 0xFF;
 		u8 tile_atr = tile_atrs[line_offset + (i + start_offset) / 8];
@@ -522,7 +522,7 @@ void Gpu::draw_window_row_cgb(u32 start, u32 end)
 			tile_high = flip_bits(tile_high);
 		}
 
-		for (u32 j = (start_offset + i) % 8; j < 8 && i < 160; ++j, ++i)
+		for (u32 j = (start_offset + i) % 8; j < 8 && i < end; ++j, ++i)
 		{
 			u32 id = 7 - j;
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
