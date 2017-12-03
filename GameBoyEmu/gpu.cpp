@@ -750,10 +750,10 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
 	{
-		if ((adress == 0xFF42 || adress == 0xFF47) && current_state == GS_TRANSFER)
+		if ((adress == 0xFF42 || adress == 0xFF47) && current_state == GS_TRANSFER && cycles > 6)
 		{
-			draw_line(current_pixels_drawn, std::min(cycles, 160U));
-			current_pixels_drawn = std::min(cycles, 160U);
+			draw_line(current_pixels_drawn, std::min(cycles - 6, 160U)); //TODO: what is the real start point of drawing?
+			current_pixels_drawn = std::min(cycles - 6, 160U);
 		}
 
 		if (adress == 0xFF40)
