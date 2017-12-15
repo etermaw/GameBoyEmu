@@ -658,7 +658,7 @@ void Gpu::turn_off_lcd()
 void Gpu::turn_on_lcd()
 {
 	current_state = GS_TURNING_ON;
-	cycles_to_next_state = 70224;
+	cycles_to_next_state = 240;
 }
 
 const u8* Gpu::resolve_adress(u16 adress) const
