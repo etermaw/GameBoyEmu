@@ -21,8 +21,8 @@ void CPU::reset()
 
 	reg_16[AF] = 0x1180; //CGB
 	reg_16[BC] = 0x0000;
-	reg_16[DE] = 0xFF56;
-	reg_16[HL] = 0x000D;
+	reg_16[DE] = 0x0008;
+	reg_16[HL] = 0x007C;
     
 	reg_16[SP] = 0xFFFE;
 	pc = 0x100;
