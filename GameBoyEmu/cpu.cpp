@@ -37,6 +37,7 @@ u32 CPU::handle_interrupt()
 
 	//advance all things by 8 cycles
 	//TODO: watch out for dead code elimination!
+	//TODO: try to find out better alternative to this (ucode?)
 	mmu.read_byte(0x8000, 8); //GPU
 	mmu.read_byte(0xFF04, 8); //timer
 	mmu.read_byte(0xFF10, 8); //APU
