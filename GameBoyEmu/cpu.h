@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "mmu.h"
+#include "interrupts.h"
 
 //TODO those enums must be private!
 enum FLAGS { F_C = 4, F_H, F_N, F_Z };
@@ -17,6 +18,7 @@ class CPU
 		op_fun ext_instr_map[256];
 
 		MMU& mmu;
+		Interrupts& ints;
 
 		u32 cycles_ahead;
 
@@ -54,12 +56,12 @@ class CPU
 		}
 
 	public: //cpu.cpp
-		CPU(MMU& memory_controller);
+		CPU(MMU& memory_controller, Interrupts& ints);
 
 		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
 		void reset();
 		u32 step(u32 cycles);
-		u32 handle_interrupt(INTERRUPTS code);
+		u32 handle_interrupt();
 		bool is_interrupt_enabled() const;
 		void unhalt();
 

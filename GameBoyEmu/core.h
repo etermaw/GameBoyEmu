@@ -28,7 +28,6 @@ struct TestReader final : public IMemory
 {
 	u8 a;
 
-public:
 	TestReader() : a() {}
 
 	u8 read_byte(u16 adress, u32 unused) override

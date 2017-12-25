@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "cpu.h"
 
-CPU::CPU(MMU& memory_controller) : mmu(memory_controller) 
+CPU::CPU(MMU& memory_controller, Interrupts& ints) : mmu(memory_controller), ints(ints)
 {
 	fill_instruction_maps(); 
 	reset();
@@ -28,6 +28,25 @@ void CPU::reset()
 	pc = 0x100;
 
 	cycles_ahead = 0;
+}
+
+u32 CPU::handle_interrupt()
+{
+	interrupts = false;
+	mmu.write_byte(--reg_16[SP], (pc >> 8) & 0xFF, 4);
+
+	//advance all things by 8 cycles
+	//TODO: watch out for dead code elimination!
+	mmu.read_byte(0x8000, 8); //GPU
+	mmu.read_byte(0xFF04, 8); //timer
+	mmu.read_byte(0xFF10, 8); //APU
+
+	INTERRUPTS code = ints.get_first_raised();
+
+	mmu.write_byte(--reg_16[SP], pc & 0xFF, 8);
+	pc = ((code != INT_NONE) ? (0x40 + code * 8) : 0);
+
+	return 20;
 }
 
 u32 CPU::step(u32 cycles)

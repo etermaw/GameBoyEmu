@@ -1,6 +1,6 @@
 #include "core.h"
 
-Core::Core() : timer(ints), gpu(ints), cpu(mmu)
+Core::Core() : timer(ints), gpu(ints), cpu(mmu, ints)
 {
 	mmu.register_chunk(0, 0x7FFF, cart.get_memory_controller());
 	mmu.register_chunk(0x8000, 0x9FFF, &gpu); //vram
@@ -102,7 +102,7 @@ void Core::run()
 				cpu.unhalt();
 
 				if (cpu.is_interrupt_enabled())
-					sync_cycles = cpu.handle_interrupt(ints.get_first_raised());
+					sync_cycles = cpu.handle_interrupt();
 			}
 
 			debugger.step();

@@ -208,17 +208,6 @@ void CPU::fill_instruction_maps()
 
 #undef RANGE_FILL
 
-
-u32 CPU::handle_interrupt(INTERRUPTS code)
-{
-	interrupts = false; //disable all interrupts
-
-	push(pc, 4); //TODO: not sure if this is correct value
-	pc = 0x40 + code * 8; //jump to interrupt handler
-
-	return 20;
-}
-
 //internal helpers
 //--------------------------------------------------------------------------------------
 void CPU::push(u16 value, u32 cach_up_cycles)
