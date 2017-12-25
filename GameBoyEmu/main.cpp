@@ -2,6 +2,55 @@
 #include "core.h"
 #include "audio_postprocess.h"
 
+bool input_handler(Joypad& input)
+{
+	SDL_Event ev;
+	static const u32 key_map[8] = { SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_a, SDLK_b, SDLK_RETURN, SDLK_s };
+
+	while (SDL_PollEvent(&ev))
+	{
+		if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+		{
+			auto key_code = std::find(std::begin(key_map), std::end(key_map), ev.key.keysym.sym);
+
+			if (key_code != std::end(key_map))
+			{
+				auto index = std::distance(std::begin(key_map), key_code);
+
+				if (ev.type == SDL_KEYDOWN)
+					input.push_key(static_cast<KEYS>(index));
+
+				else
+					input.release_key(static_cast<KEYS>(index));
+			}
+
+			else if (ev.key.keysym.sym == SDLK_ESCAPE)
+			{
+				if (ev.type == SDL_KEYDOWN)
+				{
+					input.push_key(K_A);
+					input.push_key(K_B);
+					input.push_key(K_SELECT);
+					input.push_key(K_START);
+				}
+
+				else
+				{
+					input.release_key(K_A);
+					input.release_key(K_B);
+					input.release_key(K_SELECT);
+					input.release_key(K_START);
+				}
+			}
+		}
+
+		else if (ev.type == SDL_QUIT)
+			return false;
+	}
+
+	return true;
+}
+
 int main(int argc, char *argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -22,55 +71,6 @@ int main(int argc, char *argv[])
 		SDL_RenderClear(rend);
 		SDL_RenderCopy(rend, tex, NULL, NULL);
 		SDL_RenderPresent(rend); 
-	};
-
-	auto input_handler = [](Joypad& input)
-	{
-		SDL_Event ev;
-		static const u32 key_map[8] = { SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_a, SDLK_b, SDLK_RETURN, SDLK_s };
-
-		while (SDL_PollEvent(&ev))
-		{
-			if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
-			{
-				auto key_code = std::find(std::begin(key_map), std::end(key_map), ev.key.keysym.sym);
-
-				if (key_code != std::end(key_map))
-				{
-					auto index = std::distance(std::begin(key_map), key_code);
-
-					if (ev.type == SDL_KEYDOWN)
-						input.push_key(static_cast<KEYS>(index));
-
-					else
-						input.release_key(static_cast<KEYS>(index));
-				}
-
-                else if(ev.key.keysym.sym == SDLK_ESCAPE)
-                {
-                    if(ev.type == SDL_KEYDOWN)
-                    {
-                        input.push_key(K_A);
-                        input.push_key(K_B);
-                        input.push_key(K_SELECT);
-                        input.push_key(K_START);
-                    }
-
-                    else
-                    {
-                        input.release_key(K_A);
-                        input.release_key(K_B);
-                        input.release_key(K_SELECT);
-                        input.release_key(K_START);
-                    }
-                }
-			}
-
-			else if (ev.type == SDL_QUIT)
-				return false;
-		}
-
-		return true;
 	};
 
 	std::string file_name;
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
 	endpoints.audio_control = make_function(&Audio::dummy, &audio_post);
 	endpoints.swap_sample_buffer = make_function(&Audio::swap_buffers, &audio_post);
-	endpoints.update_input = function<bool(Joypad&)>(input_handler);
+	endpoints.update_input = make_function(&input_handler);
 	endpoints.draw_frame = function<void(const u32*)>(vblank_handler);
 
 	emu_core.attach_callbacks(endpoints);
