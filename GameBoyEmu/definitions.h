@@ -10,5 +10,3 @@ using i8 = int8_t;
 using i16 = int16_t;
 using i32 = int32_t;
 using i64 = int64_t;
-
-enum INTERRUPTS { INT_VBLANK, INT_LCD, INT_TIMER, INT_SERIAL, INT_JOYPAD, INT_NONE };

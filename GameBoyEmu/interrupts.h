@@ -2,6 +2,8 @@
 #include "stdafx.h"
 #include "IMemory.h"
 
+enum INTERRUPTS { INT_VBLANK, INT_LCD, INT_TIMER, INT_SERIAL, INT_JOYPAD, INT_NONE };
+
 class Interrupts final : public IMemory
 {
 	private:
