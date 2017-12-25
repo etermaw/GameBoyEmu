@@ -242,4 +242,7 @@ ModelManifest.xml
 .fake/
 
 # exclude tests directory
-GameBoyEmu/tests/
+tests*/
+
+#exclude any obj files
+*.o
