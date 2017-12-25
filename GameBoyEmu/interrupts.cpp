@@ -16,12 +16,18 @@ INTERRUPTS Interrupts::get_first_raised()
 	u32 counter = 0;
 	auto masked_interrupts = interrupt_flags & interrupt_mask;
 
-	while (!check_bit(masked_interrupts, counter))
-		counter++;
+	if (masked_interrupts != 0)
+	{
+		while (!check_bit(masked_interrupts, counter))
+			counter++;
 
-	interrupt_flags = clear_bit(interrupt_flags, counter);
+		interrupt_flags = clear_bit(interrupt_flags, counter);
 
-	return static_cast<INTERRUPTS>(counter);
+		return static_cast<INTERRUPTS>(counter);
+	}
+
+	else
+		return INT_NONE;
 }
 
 u8 Interrupts::read_byte(u16 adress, u32 cycles_passed)
