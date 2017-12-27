@@ -214,7 +214,12 @@ void Gpu::launch_dma(u8 adress)
 {
 	const u8* src_ptr = resolve_adress(adress * 0x100);
 	
-	std::memcpy(oam.get(), src_ptr, sizeof(u8) * 0xA0);
+	if (src_ptr)
+		std::memcpy(oam.get(), src_ptr, sizeof(u8) * 0xA0);
+
+	else
+		std::memset(oam.get(), 0xFF, sizeof(u8) * 0xA0);
+
 	dma_cycles = 648;
 	//TODO: add memory bus conficts if cpu don`t operate on HRAM during oam dma?
 	//cpu should read last word read by dma (require messing with MMU)
@@ -230,7 +235,12 @@ void Gpu::launch_gdma()
 	//TODO: what if dst + len is bigger then vram?
 	//TODO: edge case, what if someone launch GMDA not in vblank state? emulate no access
 	const u8* src_ptr = resolve_adress(src);
-	std::memcpy(&vram[vram_bank][dst], src_ptr, sizeof(u8) * len);
+
+	if (src_ptr)
+		std::memcpy(&vram[vram_bank][dst], src_ptr, sizeof(u8) * len);
+
+	else
+		std::memset(&vram[vram_bank][dst], 0xFF, sizeof(u8) * len);
 
 	new_dma_cycles = len * 2;
 	hdma_regs[4] = 0xFF;
@@ -244,7 +254,12 @@ void Gpu::launch_hdma()
 	u16 cur_pos = hdma_cur * 0x10;
 
 	const u8* src_ptr = resolve_adress(src + cur_pos);
-	std::memcpy(&vram[vram_bank][dst + cur_pos], src_ptr, sizeof(u8) * 0x10);
+
+	if (src_ptr)
+		std::memcpy(&vram[vram_bank][dst + cur_pos], src_ptr, sizeof(u8) * 0x10);
+
+	else
+		std::memset(&vram[vram_bank][dst + cur_pos], 0xFF, sizeof(u8) * 0x10);
 
 	if (--len == 0)
 	{
@@ -674,6 +689,9 @@ const u8* Gpu::resolve_adress(u16 adress) const
 
 	else if (adress >= 0xC000 && adress < 0xF000)
 		return ram->get_dma_ptr(adress);
+
+	else
+		return nullptr;
 }
 
 u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
