@@ -32,12 +32,17 @@ struct TestReader final : public IMemory
 
 	u8 read_byte(u16 adress, u32 unused) override
 	{
+		UNUSED(adress);
+		UNUSED(unused);
+
 		return 0;
 		//return 0xFF;
 	}
 
 	void write_byte(u16 adress, u8 val, u32 unused) override
 	{
+		UNUSED(unused);
+
 		if (adress == 0xFF01)
 			a = val;
 
@@ -53,6 +58,8 @@ struct SpeedSwitch : public IMemory
 
 	u8 read_byte(u16 adress, u32 unused) override
 	{
+		UNUSED(unused);
+
 		if (adress == 0xFF4D)
 		{
 			auto ret = change_bit(0xFF, double_speed, 7);

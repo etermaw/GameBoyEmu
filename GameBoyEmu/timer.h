@@ -8,24 +8,22 @@ class Timer final : public IMemory
 	private:
 		Interrupts& interrupts;
 
-		u32 cycles_ahead;
-		u32 divider_cycles;
-		u32 counter_cycles;
+		u32 cycles_ahead = 0;
+		u32 divider_cycles = 0;
+		u32 counter_cycles = 0;
 
-		u8 control;
-		u8 divider;
-		u8 counter;
-		u8 mod;
+		u8 control = 0;
+		u8 divider = 0;
+		u8 counter = 0;
+		u8 mod = 0;
 		
-		bool enabled;
+		bool enabled = false;
 
 		void step_ahead(u32 cycles);
 		void check_fault_bits();
 
 	public:
-		Timer(Interrupts& ints) : 
-			cycles_ahead(0), divider_cycles(0), counter_cycles(0), control(0), divider(0),
-			counter(0), mod(0), enabled(false), interrupts(ints) {}
+		Timer(Interrupts& ints) : interrupts(ints) {}
 
 		void step(u32 cycles);
 

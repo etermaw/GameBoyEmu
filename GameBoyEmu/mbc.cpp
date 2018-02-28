@@ -3,6 +3,8 @@
 
 u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+
 	if (adress < 0x8000)
 		return rom[adress];
 
@@ -15,6 +17,8 @@ u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
 
 void NoMBC::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x2000)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);
 
@@ -38,6 +42,8 @@ const u8* NoMBC::get_dma_ptr(u16 adress)
 
 u8 MBC1::read_byte(u16 adress, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x4000)
 		return rom[adress];
 
@@ -53,6 +59,8 @@ u8 MBC1::read_byte(u16 adress, u32 cycles_passed)
 
 void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x2000)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);
 
@@ -109,6 +117,8 @@ const u8* MBC1::get_dma_ptr(u16 adress)
 
 u8 MBC2::read_byte(u16 adress, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x4000)
 		return rom[adress];
 
@@ -124,6 +134,8 @@ u8 MBC2::read_byte(u16 adress, u32 cycles_passed)
 
 void MBC2::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x2000 && ((adress & 0x0100) == 0x0000))
 		ram_enabled = ((value & 0x0F) == 0x0A);
 
@@ -178,6 +190,8 @@ void MBC3::update_time()
 
 u8 MBC3::read_byte(u16 adress, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x4000)
 		return rom[adress];
 
@@ -193,6 +207,8 @@ u8 MBC3::read_byte(u16 adress, u32 cycles_passed)
 
 void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x2000)
 		ram_enabled = ((value & 0x0F) == 0x0A); //ram_enabled affects ram AND timer
 
@@ -243,6 +259,8 @@ const u8* MBC3::get_dma_ptr(u16 adress)
 
 u8 MBC5::read_byte(u16 adress, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x4000)
 		return rom[adress];
 
@@ -258,6 +276,8 @@ u8 MBC5::read_byte(u16 adress, u32 cycles_passed)
 
 void MBC5::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress < 0x2000)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);
 

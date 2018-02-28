@@ -4,6 +4,9 @@
 
 u8 Joypad::read_byte(u16 adress, u32 cycles_passed)
 {
+	UNUSED(adress);
+	UNUSED(cycles_passed);
+	
 	u8 ret = 0xFF;
 	
 	if (dir_keys)
@@ -17,6 +20,9 @@ u8 Joypad::read_byte(u16 adress, u32 cycles_passed)
 
 void Joypad::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	UNUSED(adress);
+	UNUSED(cycles_passed);
+	
 	dir_keys = !check_bit(value, 4); //if bit 4 is zero, then we select direction keys
 	sel_keys = !check_bit(value, 5); //if bit 5 is zero, then we select special keys
 }

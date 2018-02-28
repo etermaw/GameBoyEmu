@@ -4,7 +4,11 @@
 class Debugger
 {
 	private:
+#ifndef ENABLE_AUTO_TESTS 
 		std::vector<u16> break_points = { 0x100 };
+#else
+		std::vector<u16> break_points;
+#endif
 		std::vector<u16> memory_watches;
 
 		function<u8(u16, u32)> read_byte_callback;
@@ -25,7 +29,7 @@ class Debugger
 		bool is_breakpoint();
 		void enter_trap();
 
-		const char* dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2);
+		const char* dispatch_opcode(u8 opcode, u8 byte_1);
 		u8 get_opcode_bytes(u8 opcode);
 
 		void insert_breakpoint(u16 adress);

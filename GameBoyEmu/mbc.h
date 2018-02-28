@@ -69,18 +69,17 @@ class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 	private:
 		time_point start_time;
 		u8* rtc;
-		u8 latched_rtc[5];
-		u8 selected_time_reg;
+		u8 latched_rtc[5] = {};
+		u8 selected_time_reg = 0;
 		u8 last_write;
-		bool reg_used;
+		bool reg_used = false;
 
 		void latch_rtc();
 		void update_time();
 
 	public:
 		MBC3(const u8* rom = nullptr, u8* ram = nullptr, u8* rtc_regs = nullptr) : 
-			MBCBase(rom, ram), rtc(rtc_regs), reg_used(false), selected_time_reg(0),
-			start_time(std::chrono::system_clock::now()) {}
+			MBCBase(rom, ram), start_time(std::chrono::system_clock::now()), rtc(rtc_regs) {}
 
 		~MBC3() { if(rtc) update_time(); }
 

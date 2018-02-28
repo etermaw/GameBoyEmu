@@ -7,12 +7,10 @@ enum INTERRUPTS { INT_VBLANK, INT_LCD, INT_TIMER, INT_SERIAL, INT_JOYPAD, INT_NO
 class Interrupts final : public IMemory
 {
 	private:
-		u8 interrupt_mask;
-		u8 interrupt_flags;
+		u8 interrupt_mask = 0;
+		u8 interrupt_flags = 0;
 
 	public:
-		Interrupts() : interrupt_flags(0), interrupt_mask(0) {}
-
 		void raise(INTERRUPTS code);
 		bool is_any_raised();
 		INTERRUPTS get_first_raised();

@@ -33,7 +33,7 @@ void Debugger::enter_trap()
 	   b2 = read_byte_callback(*pc + 2, 0);
 
 	char buffer[32];
-	const char* op = dispatch_opcode(opcode, b1, b2);
+	const char* op = dispatch_opcode(opcode, b1);
 	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
 
 	printf("\nBREAK POINT! (h - help)\n");
@@ -166,7 +166,7 @@ void Debugger::enter_trap()
 			case RUN_VB:
 				printf("How many vblanks?\n");
 
-				if (scanf("%d", &num) && num < 10000)
+				if (scanf("%u", &num) && num < 10000)
 				{
 					vblanks_left = num;
 					printf("\nNext breakpoint after %d vblanks!", vblanks_left);
@@ -332,7 +332,7 @@ void Debugger::after_vblank()
 		--vblanks_left;
 }
 
-const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1, u8 byte_2)
+const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1)
 {
 	static const char* opcodes[] = {
 		"NOP", "LD BC,0x%X", "LD (BC),A", "INC BC",

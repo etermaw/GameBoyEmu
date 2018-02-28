@@ -2,7 +2,7 @@
 
 constexpr u32 SAMPLE_COUNT_TRIGGER = 512 * 48;
 
-APU::APU() : cycles_ahead(0),cur_pos(0),sample_buffers(nullptr) {}
+APU::APU() {}
 
 void APU::step_ahead(u32 cycles)
 {
