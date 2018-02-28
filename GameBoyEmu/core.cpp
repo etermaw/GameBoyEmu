@@ -1,6 +1,6 @@
 #include "core.h"
 
-Core::Core() : timer(ints), gpu(ints), cpu(mmu, ints)
+Core::Core() : cpu(mmu, ints), gpu(ints), timer(ints)
 {
 	mmu.register_chunk(0, 0x7FFF, cart.get_memory_controller());
 	mmu.register_chunk(0x8000, 0x9FFF, &gpu); //vram
@@ -28,7 +28,7 @@ Core::Core() : timer(ints), gpu(ints), cpu(mmu, ints)
 	mmu.attach_debug_callback(make_function(&Debugger::check_memory_access, &debugger));
 }
 
-bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file)
+bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file) 
 {
 	if (!cart.load_cartrige(rom_file, ram_file, rtc_file))
 		return false;

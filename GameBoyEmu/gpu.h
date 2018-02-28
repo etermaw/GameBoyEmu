@@ -32,40 +32,40 @@ class Gpu final : public IMemory
 		GPU_STATE current_state;
 		u32 cycles_to_next_state;
 
-		u32 cycles_ahead;
-		u32 cycles;
-		i32 dma_cycles;
-		i32 enable_delay;
+		u32 cycles_ahead = 0;
+		u32 cycles = 0;
+		i32 dma_cycles = 0;
+		i32 enable_delay = 0;
 
-		u8 regs[12];
+		u8 regs[12] = {}; //TODO: initial values
 
-		u32 current_pixels_drawn;
-		oam_entry sorted_sprites[10];
-		i32 sprite_count;
+		u32 current_pixels_drawn = 0;
+		oam_entry sorted_sprites[10] = {};
+		i32 sprite_count = 0;
 
 		std::bitset<160> priority_buffer;
 		std::bitset<160> alpha_buffer;
-		u32 hdma_cur;
-		u32 new_dma_cycles;
+		u32 hdma_cur = 0;
+		u32 new_dma_cycles = 0;
 		
 		u8 cgb_bgp[64];
 		u8 cgb_obp[64];
 
 		u32 color_bgp[8][4];
 		u32 color_obp[8][4];
-		u8 cgb_bgp_index;
-		u8 cgb_obp_index;
-		u8 hdma_regs[5];
-		u8 vram_bank;
+		u8 cgb_bgp_index = 0;
+		u8 cgb_obp_index = 0;
+		u8 hdma_regs[5]; //TODO: inital values?
+		u8 vram_bank = 0;
 		
-		bool entering_vblank;
-		bool cgb_mode;
-		bool cgb_bgp_autoinc;
-		bool cgb_obp_autoinc;
-		bool hdma_active;
-		bool double_speed;
-		bool unlocked_vram;
-		bool unlocked_oam;
+		bool entering_vblank = false;
+		bool cgb_mode = false;
+		bool cgb_bgp_autoinc = false;
+		bool cgb_obp_autoinc = false;
+		bool hdma_active = false;
+		bool double_speed = false;
+		bool unlocked_vram = true;
+		bool unlocked_oam = true;
 
 		void vb_mode();
 		void hb_mode();

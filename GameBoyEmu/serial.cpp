@@ -5,6 +5,8 @@ Serial::Serial(Interrupts& ints) : int_handler(ints), cgb_mode(false), double_sp
 
 u8 Serial::read_byte(u16 adress, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress == 0xFF01)
 		return reg;
 
@@ -17,6 +19,8 @@ u8 Serial::read_byte(u16 adress, u32 cycles_passed)
 
 void Serial::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress == 0xFF01)
 		reg = value;
 

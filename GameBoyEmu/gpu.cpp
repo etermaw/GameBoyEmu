@@ -39,11 +39,7 @@ u32 cgb_to_rgb(u16 cgb)
 	return 0xFF000000 | (r << 16) | (g << 8) | b;
 }
 
-Gpu::Gpu(Interrupts& ints) : 
-	interrupts(ints), regs(), cycles(0), dma_cycles(0), enable_delay(0), 
-	entering_vblank(), cycles_ahead(0), vram_bank(0), cgb_mode(false), new_dma_cycles(0),
-	hdma_cur(0), hdma_active(false),
-	double_speed(false), unlocked_vram(true), unlocked_oam(true)
+Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 {
 	regs[IO_LCD_CONTROL] = 0x91;
 	regs[IO_BGP] = 0xFC;
@@ -80,7 +76,7 @@ void Gpu::vb_mode()
 	else
 	{
 		current_state = GS_LY_153;
-		cycles_to_next_state = 92;
+		cycles_to_next_state = 4;
 	}
 }
 
@@ -176,7 +172,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 					interrupts.raise(INT_LCD);
 
 				current_state = GS_LY_153_0;
-				cycles_to_next_state = 456 - 92;
+				cycles_to_next_state = 456 - 4;
 				break;
 
 			case GS_LY_153_0:

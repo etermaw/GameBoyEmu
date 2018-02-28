@@ -32,6 +32,8 @@ INTERRUPTS Interrupts::get_first_raised()
 
 u8 Interrupts::read_byte(u16 adress, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+
 	if (adress == 0xFF0F)
 		return (interrupt_flags | 0xE0);
 
@@ -44,6 +46,8 @@ u8 Interrupts::read_byte(u16 adress, u32 cycles_passed)
 
 void Interrupts::write_byte(u16 adress, u8 value, u32 cycles_passed)
 {
+	UNUSED(cycles_passed);
+	
 	if (adress == 0xFF0F)
 		interrupt_flags = value & 0x1F;
 
