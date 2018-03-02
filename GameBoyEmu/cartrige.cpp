@@ -216,7 +216,7 @@ void Cartrige::dispatch()
 		memory_interface = std::move(tmp);
 	}
 
-	else if (in_range(type, 0x1A, 0x1E))
+	else if (in_range(type, 0x19, 0x1E))
 	{
 		auto tmp = std::make_unique<MBC5>(MBC5(rom.get(), ram.get()));
 		dma_interface = tmp.get();
