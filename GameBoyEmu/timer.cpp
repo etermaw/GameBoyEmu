@@ -12,6 +12,8 @@ void Timer::step_ahead(u32 cycles)
 	divider += divider_cycles / 256;
 	divider_cycles %= 256;
 
+	overflow = false;
+
 	if (enabled)
 	{
 		counter_cycles += cycles;
@@ -20,6 +22,10 @@ void Timer::step_ahead(u32 cycles)
 
 		if (ticks + counter > 0xFF)
 		{
+			//while reloading counter (TMA -> TIMA), we can see 0 in TIMA for 4 cycles
+			if (ticks + counter == 0x100 && counter_cycles < 4)
+				overflow = true;
+
 			interrupts.raise(INT_TIMER);
 			ticks -= (0x100 - counter);
 			counter = mod + ticks % (0x100 - mod);
@@ -39,7 +45,7 @@ void Timer::check_fault_bits()
 		if (counter == 0xFF)
 		{
 			interrupts.raise(INT_TIMER);
-			counter = mod;
+			counter = mod; //TODO: oveflow = true; [only when cycles < 4]?
 		}
 
 		else
@@ -67,7 +73,7 @@ u8 Timer::read_byte(u16 adress, u32 cycles_passed)
 		return divider;
 
 	else if (adress == 0xFF05)
-		return counter;
+		return (overflow) ? 0 : counter;
 
 	else if (adress == 0xFF06)
 		return mod;
