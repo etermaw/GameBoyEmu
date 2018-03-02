@@ -119,7 +119,12 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		counter = value;
 
 	else if (adress == 0xFF06)
+	{
 		mod = value;
+
+		if (overflow || reload)
+			counter = mod;
+	}
 
 	else if (adress == 0xFF07)
 	{
