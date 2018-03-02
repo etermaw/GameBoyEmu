@@ -4,8 +4,8 @@
 void Timer::step_ahead(u32 cycles)
 {
 	//~4kHz, ~262kHz, ~65,5kHz, ~16kHz
-	static const u16 tick_masks[] = {1023, 15, 63, 255}; //tick cycles {1024, 16, 64, 256}
-	static const u8 tick_shifts[] = {10, 4, 6, 8};
+	static const u32 tick_masks[] = {1023, 15, 63, 255}; //tick cycles {1024, 16, 64, 256}
+	static const u32 tick_shifts[] = {10, 4, 6, 8};
 
 	//divider ticks at frequency ~16kHz
 	divider_cycles += cycles;
