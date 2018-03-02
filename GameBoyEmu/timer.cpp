@@ -27,7 +27,6 @@ void Timer::step_ahead(u32 cycles)
 
 		if (ticks + counter > 0xFF)
 		{
-			//while reloading counter (TMA -> TIMA), we can see 0 in TIMA for 4 cycles
 			if (ticks + counter == 0x100)
 			{
 				if (counter_cycles < 4)
