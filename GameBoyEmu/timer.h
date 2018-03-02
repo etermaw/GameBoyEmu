@@ -19,6 +19,7 @@ class Timer final : public IMemory
 		
 		bool enabled = false;
 		bool overflow = false;
+		bool reload = false;
 
 		void step_ahead(u32 cycles);
 		void check_fault_bits();

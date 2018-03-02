@@ -12,6 +12,11 @@ void Timer::step_ahead(u32 cycles)
 	divider += divider_cycles / 256;
 	divider_cycles %= 256;
 
+	reload = false;
+
+	if (overflow && cycles == 4)
+		reload = true;
+
 	overflow = false;
 
 	if (enabled)
@@ -23,8 +28,14 @@ void Timer::step_ahead(u32 cycles)
 		if (ticks + counter > 0xFF)
 		{
 			//while reloading counter (TMA -> TIMA), we can see 0 in TIMA for 4 cycles
-			if (ticks + counter == 0x100 && counter_cycles < 4)
-				overflow = true;
+			if (ticks + counter == 0x100)
+			{
+				if (counter_cycles < 4)
+					overflow = true;
+
+				else if (counter_cycles < 8)
+					reload = true;
+			}
 
 			interrupts.raise(INT_TIMER);
 			ticks -= (0x100 - counter);
@@ -104,7 +115,7 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		counter_cycles = 0;
 	}
 
-	else if (adress == 0xFF05)
+	else if (adress == 0xFF05 && !reload)
 		counter = value;
 
 	else if (adress == 0xFF06)
