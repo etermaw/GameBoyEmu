@@ -73,7 +73,7 @@ void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	else if (adress < 0x6000)
 	{
 		if (ram_mode)
-			ram_bank = value & 0x03;
+			ram_bank = value & 0x03; //TODO: there might be 1 bank, or even just 1/4 of bank!
 
 		else
 		{
