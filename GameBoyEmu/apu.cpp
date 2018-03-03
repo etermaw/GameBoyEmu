@@ -118,23 +118,17 @@ void APU::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	if (enabled)
 	{
-		//=====================================================
-		//TODO: if we enable length AND sequencer_frame % 2 == 1, tick length counter!
-		//TODO: (by enabling i mean: disabled [len] -> enabled [len])
-
 		if (adress >= 0xFF10 && adress <= 0xFF14)
-			channel_1.write_reg(adress - 0xFF10, value);
+			channel_1.write_reg(adress - 0xFF10, value, sequencer_frame);
 
 		else if (adress >= 0xFF16 && adress <= 0xFF19)
-			channel_2.write_reg(adress - 0xFF15, value); //why ff15? because we skip 1st register!
+			channel_2.write_reg(adress - 0xFF15, value, sequencer_frame); //why ff15? because we skip 1st register!
 
 		else if (adress >= 0xFF1A && adress <= 0xFF1E)
-			channel_3.write_reg(adress - 0xFF1A, value);
+			channel_3.write_reg(adress - 0xFF1A, value, sequencer_frame);
 
 		else if (adress >= 0xFF20 && adress <= 0xFF23)
-			channel_4.write_reg(adress - 0xFF20, value);
-
-		//=====================================================
+			channel_4.write_reg(adress - 0xFF20, value, sequencer_frame);
 
 		else if (adress >= 0xFF24 && adress <= 0xFF25)
 			dummy_regs[adress - 0xFF24] = value;

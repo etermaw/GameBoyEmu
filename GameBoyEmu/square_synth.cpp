@@ -166,7 +166,7 @@ u8 SquareSynth::read_reg(u16 reg_num)
 		return 0xFF; //reg 3 is write-only!
 }
 
-void SquareSynth::write_reg(u16 reg_num, u8 value)
+void SquareSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 {
 	if (reg_num == 0)
 	{
@@ -200,8 +200,14 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 
 	else if (reg_num == 4)
 	{
-		length_enabled = check_bit(value, 6);
+		const bool old_enable = length_enabled;
+		const bool len_enable = check_bit(value, 6);
+
+		length_enabled = len_enable;
 		freq = (freq & 0xFF) | ((value & 0x7) << 8);
+
+		if (!old_enable && len_enable && ((seq_frame % 2) == 1))
+			update_length();
 
 		if (check_bit(value, 7))
 			start_playing();
