@@ -123,11 +123,14 @@ void WaveSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 		length_enabled = len_enable;
 		freq_high = value & 0x7;
 
-		if (!old_enable && len_enable && ((seq_frame % 2) == 1))
-			update_length();		
-
 		if (check_bit(value, 7))
 			start_playing();
+
+		if (!old_enable && len_enable && ((seq_frame % 2) == 1))
+			update_length();
+
+		if (((seq_frame % 2) == 1) && length_counter == 256 && (value & 0xC0) == 0xC0)
+			length_counter = 255;
 	}
 }
 
