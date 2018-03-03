@@ -26,6 +26,7 @@ class SquareSynth
 		bool dac_enabled = false;
 		bool sweep_enabled = false;
 		bool sweep_neg = false;
+		bool sweep_calculated = false;
 
 		u32 calculate_freq();
 		void start_playing();

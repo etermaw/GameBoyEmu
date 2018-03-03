@@ -8,12 +8,16 @@ u32 SquareSynth::calculate_freq()
 	if (new_freq > 2047)
 		enabled = false;
 
+	if (sweep_neg)
+		sweep_calculated = true;
+
 	return new_freq;
 }
 
 void SquareSynth::start_playing()
 {
 	enabled = true;
+	sweep_calculated = false;
 
 	if (length_counter == 0)
 		length_counter = 64;
@@ -68,6 +72,7 @@ void SquareSynth::reset()
 	dac_enabled = false;
 	sweep_enabled = false;
 	sweep_neg = false;
+	sweep_calculated = false;
 }
 
 void SquareSynth::update_sweep()
@@ -89,8 +94,6 @@ void SquareSynth::update_sweep()
 				freq = new_freq;
 				calculate_freq();
 			}
-
-			calculate_freq(); //is it required?
 		}
 	}
 }
@@ -170,9 +173,14 @@ void SquareSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 {
 	if (reg_num == 0)
 	{
+		const bool old_neg = sweep_neg;
+
 		sweep_load = (value >> 4) & 0x7;
 		sweep_neg = check_bit(value, 3);
 		sweep_shift = value & 0x7;
+
+		if (old_neg && !sweep_neg && sweep_calculated && enabled)
+			enabled = false;
 	}
 
 	else if (reg_num == 1)
