@@ -28,7 +28,7 @@ void SquareSynth::start_playing()
 	if (sweep_counter == 0)
 		sweep_counter = 8;
 
-	sweep_enabled = (sweep_counter > 0) || (sweep_shift > 0);
+	sweep_enabled = (sweep_load > 0) || (sweep_shift > 0);
 
 	if (sweep_shift > 0)
 		calculate_freq();
