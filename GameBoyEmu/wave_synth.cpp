@@ -141,7 +141,7 @@ u8 WaveSynth::read_ram(u16 adress)
 
 void WaveSynth::write_ram(u16 adress, u8 value)
 {
-	wave_ram[adress] = value;
+	wave_ram[enabled ? (buffer_pos / 2) : adress] = value;
 }
 
 void WaveSynth::serialize(std::ostream& stream)
