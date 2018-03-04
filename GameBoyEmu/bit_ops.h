@@ -29,6 +29,12 @@ constexpr inline bool check_bit(T num, size_t pos)
 	return (num >> pos) & 1;
 }
 
+template<class T>
+constexpr inline bool is_pow_of_2(T num)
+{
+	return num != 0 && (num & (num - 1)) == 0;
+}
+
 //swap all bits eg. flip_bits(00110010) == 01001100
 inline u8 flip_bits(u8 b)
 {
