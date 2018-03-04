@@ -8,13 +8,12 @@ class MBCBase
 		const u8* rom;
 		u8* ram;
 
-		u32 rom_bank;
-		u32 ram_bank;
-		bool ram_enabled;
+		u32 rom_bank = 1;
+		u32 ram_bank = 0;
+		bool ram_enabled = false;
 		
 	public:
-		MBCBase(const u8* rom = nullptr, u8* ram = nullptr) : 
-			rom(rom), ram(ram), rom_bank(1), ram_bank(0), ram_enabled(false) {}
+		MBCBase(const u8* rom = nullptr, u8* ram = nullptr) :  rom(rom), ram(ram) {}
 };
 
 class NoMBC final : public IMemory, public IDmaMemory
@@ -22,10 +21,10 @@ class NoMBC final : public IMemory, public IDmaMemory
 	private:
 		const u8* rom;
 		u8* ram;
-		bool ram_enabled;
+		bool ram_enabled = false;
 
 	public:
-		NoMBC(const u8* rom = nullptr, u8* ram = nullptr) : rom(rom), ram(ram), ram_enabled(false) {}
+		NoMBC(const u8* rom = nullptr, u8* ram = nullptr) : rom(rom), ram(ram) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
@@ -36,14 +35,13 @@ class NoMBC final : public IMemory, public IDmaMemory
 class MBC1 final : public MBCBase, public IMemory, public IDmaMemory
 {
 	private:
-		u8 rom_num_high;
-		u8 rom_num_low;
+		u8 rom_num_high = 0;
+		u8 rom_num_low = 1;
 
-		bool ram_mode;
+		bool ram_mode = false;
 
 	public:
-		MBC1(const u8* rom, u8* ram) : 
-			MBCBase(rom, ram), rom_num_high(0), rom_num_low(1), ram_mode(false) {}
+		MBC1(const u8* rom, u8* ram) : MBCBase(rom, ram) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
@@ -71,7 +69,7 @@ class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 		u8* rtc;
 		u8 latched_rtc[5] = {};
 		u8 selected_time_reg = 0;
-		u8 last_write;
+		u8 last_write = 0;
 		bool reg_used = false;
 
 		void latch_rtc();
@@ -99,4 +97,3 @@ class MBC5 final : public MBCBase, public IMemory, public IDmaMemory
 
 		const u8* get_dma_ptr(u16 adress) override;
 };
-
