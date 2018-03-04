@@ -8,7 +8,11 @@ void MBCBase::switch_rom_bank(u32 new_bank_rom)
 
 void MBCBase::switch_bank_ram(u32 new_ram_bank)
 {
-	ram_bank = new_ram_bank; //TODO: edge cases: 1/4,1 bank (2kb, 8kb) + mbc2 (512x4 bits)
+	if (max_banks_ram > 0)
+		ram_bank = new_ram_bank & (max_banks_ram - 1); //TODO: edge cases: 1/4,1 bank (2kb, 8kb) + mbc2 (512x4 bits)
+
+	else
+		ram_bank = 0;
 }
 
 u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
