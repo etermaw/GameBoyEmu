@@ -3,7 +3,7 @@
 
 void MBCBase::switch_rom_bank(u32 new_bank_rom)
 {
-	rom_bank = new_bank_rom; //& (max_rom_banks - 1);
+	rom_bank = new_bank_rom & (max_rom_banks - 1); //TODO: ensure that max_rom_banks is power of 2
 }
 
 void MBCBase::switch_bank_ram(u32 new_ram_bank)
