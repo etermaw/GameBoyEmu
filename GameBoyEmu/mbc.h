@@ -5,15 +5,20 @@
 class MBCBase
 {
 	protected:
-		const u8* rom;
-		u8* ram;
+		const u8* rom = nullptr;
+		u8* ram = nullptr;
 
 		u32 rom_bank = 1;
 		u32 ram_bank = 0;
+		//u32 max_rom_banks = 0;
 		bool ram_enabled = false;
+
+		//swapped names, because single letter difference is not enough
+		void switch_rom_bank(u32 new_bank_rom);
+		void switch_bank_ram(u32 new_ram_bank);
 		
 	public:
-		MBCBase(const u8* rom = nullptr, u8* ram = nullptr) :  rom(rom), ram(ram) {}
+		MBCBase(const u8* rom, u8* ram/*, u32 rom_banks*/) :  rom(rom), ram(ram) {}//, max_rom_banks(rom_banks) {}
 };
 
 class NoMBC final : public IMemory, public IDmaMemory

@@ -1,6 +1,16 @@
 #include "stdafx.h"
 #include "mbc.h"
 
+void MBCBase::switch_rom_bank(u32 new_bank_rom)
+{
+	rom_bank = new_bank_rom; //& (max_rom_banks - 1);
+}
+
+void MBCBase::switch_bank_ram(u32 new_ram_bank)
+{
+	ram_bank = new_ram_bank; //TODO: edge cases: 1/4,1 bank (2kb, 8kb) + mbc2 (512x4 bits)
+}
+
 u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
 {
 	UNUSED(cycles_passed);
@@ -67,18 +77,18 @@ void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	else if (adress < 0x4000)
 	{
 		rom_num_low = std::max(1, value & 0x1F);
-		rom_bank = ((ram_mode ? 0 : rom_num_high) << 5) | rom_num_low;
+		switch_rom_bank(((ram_mode ? 0 : rom_num_high) << 5) | rom_num_low);
 	}
 
 	else if (adress < 0x6000)
 	{
 		if (ram_mode)
-			ram_bank = value & 0x03; //TODO: there might be 1 bank, or even just 1/4 of bank!
+			switch_bank_ram(value & 0x03); //TODO: there might be 1 bank, or even just 1/4 of bank!
 
 		else
 		{
 			rom_num_high = value & 0x3;
-			rom_bank = (rom_num_high << 5) | rom_num_low;
+			switch_rom_bank((rom_num_high << 5) | rom_num_low);
 		}
 	}
 
@@ -87,12 +97,12 @@ void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		ram_mode = check_bit(value, 0) && (ram != nullptr);
 
 		if (ram_mode)
-			rom_bank = rom_num_low & 0x1F;
+			switch_rom_bank(rom_num_low & 0x1F);
 
 		else
 		{
-			rom_bank = (rom_num_high << 5) | rom_num_low;
-			ram_bank = 0;
+			switch_rom_bank((rom_num_high << 5) | rom_num_low);
+			switch_bank_ram(0);
 		}
 	}
 
@@ -140,7 +150,7 @@ void MBC2::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		ram_enabled = ((value & 0x0F) == 0x0A);
 
 	else if (adress < 0x4000 && ((adress & 0x0100) == 0x0100))
-		rom_bank = value & 0x0F;
+		switch_rom_bank(value & 0x0F);
 
 	else if (adress >= 0xA000 && adress < 0xA200 && ram_enabled)
 		ram[adress - 0xA000] = value & 0xF;
@@ -213,14 +223,14 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		ram_enabled = ((value & 0x0F) == 0x0A); //ram_enabled affects ram AND timer
 
 	else if (adress < 0x4000)
-		rom_bank = std::max(1, value & 0x7F);
+		switch_rom_bank(std::max(1, value & 0x7F));
 	
 	else if (adress < 0x6000)
 	{
 		if (value < 0x04) 
 		{
 			reg_used = false;
-			ram_bank = value;
+			switch_bank_ram(value);
 		}
 
 		else if (rtc != nullptr && value >= 0x08 && value <= 0x0C) //TODO: keep an eye on it
@@ -282,13 +292,13 @@ void MBC5::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);
 
 	else if (adress < 0x3000)
-		rom_bank = (rom_bank & 0x100) | value;
+		switch_rom_bank((rom_bank & 0x100) | value);
 
 	else if (adress < 0x4000)
-		rom_bank = change_bit(rom_bank, value & 1, 8);
+		switch_rom_bank(change_bit(rom_bank, value & 1, 8));
 
 	else if (adress < 0x6000)
-		ram_bank = value & 0x0F;
+		switch_bank_ram(value & 0x0F);
 
 	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
 		ram[adress - 0xA000 + (ram_bank * 0x2000)] = value;
