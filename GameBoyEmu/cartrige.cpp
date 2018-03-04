@@ -227,4 +227,5 @@ void Cartrige::dispatch()
 
 	else
 		memory_interface = nullptr;
+		//TODO: inform somehow that there is some unknown MBC
 }

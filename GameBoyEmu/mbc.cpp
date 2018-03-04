@@ -66,7 +66,7 @@ u8 MBC1::read_byte(u16 adress, u32 cycles_passed)
 	else if (adress < 0x8000)
 		return rom[adress - 0x4000 + (rom_bank * 0x4000)];
 
-	else if (adress >= 0xA000 && adress < 0xC000)
+	else if (adress >= 0xA000 && adress < 0xC000) //TODO: check if ram_size == 0x800, and prevent out of range access
 		return (ram_enabled ? ram[adress - 0xA000 + (ram_bank * 0x2000)] : 0xFF);
 
 	else
