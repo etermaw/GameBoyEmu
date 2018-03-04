@@ -20,7 +20,7 @@ class MBCBase
 		
 	public:
 		MBCBase(const u8* rom, u8* ram, u32 rom_banks, u32 ram_banks) : 
-			rom(rom), ram(ram), max_rom_banks(rom_banks), max_banks_ram(ram_banks) {}
+			rom(rom), ram(ram), max_rom_banks(rom_banks), max_banks_ram(std::min(1U, ram_banks)) {}
 };
 
 class NoMBC final : public IMemory, public IDmaMemory

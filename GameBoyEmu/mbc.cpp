@@ -3,16 +3,12 @@
 
 void MBCBase::switch_rom_bank(u32 new_bank_rom)
 {
-	rom_bank = new_bank_rom & (max_rom_banks - 1); //TODO: ensure that max_rom_banks is power of 2
+	rom_bank = new_bank_rom & (max_rom_banks - 1); //TODO: ensure that max_rom_banks is power of 2 AND >= 2
 }
 
 void MBCBase::switch_bank_ram(u32 new_ram_bank)
 {
-	if (max_banks_ram > 0)
-		ram_bank = new_ram_bank & (max_banks_ram - 1); //TODO: edge cases: 1/4,1 bank (2kb, 8kb) + mbc2 (512x4 bits)
-
-	else
-		ram_bank = 0;
+	ram_bank = new_ram_bank & (max_banks_ram - 1); //TODO ensure that max... is power of 2 AND >= 1
 }
 
 u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
@@ -87,7 +83,7 @@ void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	else if (adress < 0x6000)
 	{
 		if (ram_mode)
-			switch_bank_ram(value & 0x03); //TODO: there might be 1 bank, or even just 1/4 of bank!
+			switch_bank_ram(value & 0x03);
 
 		else
 		{
