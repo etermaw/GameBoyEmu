@@ -136,7 +136,7 @@ void WaveSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 
 u8 WaveSynth::read_ram(u16 adress)
 {
-	return wave_ram[adress];
+	return wave_ram[enabled ? (buffer_pos / 2) : adress];
 }
 
 void WaveSynth::write_ram(u16 adress, u8 value)
