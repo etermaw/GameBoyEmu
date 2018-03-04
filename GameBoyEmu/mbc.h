@@ -10,8 +10,8 @@ class MBCBase
 
 		u32 rom_bank = 1;
 		u32 ram_bank = 0;
-		u32 max_rom_banks = 0;
-		u32 max_banks_ram = 0;
+		const u32 max_rom_banks;
+		const u32 max_banks_ram;
 		bool ram_enabled = false;
 
 		//swapped names, because single letter difference is not enough
@@ -20,7 +20,7 @@ class MBCBase
 		
 	public:
 		MBCBase(const u8* rom, u8* ram, u32 rom_banks, u32 ram_banks) : 
-			rom(rom), ram(ram), max_rom_banks(rom_banks), max_banks_ram(std::min(1U, ram_banks)) {}
+			rom(rom), ram(ram), max_rom_banks(rom_banks), max_banks_ram(std::max(1U, ram_banks)) {}
 };
 
 class NoMBC final : public IMemory, public IDmaMemory

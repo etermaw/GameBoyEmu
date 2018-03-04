@@ -3,12 +3,18 @@
 
 void MBCBase::switch_rom_bank(u32 new_bank_rom)
 {
-	rom_bank = new_bank_rom & (max_rom_banks - 1); //TODO: ensure that max_rom_banks is power of 2 AND >= 2
+	//cartrige code sets this to 2 << N, so any other values are errors
+	assert(is_pow_of_2(max_rom_banks) && max_rom_banks >= 2);
+
+	rom_bank = new_bank_rom & (max_rom_banks - 1);
 }
 
 void MBCBase::switch_bank_ram(u32 new_ram_bank)
 {
-	ram_bank = new_ram_bank & (max_banks_ram - 1); //TODO ensure that max... is power of 2 AND >= 1
+	//catch all errors, value 0 should be impossible (check constructor)
+	assert(is_pow_of_2(max_banks_ram) && max_banks_ram >= 1);
+
+	ram_bank = new_ram_bank & (max_banks_ram - 1);
 }
 
 u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
