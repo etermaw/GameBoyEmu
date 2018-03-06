@@ -8,10 +8,11 @@ class MBCBase
 		const u8* rom = nullptr;
 		u8* ram = nullptr;
 
-		u32 rom_bank = 1;
-		u32 ram_bank = 0;
 		const u32 max_rom_banks;
 		const u32 max_banks_ram;
+		const u32 ram_size;
+		u32 rom_bank = 1;
+		u32 ram_bank = 0;
 		bool ram_enabled = false;
 
 		//swapped names, because single letter difference is not enough
@@ -19,19 +20,22 @@ class MBCBase
 		void switch_bank_ram(u32 new_ram_bank);
 		
 	public:
-		MBCBase(const u8* rom, u8* ram, u32 rom_banks, u32 ram_banks) : 
-			rom(rom), ram(ram), max_rom_banks(rom_banks), max_banks_ram(std::max(1U, ram_banks)) {}
+		MBCBase(const u8* rom, u8* ram, u32 rom_banks, u32 max_ram_size) :
+			rom(rom), ram(ram), max_rom_banks(rom_banks), max_banks_ram(std::max(1U, max_ram_size/0x2000)),
+			ram_size(max_ram_size) {}
 };
 
 class NoMBC final : public IMemory, public IDmaMemory
 {
 	private:
-		const u8* rom;
-		u8* ram;
+		const u8* rom = nullptr;
+		u8* ram = nullptr;
 		bool ram_enabled = false;
 
+		const u32 ram_size;
+
 	public:
-		NoMBC(const u8* rom = nullptr, u8* ram = nullptr) : rom(rom), ram(ram) {}
+		NoMBC(const u8* rom, u8* ram, u32 max_ram_size) : rom(rom), ram(ram), ram_size(max_ram_size) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
@@ -48,7 +52,7 @@ class MBC1 final : public MBCBase, public IMemory, public IDmaMemory
 		bool ram_mode = false;
 
 	public:
-		MBC1(const u8* rom, u8* ram, u32 rom_banks, u32 ram_banks) : MBCBase(rom, ram, rom_banks, ram_banks) {}
+		MBC1(const u8* rom, u8* ram, u32 rom_banks, u32 ram_size) : MBCBase(rom, ram, rom_banks, ram_size) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
@@ -59,7 +63,7 @@ class MBC1 final : public MBCBase, public IMemory, public IDmaMemory
 class MBC2 final : public MBCBase, public IMemory, public IDmaMemory
 {
 	public:
-		MBC2(const u8* rom, u8* ram, u32 rom_banks, u32 ram_banks) : MBCBase(rom, ram, rom_banks, ram_banks) {}
+		MBC2(const u8* rom, u8* ram, u32 rom_banks, u32 ram_size) : MBCBase(rom, ram, rom_banks, ram_size) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
@@ -83,8 +87,8 @@ class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 		void update_time();
 
 	public:
-		MBC3(const u8* rom, u8* ram, u8* rtc_regs, u32 rom_banks, u32 ram_banks) : 
-			MBCBase(rom, ram, rom_banks, ram_banks), start_time(std::chrono::system_clock::now()), rtc(rtc_regs) {}
+		MBC3(const u8* rom, u8* ram, u8* rtc_regs, u32 rom_banks, u32 ram_size) :
+			MBCBase(rom, ram, rom_banks, ram_size), start_time(std::chrono::system_clock::now()), rtc(rtc_regs) {}
 
 		~MBC3() { if(rtc) update_time(); }
 
@@ -97,7 +101,7 @@ class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 class MBC5 final : public MBCBase, public IMemory, public IDmaMemory
 {
 	public:
-		MBC5(const u8* rom, u8* ram, u32 rom_banks, u32 ram_banks) : MBCBase(rom, ram, rom_banks, ram_banks) {}
+		MBC5(const u8* rom, u8* ram, u32 rom_banks, u32 ram_size) : MBCBase(rom, ram, rom_banks, ram_size) {}
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;

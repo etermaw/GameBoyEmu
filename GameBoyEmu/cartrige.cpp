@@ -188,39 +188,38 @@ void Cartrige::dispatch()
 	rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
 	const u8 type = header->cartrige_type;
 	const u32 rom_banks = 2 << header->rom_size;
-	const u32 ram_banks = ram_size / 0x2000;
 
 	if (type == 0x00 || type == 0x08 || type == 0x09)
 	{
-		auto tmp = std::make_unique<NoMBC>(NoMBC(rom.get(), ram.get()));
+		auto tmp = std::make_unique<NoMBC>(NoMBC(rom.get(), ram.get(), ram_size));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}
 
 	else if (in_range(type, 0x01, 0x03))
 	{
-		auto tmp = std::make_unique<MBC1>(MBC1(rom.get(), ram.get(), rom_banks, ram_banks));
+		auto tmp = std::make_unique<MBC1>(MBC1(rom.get(), ram.get(), rom_banks, ram_size));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}
 
 	else if (in_range(type, 0x05, 0x06))
 	{
-		auto tmp = std::make_unique<MBC2>(MBC2(rom.get(), ram.get(), rom_banks, ram_banks));
+		auto tmp = std::make_unique<MBC2>(MBC2(rom.get(), ram.get(), rom_banks, ram_size));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}
 
 	else if (in_range(type, 0x0F, 0x13))
 	{
-		auto tmp = std::make_unique<MBC3>(MBC3(rom.get(), ram.get(), (type <= 0x10 ? rtc_regs : nullptr), rom_banks, ram_banks));
+		auto tmp = std::make_unique<MBC3>(MBC3(rom.get(), ram.get(), (type <= 0x10 ? rtc_regs : nullptr), rom_banks, ram_size));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}
 
 	else if (in_range(type, 0x19, 0x1E))
 	{
-		auto tmp = std::make_unique<MBC5>(MBC5(rom.get(), ram.get(), rom_banks, ram_banks));
+		auto tmp = std::make_unique<MBC5>(MBC5(rom.get(), ram.get(), rom_banks, ram_size));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}

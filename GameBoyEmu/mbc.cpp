@@ -25,7 +25,15 @@ u8 NoMBC::read_byte(u16 adress, u32 cycles_passed)
 		return rom[adress];
 
 	else if (adress >= 0xA000 && adress < 0xC000)
-		return ram_enabled ? ram[adress - 0xA000] : 0xFF;
+	{
+		const u32 real_address = adress - 0xA000;
+
+		if (ram_enabled && real_address < ram_size)
+			return ram[real_address];
+
+		else
+			return 0xFF;
+	}
 
 	else
 		return 0xFF;
@@ -39,7 +47,12 @@ void NoMBC::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr);
 
 	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
-		ram[adress - 0xA000] = value;
+	{
+		const u32 real_address = adress - 0xA000;
+
+		if (ram_enabled && real_address < ram_size)
+			ram[real_address] = value;
+	}
 
 	//else ignore
 }
@@ -49,7 +62,7 @@ const u8* NoMBC::get_dma_ptr(u16 adress)
 	if (adress < 0x8000)
 		return &rom[adress];
 
-	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
+	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled) //TODO: handling out of range requests
 		return &ram[adress - 0xA000];
 
 	else
@@ -66,8 +79,16 @@ u8 MBC1::read_byte(u16 adress, u32 cycles_passed)
 	else if (adress < 0x8000)
 		return rom[adress - 0x4000 + (rom_bank * 0x4000)];
 
-	else if (adress >= 0xA000 && adress < 0xC000) //TODO: check if ram_size == 0x800, and prevent out of range access
-		return (ram_enabled ? ram[adress - 0xA000 + (ram_bank * 0x2000)] : 0xFF);
+	else if (adress >= 0xA000 && adress < 0xC000)
+	{
+		const u32 real_address = adress - 0xA000 + (ram_bank * 0x2000);
+
+		if (ram_enabled && real_address < ram_size)
+			return ram[real_address];
+
+		else
+			return 0xFF;
+	}
 
 	else
 		return 0xFF;
@@ -112,8 +133,13 @@ void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		}
 	}
 
-	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
-		ram[adress - 0xA000 + (ram_bank * 0x2000)] = value;
+	else if (adress >= 0xA000 && adress < 0xC000)
+	{
+		const u32 real_address = adress - 0xA000 + (ram_bank * 0x2000);
+
+		if (ram_enabled && real_address < ram_size)
+			ram[real_address] = value;
+	}
 }
 
 const u8* MBC1::get_dma_ptr(u16 adress)
@@ -215,7 +241,21 @@ u8 MBC3::read_byte(u16 adress, u32 cycles_passed)
 		return rom[adress - 0x4000 + (rom_bank * 0x4000)];
 
 	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
-		return (reg_used ? latched_rtc[selected_time_reg] : ram[adress - 0xA000 + (ram_bank * 0x2000)]);
+	{
+		if (reg_used)
+			return latched_rtc[selected_time_reg];
+
+		else
+		{
+			const u32 real_address = adress - 0xA000 + (ram_bank * 0x2000);
+
+			if (real_address < ram_size)
+				return ram[real_address];
+
+			else
+				return 0xFF;
+		}
+	}
 
 	else
 		return 0xFF;
@@ -255,7 +295,18 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	}
 
 	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
-		(reg_used ? rtc[selected_time_reg] : ram[adress - 0xA000 + (ram_bank * 0x2000)]) = value;
+	{
+		if (reg_used)
+			rtc[selected_time_reg] = value;
+
+		else
+		{
+			const u32 real_address = adress - 0xA000 + (ram_bank * 0x2000);
+
+			if (real_address < ram_size)
+				ram[real_address] = value;
+		}
+	}
 }
 
 const u8* MBC3::get_dma_ptr(u16 adress)
@@ -284,7 +335,15 @@ u8 MBC5::read_byte(u16 adress, u32 cycles_passed)
 		return rom[adress - 0x4000 + (rom_bank * 0x4000)];
 
 	else if (adress >= 0xA000 && adress < 0xC000)
-		return (ram_enabled ? ram[adress - 0xA000 + (ram_bank * 0x2000)] : 0xFF);
+	{
+		const u32 real_address = adress - 0xA000 + (ram_bank * 0x2000);
+
+		if (ram_enabled && real_address < ram_size)
+			return ram[real_address];
+
+		else
+			return 0xFF;
+	}
 
 	else
 		return 0xFF;
@@ -306,8 +365,13 @@ void MBC5::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	else if (adress < 0x6000)
 		switch_bank_ram(value & 0x0F);
 
-	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
-		ram[adress - 0xA000 + (ram_bank * 0x2000)] = value;
+	else if (adress >= 0xA000 && adress < 0xC000)
+	{
+		const u32 real_address = adress - 0xA000 + (ram_bank * 0x2000);
+
+		if (ram_enabled && real_address < ram_size)
+			ram[real_address] = value;
+	}
 }
 
 const u8* MBC5::get_dma_ptr(u16 adress)
