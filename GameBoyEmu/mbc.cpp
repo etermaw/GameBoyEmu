@@ -226,7 +226,7 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	UNUSED(cycles_passed);
 	
 	if (adress < 0x2000)
-		ram_enabled = ((value & 0x0F) == 0x0A); //ram_enabled affects ram AND timer
+		ram_enabled = ((value & 0x0F) == 0x0A) && (ram != nullptr || rtc != nullptr); //ram_enabled affects ram AND timer
 
 	else if (adress < 0x4000)
 		switch_rom_bank(std::max(1, value & 0x7F));
