@@ -4,28 +4,29 @@
 class SquareSynth
 {
 	private:
-		u32 length_counter;
-		u32 timer;
-		u32 duty_pos;
-		u32 duty;
-		u32 envelope_counter;
-		u32 start_envelope;
-		u32 freq;
-		u32 sweep_counter;
-		u32 sweep_shadow;
-		u32 sweep_shift;
-		u32 sweep_load;
-		u8 volume_load;
-		u8 volume;
-		u8 out_vol;
+		u32 length_counter = 0;
+		u32 timer = 0;
+		u32 duty_pos = 0;
+		u32 duty = 0;
+		u32 envelope_counter = 0;
+		u32 start_envelope = 0;
+		u32 freq = 0;
+		u32 sweep_counter = 0;
+		u32 sweep_shadow = 0;
+		u32 sweep_shift = 0;
+		u32 sweep_load = 0;
+		u8 volume_load = 0;
+		u8 volume = 0;
+		u8 out_vol = 0;
 
-		bool enabled;
-		bool length_enabled;
-		bool envelope_enabled;
-		bool envelope_asc;
-		bool dac_enabled;
-		bool sweep_enabled;
-		bool sweep_neg;
+		bool enabled = false;
+		bool length_enabled = false;
+		bool envelope_enabled = false;
+		bool envelope_asc = false;
+		bool dac_enabled = false;
+		bool sweep_enabled = false;
+		bool sweep_neg = false;
+		bool sweep_calculated = false;
 
 		u32 calculate_freq();
 		void start_playing();
@@ -41,7 +42,7 @@ class SquareSynth
 		void step(u32 cycles, u8* sample_buffer = nullptr);
 
 		u8 read_reg(u16 reg_num);
-		void write_reg(u16 reg_num, u8 value);
+		void write_reg(u16 reg_num, u8 value, u32 seq_frame);
 
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);

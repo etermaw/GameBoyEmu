@@ -123,13 +123,16 @@ u8 NoiseSynth::read_reg(u16 reg_num)
 		return 0xFF; //reg 0 is write only
 }
 
-void NoiseSynth::write_reg(u16 reg_num, u8 value)
+void NoiseSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 {
 	if (reg_num == 0)
 		length_counter = 64 - (value & 0x3F);
 
 	else if (reg_num == 1)
 	{
+		const bool old_env_asc = envelope_asc;
+		const u32 old_env = envelope_load;
+
 		dac_enabled = (value & 0xF8) != 0;
 		volume_load = (value & 0xF0) >> 4;
 		envelope_asc = check_bit(value, 3);
@@ -140,6 +143,21 @@ void NoiseSynth::write_reg(u16 reg_num, u8 value)
 
 		if (!dac_enabled)
 			enabled = false;
+
+		//zombie mode (CGB02/04 version)
+		if (enabled)
+		{
+			if (old_env == 0 && envelope_enabled)
+				++volume;
+
+			else if (!old_env_asc)
+				volume += 2;
+
+			if (old_env_asc ^ envelope_asc) //consistent across CGB
+				volume = 16 - volume;
+
+			volume &= 0xF; //consistent across CGB
+		}
 	}
 
 	else if (reg_num == 2)
@@ -151,10 +169,21 @@ void NoiseSynth::write_reg(u16 reg_num, u8 value)
 
 	else if (reg_num == 3)
 	{
-		length_enabled = check_bit(value, 6);
+		const bool old_enable = length_enabled;
+		const bool len_enable = check_bit(value, 6);
+
+		length_enabled = len_enable;
+
+		//apu quirk: additional length counter 'ticks'
+		if (!old_enable && len_enable && ((seq_frame % 2) == 1))
+			update_length();
 
 		if (check_bit(value, 7))
 			start_playing();
+
+		//apu quirk: another additional len ctr 'tick'
+		if (((seq_frame % 2) == 1) && length_counter == 64 && (value & 0xC0) == 0xC0)
+			length_counter = 63;
 	}
 }
 

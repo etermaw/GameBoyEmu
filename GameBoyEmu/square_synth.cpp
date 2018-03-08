@@ -8,12 +8,16 @@ u32 SquareSynth::calculate_freq()
 	if (new_freq > 2047)
 		enabled = false;
 
+	if (sweep_neg)
+		sweep_calculated = true;
+
 	return new_freq;
 }
 
 void SquareSynth::start_playing()
 {
 	enabled = true;
+	sweep_calculated = false;
 
 	if (length_counter == 0)
 		length_counter = 64;
@@ -28,7 +32,7 @@ void SquareSynth::start_playing()
 	if (sweep_counter == 0)
 		sweep_counter = 8;
 
-	sweep_enabled = (sweep_counter > 0) || (sweep_shift > 0);
+	sweep_enabled = (sweep_load > 0) || (sweep_shift > 0);
 
 	if (sweep_shift > 0)
 		calculate_freq();
@@ -68,6 +72,7 @@ void SquareSynth::reset()
 	dac_enabled = false;
 	sweep_enabled = false;
 	sweep_neg = false;
+	sweep_calculated = false;
 }
 
 void SquareSynth::update_sweep()
@@ -89,8 +94,6 @@ void SquareSynth::update_sweep()
 				freq = new_freq;
 				calculate_freq();
 			}
-
-			calculate_freq(); //is it required?
 		}
 	}
 }
@@ -166,13 +169,19 @@ u8 SquareSynth::read_reg(u16 reg_num)
 		return 0xFF; //reg 3 is write-only!
 }
 
-void SquareSynth::write_reg(u16 reg_num, u8 value)
+void SquareSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 {
 	if (reg_num == 0)
 	{
+		const bool old_neg = sweep_neg;
+
 		sweep_load = (value >> 4) & 0x7;
 		sweep_neg = check_bit(value, 3);
 		sweep_shift = value & 0x7;
+
+		//apu quirk: if we change mode: neg -> pos, after sweep calc, we disable it
+		if (old_neg && !sweep_neg && sweep_calculated && enabled)
+			enabled = false;
 	}
 
 	else if (reg_num == 1)
@@ -183,6 +192,9 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 
 	else if (reg_num == 2)
 	{
+		const bool old_env_asc = envelope_asc;
+		const u32 old_env = start_envelope;
+
 		dac_enabled = (value & 0xF8) != 0;
 		volume_load = (value >> 4) & 0xF;
 		envelope_asc = check_bit(value, 3);
@@ -193,6 +205,21 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 
 		if (!dac_enabled)
 			enabled = false;
+
+		//zombie mode (CGB02/04 version)
+		if (enabled)
+		{
+			if (old_env == 0 && envelope_enabled)
+				++volume;
+
+			else if (!old_env_asc)
+				volume += 2;
+
+			if (old_env_asc ^ envelope_asc) //consistent across CGB
+				volume = 16 - volume;
+
+			volume &= 0xF; //consistent across CGB
+		}
 	}
 
 	else if (reg_num == 3)
@@ -200,11 +227,22 @@ void SquareSynth::write_reg(u16 reg_num, u8 value)
 
 	else if (reg_num == 4)
 	{
-		length_enabled = check_bit(value, 6);
+		const bool old_enable = length_enabled;
+		const bool len_enable = check_bit(value, 6);
+
+		length_enabled = len_enable;
 		freq = (freq & 0xFF) | ((value & 0x7) << 8);
+
+		//apu quirk: additional length counter 'ticks'
+		if (!old_enable && len_enable && ((seq_frame % 2) == 1))
+			update_length();
 
 		if (check_bit(value, 7))
 			start_playing();
+
+		//apu quirk: another additional len ctr 'tick'
+		if (((seq_frame % 2) == 1) && length_counter == 64 && (value & 0xC0) == 0xC0)
+			length_counter = 63;
 	}
 }
 

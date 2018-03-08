@@ -4,23 +4,23 @@
 class NoiseSynth
 {
 	private:
-		u32 length_counter;
-		u32 envelope_counter;
-		u32 envelope_load;
-		u32 timer;
-		u32 current_divisor;
-		u32 clock_shift;
-		u32 volume_load;
-		u16 lfsr;
-		u8 volume;
-		u8 out_vol;
+		u32 length_counter = 0;
+		u32 envelope_counter = 0;
+		u32 envelope_load = 0;
+		u32 timer = 0;
+		u32 current_divisor = 0;
+		u32 clock_shift = 0;
+		u32 volume_load = 0;
+		u16 lfsr = 0;
+		u8 volume = 0;
+		u8 out_vol = 0;
 
-		bool enabled;
-		bool envelope_asc;
-		bool length_enabled;
-		bool envelope_enabled;
-		bool width_mode;
-		bool dac_enabled;
+		bool enabled = false;
+		bool envelope_asc = false;
+		bool length_enabled = false;
+		bool envelope_enabled = false;
+		bool width_mode = false;
+		bool dac_enabled = false;
 
 		void start_playing();
 
@@ -34,7 +34,7 @@ class NoiseSynth
 		void step(u32 cycles, u8* sample_buffer = nullptr);
 		
 		u8 read_reg(u16 reg_num);
-		void write_reg(u16 reg_num, u8 value);
+		void write_reg(u16 reg_num, u8 value, u32 seq_frame);
 
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
