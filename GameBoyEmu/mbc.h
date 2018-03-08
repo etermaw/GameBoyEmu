@@ -46,6 +46,7 @@ class NoMBC final : public IMemory, public IDmaMemory
 class MBC1 final : public MBCBase, public IMemory, public IDmaMemory
 {
 	private:
+		u32 high_offset = 0;
 		u8 rom_num_high = 0;
 		u8 rom_num_low = 1;
 

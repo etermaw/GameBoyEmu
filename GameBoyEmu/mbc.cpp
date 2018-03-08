@@ -74,7 +74,7 @@ u8 MBC1::read_byte(u16 adress, u32 cycles_passed)
 	UNUSED(cycles_passed);
 	
 	if (adress < 0x4000)
-		return rom[adress];
+		return rom[adress + high_offset];
 
 	else if (adress < 0x8000)
 		return rom[adress - 0x4000 + (rom_bank * 0x4000)];
@@ -109,27 +109,38 @@ void MBC1::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (adress < 0x6000)
 	{
+		rom_num_high = value & 0x3;
+
 		if (ram_mode)
-			switch_bank_ram(value & 0x03);
+		{
+			switch_bank_ram(rom_num_high);
+			switch_rom_bank((rom_num_high << 5) | rom_num_low);
+
+			const u32 lanes = (max_rom_banks == 64 ? 0x1 : (max_rom_banks == 128 ? 0x3 : 0));
+			high_offset = ((rom_num_high & lanes) << 5) * 0x4000;
+		}
 
 		else
-		{
-			rom_num_high = value & 0x3;
 			switch_rom_bank((rom_num_high << 5) | rom_num_low);
-		}
 	}
 
 	else if (adress < 0x8000)
 	{
-		ram_mode = check_bit(value, 0) && (ram != nullptr);
+		ram_mode = check_bit(value, 0);// && (ram != nullptr);
 
 		if (ram_mode)
-			switch_rom_bank(rom_num_low & 0x1F);
+		{
+			switch_rom_bank((rom_num_high << 5) | rom_num_low);
+
+			const u32 lanes = (max_rom_banks == 64 ? 0x1 : (max_rom_banks == 128 ? 0x3 : 0));
+			high_offset = ((rom_num_high & lanes) << 5) * 0x4000;
+		}
 
 		else
 		{
 			switch_rom_bank((rom_num_high << 5) | rom_num_low);
 			switch_bank_ram(0);
+			high_offset = 0;
 		}
 	}
 
