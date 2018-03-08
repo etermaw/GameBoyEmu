@@ -130,6 +130,9 @@ void NoiseSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 
 	else if (reg_num == 1)
 	{
+		const bool old_env_asc = envelope_asc;
+		const u32 old_env = envelope_load;
+
 		dac_enabled = (value & 0xF8) != 0;
 		volume_load = (value & 0xF0) >> 4;
 		envelope_asc = check_bit(value, 3);
@@ -140,6 +143,21 @@ void NoiseSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 
 		if (!dac_enabled)
 			enabled = false;
+
+		//zombie mode (CGB02/04 version)
+		if (enabled)
+		{
+			if (old_env == 0 && envelope_enabled)
+				++volume;
+
+			else if (!old_env_asc)
+				volume += 2;
+
+			if (old_env_asc ^ envelope_asc) //consistent across CGB
+				volume = 16 - volume;
+
+			volume &= 0xF; //consistent across CGB
+		}
 	}
 
 	else if (reg_num == 2)
