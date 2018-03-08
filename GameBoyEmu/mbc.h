@@ -52,6 +52,8 @@ class MBC1 final : public MBCBase, public IMemory, public IDmaMemory
 
 		bool ram_mode = false;
 
+		u32 calculate_offset(u32 high_rom_num);
+
 	public:
 		MBC1(const u8* rom, u8* ram, u32 rom_banks, u32 ram_size) : MBCBase(rom, ram, rom_banks, ram_size) {}
 
