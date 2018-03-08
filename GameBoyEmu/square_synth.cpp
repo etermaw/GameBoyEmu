@@ -179,6 +179,7 @@ void SquareSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 		sweep_neg = check_bit(value, 3);
 		sweep_shift = value & 0x7;
 
+		//apu quirk: if we change mode: neg -> pos, after sweep calc, we disable it
 		if (old_neg && !sweep_neg && sweep_calculated && enabled)
 			enabled = false;
 	}
@@ -232,12 +233,14 @@ void SquareSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 		length_enabled = len_enable;
 		freq = (freq & 0xFF) | ((value & 0x7) << 8);
 
+		//apu quirk: additional length counter 'ticks'
 		if (!old_enable && len_enable && ((seq_frame % 2) == 1))
 			update_length();
 
 		if (check_bit(value, 7))
 			start_playing();
 
+		//apu quirk: another additional len ctr 'tick'
 		if (((seq_frame % 2) == 1) && length_counter == 64 && (value & 0xC0) == 0xC0)
 			length_counter = 63;
 	}

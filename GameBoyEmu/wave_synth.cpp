@@ -123,12 +123,14 @@ void WaveSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 		length_enabled = len_enable;
 		freq_high = value & 0x7;
 
+		//apu quirk: additional length counter 'ticks'
 		if (!old_enable && len_enable && ((seq_frame % 2) == 1))
 			update_length();
 
 		if (check_bit(value, 7))
 			start_playing();
 
+		//apu quirk: another additional len ctr 'tick'
 		if (((seq_frame % 2) == 1) && length_counter == 256 && (value & 0xC0) == 0xC0)
 			length_counter = 255;
 	}
@@ -136,11 +138,13 @@ void WaveSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 
 u8 WaveSynth::read_ram(u16 adress)
 {
+	//apu quirk: if enabled, we get current sample read by channel
 	return wave_ram[enabled ? (buffer_pos / 2) : adress];
 }
 
 void WaveSynth::write_ram(u16 adress, u8 value)
 {
+	//apu quirk: if enabled, we set current sample read by channel
 	wave_ram[enabled ? (buffer_pos / 2) : adress] = value;
 }
 
