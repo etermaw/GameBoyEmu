@@ -246,6 +246,11 @@ void SquareSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 	}
 }
 
+u8 SquareSynth::get_volume() const
+{
+	return out_vol;
+}
+
 void SquareSynth::serialize(std::ostream& stream)
 {
 	stream << length_counter << timer << duty_pos << duty;

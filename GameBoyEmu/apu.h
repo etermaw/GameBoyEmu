@@ -25,6 +25,7 @@ class APU final : public IMemory
 
 		bool enabled = false;
 		bool double_speed = false;
+		bool cgb_mode = false;
 
 		void step_ahead(u32 cycles);
 
@@ -38,6 +39,7 @@ class APU final : public IMemory
 
 		void step(u32 cycles);
 		void set_speed(bool speed) { double_speed = speed; }
+		void enable_cgb_mode(bool mode) { cgb_mode = mode; }
 
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);

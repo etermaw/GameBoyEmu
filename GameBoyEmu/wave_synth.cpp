@@ -136,6 +136,11 @@ void WaveSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 	}
 }
 
+u8 WaveSynth::get_volume() const
+{
+	return out_volume;
+}
+
 u8 WaveSynth::read_ram(u16 adress)
 {
 	//apu quirk: if enabled, we get current sample read by channel

@@ -187,6 +187,11 @@ void NoiseSynth::write_reg(u16 reg_num, u8 value, u32 seq_frame)
 	}
 }
 
+u8 NoiseSynth::get_volume() const
+{
+	return out_vol;
+}
+
 void NoiseSynth::serialize(std::ostream& stream)
 {
 	stream << length_counter << envelope_counter << envelope_load;

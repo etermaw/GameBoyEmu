@@ -34,6 +34,8 @@ class WaveSynth
 		u8 read_ram(u16 adress);
 		void write_ram(u16 adress, u8 value);
 
+		u8 get_volume() const;
+
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
 };

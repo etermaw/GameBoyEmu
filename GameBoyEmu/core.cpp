@@ -18,6 +18,7 @@ Core::Core() : cpu(mmu, ints), gpu(ints), timer(ints)
 	mmu.register_chunk(0xFF51, 0xFF55, &gpu); //gpu HDMA/GDMA regs (CGB)
 	mmu.register_chunk(0xFF68, 0xFF6B, &gpu); //gpu color BGP/OBP regs (CGB)
 	mmu.register_chunk(0xFF70, 0xFF70, &ram); //ram bank register (CGB)
+	mmu.register_chunk(0xFF76, 0xFF77, &apu); //APU PCM registers (CGB)
 	mmu.register_chunk(0xFF80, 0xFFFE, &ram); //high ram
 	mmu.register_chunk(0xFFFF, 0xFFFF, &ints); //interrupts
 
@@ -39,6 +40,7 @@ bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::
 	cpu.enable_cgb_mode(enable_cgb);
 	gpu.enable_cgb_mode(enable_cgb);
 	ram.enable_cgb_mode(enable_cgb);
+	apu.enable_cgb_mode(enable_cgb);
 
 	mmu.swap_chunk(0, 0x8000, cart.get_memory_controller()); //TODO: it`s inconsistent with register_chunk scheme of adressing
 	mmu.swap_chunk(0xA000, 0xC000, cart.get_memory_controller());

@@ -101,6 +101,12 @@ u8 APU::read_byte(u16 adress, u32 cycles_passed)
 	else if (adress >= 0xFF30 && adress <= 0xFF3F)
 		return channel_3.read_ram(adress - 0xFF30);
 
+	else if (cgb_mode && adress == 0xFF76)
+		return (channel_2.get_volume() << 4) | channel_1.get_volume();
+
+	else if (cgb_mode && adress == 0xFF77)
+		return (channel_4.get_volume() << 4) | channel_3.get_volume();
+
 	else
 		return 0xFF;
 }
