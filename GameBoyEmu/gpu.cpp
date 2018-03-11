@@ -885,6 +885,7 @@ bool Gpu::is_entering_vblank()
 
 u32 Gpu::step(u32 clock_cycles)
 {
+	//TODO: dereferred HDMA cycles might cause trouble if we write 2 registers using one, 16bit write
 	u32 cycles_passed = new_dma_cycles << double_speed;
 	clock_cycles >>= double_speed;
 
