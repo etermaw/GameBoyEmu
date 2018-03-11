@@ -119,8 +119,8 @@ void Gpu::oam_mode()
 	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //transfer mode
 	unlocked_vram = false;
 
-	current_state = GS_TRANSFER;
-	cycles_to_next_state = 172;
+	current_state = GS_TRANSFER_PREFETCHING;
+	cycles_to_next_state = 6;
 
 	prepare_sprites();
 	current_pixels_drawn = 0;
@@ -194,7 +194,12 @@ void Gpu::step_ahead(u32 clock_cycles)
 				oam_mode();
 				break;
 
-			case GS_TRANSFER:
+			case GS_TRANSFER_PREFETCHING:
+				current_state = GS_TRANSFER_DRAWING;
+				cycles_to_next_state = 172 - 6;
+				break;
+
+			case GS_TRANSFER_DRAWING:
 				transfer_mode();
 				break;
 
@@ -764,10 +769,11 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 	else if (adress >= 0xFF40 && adress <= 0xFF4B)
 	{
-		if ((adress == 0xFF42 || adress == 0xFF47) && current_state == GS_TRANSFER && cycles > 6)
+		if ((adress == 0xFF42 || adress == 0xFF47) && current_state == GS_TRANSFER_DRAWING)
 		{
-			draw_line(current_pixels_drawn, std::min(cycles - 6, 160U)); //TODO: what is the real start point of drawing?
-			current_pixels_drawn = std::min(cycles - 6, 160U);
+			//lazy way: "cycles" are internal state cycle counter (that one used in step_ahead switch)
+			draw_line(current_pixels_drawn, std::min(cycles, 160U));
+			current_pixels_drawn = std::min(cycles, 160U);
 		}
 
 		if (adress == 0xFF40)
