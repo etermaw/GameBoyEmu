@@ -142,7 +142,7 @@ void Gpu::transfer_mode()
 		launch_hdma();
 
 	current_state = GS_HBLANK;
-	cycles_to_next_state = 204;
+	cycles_to_next_state = 204 - (regs[IO_SX] % 8);
 }
 
 void Gpu::step_ahead(u32 clock_cycles)
@@ -196,7 +196,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 			case GS_TRANSFER_PREFETCHING:
 				current_state = GS_TRANSFER_DRAWING;
-				cycles_to_next_state = 172 - 6;
+				cycles_to_next_state = 172 - 6 + (regs[IO_SX] % 8);
 				break;
 
 			case GS_TRANSFER_DRAWING:
