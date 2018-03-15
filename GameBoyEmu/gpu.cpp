@@ -346,7 +346,7 @@ void Gpu::draw_window_row(u32 start, u32 end)
 
 	const u32 line = regs[IO_LY];
 	const u32 wy = regs[IO_WY];
-	const u32 wx = std::max(0, regs[IO_WX7] - 7);
+	const u32 wx = std::max(0, static_cast<i32>(regs[IO_WX7]) - 7);
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
@@ -501,7 +501,7 @@ void Gpu::draw_window_row_cgb(u32 start, u32 end)
 
 	const u32 line = regs[IO_LY];
 	const u32 wy = regs[IO_WY];
-	const u32 wx = std::max(0, regs[IO_WX7] - 7);
+	const u32 wx = std::max(0, static_cast<i32>(regs[IO_WX7]) - 7);
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
