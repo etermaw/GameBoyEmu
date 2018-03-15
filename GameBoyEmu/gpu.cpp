@@ -346,7 +346,7 @@ void Gpu::draw_window_row(u32 start, u32 end)
 
 	const u32 line = regs[IO_LY];
 	const u32 wy = regs[IO_WY];
-	const i32 wx = regs[IO_WX7] - 7;
+	const u32 wx = std::max(0, regs[IO_WX7] - 7);
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
@@ -360,11 +360,9 @@ void Gpu::draw_window_row(u32 start, u32 end)
 	const u32 tile_line = window_line % 8;
 	const u32 line_off = (window_line / 8) * 32;
 
-	const u32 start_offset = -std::min(wx, 0);
-
-	for (u32 i = std::max((i32)start, wx); i < end;)
+	for (u32 i = std::max(start, wx); i < end;)
 	{
-		const u32 tile_num_pos = i - wx + start_offset;
+		const u32 tile_num_pos = i - wx;
 
 		u32 tile_num = (tile_nums[line_off + tile_num_pos / 8] + index_corrector) & 0xFF;
 		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
@@ -503,7 +501,7 @@ void Gpu::draw_window_row_cgb(u32 start, u32 end)
 
 	const u32 line = regs[IO_LY];
 	const u32 wy = regs[IO_WY];
-	const i32 wx = regs[IO_WX7] - 7;
+	const u32 wx = std::max(0, regs[IO_WX7] - 7);
 
 	const u32 offset = check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_TMAP) ? 0x1C00 : 0x1800; //0x9C00,0x9800
 	const u32 data_offset = check_bit(regs[IO_LCD_CONTROL], LC_TILESET) ? 0 : 0x800; //0x8000,0x8800
@@ -518,11 +516,9 @@ void Gpu::draw_window_row_cgb(u32 start, u32 end)
 	const u32 row_tile_line = window_line % 8;
 	const u32 line_offset = (window_line / 8) * 32;
 
-	const u32 start_offset = -std::min(wx, (i32)start);
-
-	for (u32 i = std::max((i32)start, wx); i < end;)
+	for (u32 i = std::max(start, wx); i < end;)
 	{
-		const u32 tile_num_pos = i + start_offset - wx;
+		const u32 tile_num_pos = i - wx;
 
 		u32 tile_num = (tile_nums[line_offset + tile_num_pos / 8] + index_corrector) & 0xFF;
 		u8 tile_atr = tile_atrs[line_offset + tile_num_pos / 8];
