@@ -364,11 +364,13 @@ void Gpu::draw_window_row(u32 start, u32 end)
 
 	for (u32 i = std::max((i32)start, wx); i < end;)
 	{
-		u32 tile_num = (tile_nums[line_off + (i + start_offset) / 8] + index_corrector) & 0xFF;
+		const u32 tile_num_pos = i - wx + start_offset;
+
+		u32 tile_num = (tile_nums[line_off + tile_num_pos / 8] + index_corrector) & 0xFF;
 		u8 tile_low = tile_data[tile_num * 16 + tile_line * 2];
 		u8 tile_high = tile_data[tile_num * 16 + tile_line * 2 + 1];
 
-		for (u32 j = (start_offset + i) % 8; j < 8 && i < end; ++j, ++i)
+		for (u32 j = tile_num_pos % 8; j < 8 && i < end; ++j, ++i)
 		{
 			u32 id = 7 - j;
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
@@ -520,8 +522,10 @@ void Gpu::draw_window_row_cgb(u32 start, u32 end)
 
 	for (u32 i = std::max((i32)start, wx); i < end;)
 	{
-		u32 tile_num = (tile_nums[line_offset + (i + start_offset) / 8] + index_corrector) & 0xFF;
-		u8 tile_atr = tile_atrs[line_offset + (i + start_offset) / 8];
+		const u32 tile_num_pos = i + start_offset - wx;
+
+		u32 tile_num = (tile_nums[line_offset + tile_num_pos / 8] + index_corrector) & 0xFF;
+		u8 tile_atr = tile_atrs[line_offset + tile_num_pos / 8];
 
 		u8 palette_num = tile_atr & 0x7;
 		u8 data_bank = check_bit(tile_atr, 3);
@@ -540,7 +544,7 @@ void Gpu::draw_window_row_cgb(u32 start, u32 end)
 			tile_high = flip_bits(tile_high);
 		}
 
-		for (u32 j = (start_offset + i) % 8; j < 8 && i < end; ++j, ++i)
+		for (u32 j = tile_num_pos % 8; j < 8 && i < end; ++j, ++i)
 		{
 			u32 id = 7 - j;
 			u32 color_id = (check_bit(tile_high, id) << 1) | check_bit(tile_low, id);
