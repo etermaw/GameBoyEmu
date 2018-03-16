@@ -632,12 +632,16 @@ void Gpu::draw_line(u32 pixel_start, u32 pixel_end)
 		{
 			priority_buffer.reset();
 			alpha_buffer.reset();
-
-			if (check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
-				draw_background_row_cgb(pixel_start, pixel_end);
+			
+			//in CGB, background is always visible
+			draw_background_row_cgb(pixel_start, pixel_end);
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_WINDOW_ENABLED))
 				draw_window_row_cgb(pixel_start, pixel_end);
+
+			//if background is "disabled", background & window lose priority
+			if (!check_bit(regs[IO_LCD_CONTROL], LC_BG_ENABLED))
+				priority_buffer.reset();
 
 			if (check_bit(regs[IO_LCD_CONTROL], LC_SPRITES_ENABLED))
 				draw_sprite_row_cgb(pixel_start, pixel_end);
