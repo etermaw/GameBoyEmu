@@ -244,4 +244,4 @@ ModelManifest.xml
 # exclude tests directory
 tests*/
 build/
-
+CMakeFiles/
