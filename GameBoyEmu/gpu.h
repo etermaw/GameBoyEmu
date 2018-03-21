@@ -66,6 +66,7 @@ class Gpu final : public IMemory
 		bool double_speed = false;
 		bool unlocked_vram = true;
 		bool unlocked_oam = true;
+		bool cmp_bit = false;
 
 		void vb_mode();
 		void hb_mode();
@@ -99,7 +100,7 @@ class Gpu final : public IMemory
 		{
 			std::memcpy(dmg.data(), regs, sizeof(u8) * 12);
 
-			dmg[1] = change_bit(set_bit(dmg[1], 7), dmg[4] == dmg[5], 2);
+			dmg[1] = change_bit(set_bit(dmg[1], 7), cmp_bit, 2);
 
 			std::memcpy(cgb.data(), hdma_regs, sizeof(u8) * 5);
 			cgb[5] = cgb_bgp_index;

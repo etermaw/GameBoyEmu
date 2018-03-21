@@ -208,7 +208,21 @@ void Gpu::step_ahead(u32 clock_cycles)
 				cycles_to_next_state = 204;
 				break;
 		}
+
+		const bool new_cmp = (regs[IO_LY] == regs[IO_LYC]);
+
+		if (!cmp_bit && new_cmp && check_bit(regs[IO_LCD_STATUS], LS_LYC_LY))
+			interrupts.raise(INT_LCD);
+
+		cmp_bit = new_cmp;
 	}
+	
+	const bool new_cmp = (regs[IO_LY] == regs[IO_LYC]);
+
+	if (!cmp_bit && new_cmp && check_bit(regs[IO_LCD_STATUS], LS_LYC_LY))
+		interrupts.raise(INT_LCD);
+
+	cmp_bit = new_cmp;
 }
 
 void Gpu::launch_dma(u8 adress)
@@ -724,7 +738,7 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 			return regs[adress - 0xFF40];
 
 		else
-			return change_bit(set_bit(regs[1], 7), regs[IO_LY] == regs[IO_LYC], LS_CMP_SIG);
+			return change_bit(set_bit(regs[1], 7), cmp_bit, LS_CMP_SIG);
 	}
 
 	else if (cgb_mode && adress == 0xFF4F)
