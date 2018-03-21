@@ -99,6 +99,8 @@ class Gpu final : public IMemory
 		{
 			std::memcpy(dmg.data(), regs, sizeof(u8) * 12);
 
+			dmg[1] = change_bit(set_bit(dmg[1], 7), dmg[4] == dmg[5], 2);
+
 			std::memcpy(cgb.data(), hdma_regs, sizeof(u8) * 5);
 			cgb[5] = cgb_bgp_index;
 			cgb[6] = cgb_obp_index;

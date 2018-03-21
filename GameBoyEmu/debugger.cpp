@@ -279,10 +279,11 @@ void Debugger::dump_gpu_regs()
 	for (int i = 0; i < 12; i += 4)
 		printf("%s: 0x%02X\t%s: 0x%02X\t%s: 0x%02X\t%s: 0x%02X\n", regs[i], dmg_regs[i], regs[i+1], dmg_regs[i+1], regs[i+2], dmg_regs[i+2], regs[i+3], dmg_regs[i+3]);
 	
-	printf("\nSTAT:\nLYC == LY: %d ", check_bit(dmg_regs[1],6));
-	printf("VB: %d ", check_bit(dmg_regs[1],4));
-	printf("HB: %d ", check_bit(dmg_regs[1],3));
-	printf("OAM: %d ", check_bit(dmg_regs[1],5));
+	printf("\nSTAT:\n[interrupts]\tLYC == LY: %d\t", check_bit(dmg_regs[1],6));
+	printf("VB: %d\t", check_bit(dmg_regs[1],4));
+	printf("HB: %d\t", check_bit(dmg_regs[1],3));
+	printf("OAM: %d\t\n", check_bit(dmg_regs[1],5));
+	printf("[read-only]\tLYC == LY cmp bit: %d\t", check_bit(dmg_regs[1],2));
 	printf("GPU state: %s\n", gpu_state[dmg_regs[1] & 0x3]);
 
 	printf("\nCTRL:\nLCD: %d ", check_bit(dmg_regs[0], 7));
@@ -295,7 +296,7 @@ void Debugger::dump_gpu_regs()
 	printf("TILES: 0x%04x", check_bit(dmg_regs[0], 4) ? 0x8000 : 0x8800);
 
 	printf("\n\ncgb DMA src: 0x%04x\tdst: 0x%04x\tstatus+len: 0x%02x", (cgb_regs[0] << 8) | cgb_regs[1], (cgb_regs[2] << 8) | cgb_regs[3], cgb_regs[4]);
-	printf("\nvram bank: %d", cgb_regs[7]);
+	printf("\nvram bank: %d\n", cgb_regs[7]);
 }
 
 void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte)
