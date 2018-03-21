@@ -724,7 +724,7 @@ u8 Gpu::read_byte(u16 adress, u32 cycles_passed)
 			return regs[adress - 0xFF40];
 
 		else
-			return change_bit(regs[1], regs[IO_LY] == regs[IO_LYC], LS_CMP_SIG);
+			return change_bit(set_bit(regs[1], 7), regs[IO_LY] == regs[IO_LYC], LS_CMP_SIG);
 	}
 
 	else if (cgb_mode && adress == 0xFF4F)
