@@ -100,6 +100,7 @@ class Gpu final : public IMemory
 
 		void check_interrupts();
 		void change_stat_mode(u8 new_mode);
+		void check_lyc_ly_bit();
 
 		const u8* resolve_adress(u16 adress) const;
 		

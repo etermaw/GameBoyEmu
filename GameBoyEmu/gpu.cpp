@@ -66,7 +66,7 @@ Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 void Gpu::vb_mode()
 {
 	regs[IO_LY]++;
-	cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
+	check_lyc_ly_bit();
 	check_interrupts();
 
 	if (regs[IO_LY] < 153)
@@ -82,7 +82,7 @@ void Gpu::vb_mode()
 void Gpu::hb_mode()
 {
 	regs[IO_LY]++;
-	cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
+	check_lyc_ly_bit();
 	check_interrupts();
 
 	if (regs[IO_LY] < 144)
@@ -164,7 +164,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 			case GS_LY_153:
 				regs[IO_LY] = 0;
-				cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
+				check_lyc_ly_bit();
 				check_interrupts();
 
 				current_state = GS_LY_153_0;
@@ -676,13 +676,13 @@ void Gpu::turn_on_lcd()
 	current_state = GS_TURNING_ON;
 	cycles_to_next_state = 240;
 
-	cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
+	check_lyc_ly_bit();
 	check_interrupts();
 }
 
 void Gpu::check_interrupts()
 {
-	bool new_int = check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && cmp_bit; //(regs[IO_LYC] == regs[IO_LY]);
+	bool new_int = check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && cmp_bit;
 	new_int |= check_bit(regs[IO_LCD_STATUS], LS_HBLANK) && ((regs[IO_LCD_STATUS] & 0x3) == 0);
 	new_int |= check_bit(regs[IO_LCD_STATUS], LS_OAM) && ((regs[IO_LCD_STATUS] & 0x3) == 2);
 	new_int |= check_bit(regs[IO_LCD_STATUS], LS_VBLANK) && ((regs[IO_LCD_STATUS] & 0x3) == 1);
@@ -699,6 +699,11 @@ void Gpu::change_stat_mode(u8 new_mode)
 
 	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | new_mode;
 	check_interrupts();
+}
+
+void Gpu::check_lyc_ly_bit()
+{
+	cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
 }
 
 const u8* Gpu::resolve_adress(u16 adress) const
@@ -828,7 +833,7 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			regs[IO_LYC] = value;
 
 			if (current_state != GS_LCD_OFF)
-				cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
+				check_lyc_ly_bit();
 		}
 
 		else if (adress == 0xFF46)
