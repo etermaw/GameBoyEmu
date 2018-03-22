@@ -837,7 +837,10 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		}
 
 		else if (adress == 0xFF46)
+		{
+			regs[IO_DMA] = value;
 			launch_dma(value);
+		}
 
 		else
 			regs[adress - 0xFF40] = value;
