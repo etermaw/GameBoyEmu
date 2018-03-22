@@ -5,7 +5,12 @@
 
 class Gpu final : public IMemory
 {
-	enum GPU_STATE { GS_VBLANK, GS_LY_153, GS_LY_153_0, GS_HBLANK, GS_OAM, GS_TRANSFER_PREFETCHING, GS_TRANSFER_DRAWING, GS_LCD_OFF, GS_TURNING_ON };
+	enum GPU_STATE { GS_VBLANK_INT_RAISE, GS_VBLANK,
+					 GS_LY_153, GS_LY_153_0,
+					 GS_HBLANK,
+					 GS_OAM,
+					 GS_TRANSFER_PREFETCHING, GS_TRANSFER_DRAWING,
+					 GS_LCD_OFF, GS_TURNING_ON };
 
 	struct oam_entry
 	{
@@ -67,6 +72,7 @@ class Gpu final : public IMemory
 		bool unlocked_vram = true;
 		bool unlocked_oam = true;
 		bool cmp_bit = false;
+		bool prev_stat_line = false;
 
 		void vb_mode();
 		void hb_mode();
@@ -91,6 +97,9 @@ class Gpu final : public IMemory
 
 		void turn_off_lcd();
 		void turn_on_lcd();
+
+		void check_interrupts();
+		void change_stat_mode(u8 new_mode);
 
 		const u8* resolve_adress(u16 adress) const;
 		

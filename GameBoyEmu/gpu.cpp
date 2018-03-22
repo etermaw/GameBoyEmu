@@ -66,9 +66,7 @@ Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 void Gpu::vb_mode()
 {
 	regs[IO_LY]++;
-
-	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-		interrupts.raise(INT_LCD);
+	check_interrupts();
 
 	if (regs[IO_LY] < 153)
 		cycles_to_next_state = 456;
@@ -83,17 +81,12 @@ void Gpu::vb_mode()
 void Gpu::hb_mode()
 {
 	regs[IO_LY]++;
-
-	if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-		interrupts.raise(INT_LCD);
+	check_interrupts();
 
 	if (regs[IO_LY] < 144)
 	{
-		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //OAM mode
 		unlocked_oam = false;
-
-		if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
-			interrupts.raise(INT_LCD);
+		change_stat_mode(0x2); //OAM mode
 
 		current_state = GS_OAM;
 		cycles_to_next_state = 80;
@@ -101,23 +94,20 @@ void Gpu::hb_mode()
 
 	else
 	{
-		interrupts.raise(INT_VBLANK);
+		if (cgb_mode)
+			check_interrupts();
 
-		if (check_bit(regs[IO_LCD_STATUS], LS_VBLANK))
-			interrupts.raise(INT_LCD);
-
-		regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x1; //VBLANK mode
 		entering_vblank = true;
 
-		current_state = GS_VBLANK;
-		cycles_to_next_state = 456;
+		current_state = GS_VBLANK_INT_RAISE;
+		cycles_to_next_state = cgb_mode ? 2 : 4;
 	}
 }
 
 void Gpu::oam_mode()
 {
-	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x3; //transfer mode
 	unlocked_vram = false;
+	change_stat_mode(0x3); //TRANSFER mode
 
 	current_state = GS_TRANSFER_PREFETCHING;
 	cycles_to_next_state = 6;
@@ -131,12 +121,9 @@ void Gpu::transfer_mode()
 	if (current_pixels_drawn < 160U)
 		draw_line(current_pixels_drawn, 160U);
 
-	if (check_bit(regs[IO_LCD_STATUS], LS_HBLANK))
-		interrupts.raise(INT_LCD);
-
-	regs[IO_LCD_STATUS] &= 0xFC; //HBLANK mode
 	unlocked_oam = true;
 	unlocked_vram = true;
+	change_stat_mode(0x0); //HBLANK mode
 
 	if (hdma_active)
 		launch_hdma();
@@ -161,27 +148,30 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 		switch (current_state)
 		{
+			case GS_VBLANK_INT_RAISE:
+				interrupts.raise(INT_VBLANK);
+				change_stat_mode(0x1); //VBLANK mode
+
+				current_state = GS_VBLANK;
+				cycles_to_next_state = 456 - (cgb_mode ? 2 : 4);
+				break;
+
 			case GS_VBLANK:
 				vb_mode();
 				break;
 
 			case GS_LY_153:
 				regs[IO_LY] = 0;
-
-				if (check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && regs[IO_LY] == regs[IO_LYC])
-					interrupts.raise(INT_LCD);
+				check_interrupts();
 
 				current_state = GS_LY_153_0;
 				cycles_to_next_state = 456 - 4;
 				break;
 
 			case GS_LY_153_0:
-				regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | 0x2; //OAM mode
 				unlocked_oam = false;
-
-				if (check_bit(regs[IO_LCD_STATUS], LS_OAM))
-					interrupts.raise(INT_LCD);
-
+				change_stat_mode(0x2); //OAM mode
+				
 				current_state = GS_OAM;
 				cycles_to_next_state = 80;
 				break;
@@ -687,12 +677,35 @@ void Gpu::turn_off_lcd()
 	entering_vblank = true; //display white screen
 	current_state = GS_LCD_OFF;
 	cycles_to_next_state = 0;
+
+	prev_stat_line = false; //internal INT line goes to 0
 }
 
 void Gpu::turn_on_lcd()
 {
 	current_state = GS_TURNING_ON;
 	cycles_to_next_state = 240;
+}
+
+void Gpu::check_interrupts()
+{
+	bool new_int = check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && (regs[IO_LYC] == regs[IO_LY]);
+	new_int |= check_bit(regs[IO_LCD_STATUS], LS_HBLANK) && ((regs[IO_LCD_STATUS] & 0x3) == 0);
+	new_int |= check_bit(regs[IO_LCD_STATUS], LS_OAM) && ((regs[IO_LCD_STATUS] & 0x3) == 2);
+	new_int |= check_bit(regs[IO_LCD_STATUS], LS_VBLANK) && ((regs[IO_LCD_STATUS] & 0x3) == 1);
+
+	if (!prev_stat_line && new_int)
+		interrupts.raise(INT_LCD);
+
+	prev_stat_line = new_int;
+}
+
+void Gpu::change_stat_mode(u8 new_mode)
+{
+	assert(new_mode < 4);
+
+	regs[IO_LCD_STATUS] = (regs[IO_LCD_STATUS] & 0xFC) | new_mode;
+	check_interrupts();
 }
 
 const u8* Gpu::resolve_adress(u16 adress) const
@@ -822,6 +835,9 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 
 		else
 			regs[adress - 0xFF40] = value;
+
+		if (current_state != GS_LCD_OFF)
+			check_interrupts();
 	}
 
 	else if (cgb_mode && adress == 0xFF4F)
