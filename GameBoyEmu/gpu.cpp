@@ -66,6 +66,7 @@ Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 void Gpu::vb_mode()
 {
 	regs[IO_LY]++;
+	cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
 	check_interrupts();
 
 	if (regs[IO_LY] < 153)
@@ -81,6 +82,7 @@ void Gpu::vb_mode()
 void Gpu::hb_mode()
 {
 	regs[IO_LY]++;
+	cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
 	check_interrupts();
 
 	if (regs[IO_LY] < 144)
@@ -162,6 +164,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 			case GS_LY_153:
 				regs[IO_LY] = 0;
+				cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
 				check_interrupts();
 
 				current_state = GS_LY_153_0;
@@ -198,21 +201,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				cycles_to_next_state = 204;
 				break;
 		}
-
-		const bool new_cmp = (regs[IO_LY] == regs[IO_LYC]);
-
-		if (!cmp_bit && new_cmp && check_bit(regs[IO_LCD_STATUS], LS_LYC_LY))
-			interrupts.raise(INT_LCD);
-
-		cmp_bit = new_cmp;
 	}
-	
-	const bool new_cmp = (regs[IO_LY] == regs[IO_LYC]);
-
-	if (!cmp_bit && new_cmp && check_bit(regs[IO_LCD_STATUS], LS_LYC_LY))
-		interrupts.raise(INT_LCD);
-
-	cmp_bit = new_cmp;
 }
 
 void Gpu::launch_dma(u8 adress)
@@ -678,18 +667,22 @@ void Gpu::turn_off_lcd()
 	current_state = GS_LCD_OFF;
 	cycles_to_next_state = 0;
 
-	prev_stat_line = false; //internal INT line goes to 0
+	//cmp_bit freezes, we do NOT set it to 0!
+	prev_stat_line = cmp_bit; //if cmp_bit is true, stat INT line won`t go to 0
 }
 
 void Gpu::turn_on_lcd()
 {
 	current_state = GS_TURNING_ON;
 	cycles_to_next_state = 240;
+
+	cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
+	check_interrupts();
 }
 
 void Gpu::check_interrupts()
 {
-	bool new_int = check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && (regs[IO_LYC] == regs[IO_LY]);
+	bool new_int = check_bit(regs[IO_LCD_STATUS], LS_LYC_LY) && cmp_bit; //(regs[IO_LYC] == regs[IO_LY]);
 	new_int |= check_bit(regs[IO_LCD_STATUS], LS_HBLANK) && ((regs[IO_LCD_STATUS] & 0x3) == 0);
 	new_int |= check_bit(regs[IO_LCD_STATUS], LS_OAM) && ((regs[IO_LCD_STATUS] & 0x3) == 2);
 	new_int |= check_bit(regs[IO_LCD_STATUS], LS_VBLANK) && ((regs[IO_LCD_STATUS] & 0x3) == 1);
@@ -828,6 +821,14 @@ void Gpu::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		else if (adress == 0xFF44)
 		{
 			//it`s read-only register
+		}
+
+		else if (adress == 0xFF45)
+		{
+			regs[IO_LYC] = value;
+
+			if (current_state != GS_LCD_OFF)
+				cmp_bit = (regs[IO_LY] == regs[IO_LYC]);
 		}
 
 		else if (adress == 0xFF46)
