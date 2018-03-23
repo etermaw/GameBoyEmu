@@ -1,6 +1,8 @@
 #include "stdafx.h"
-#include "core.h"
-#include "audio_postprocess.h"
+#include "core/core.h"
+#include "platform/audio_postprocess.h"
+#include <SDL.h>
+
 
 #ifdef ENABLE_AUTO_TESTS
 #include <fcntl.h>
