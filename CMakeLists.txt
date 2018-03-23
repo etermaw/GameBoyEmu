@@ -16,7 +16,6 @@ set(TEST_HEADERS
 )
 
 
-
 option(USE_SDL "Use SDL2 library for platform stuff" ON)
 
 if(USE_SDL)
@@ -25,6 +24,7 @@ if(USE_SDL)
 
     file(GLOB PLATFORM_SOURCES GameBoyEmu/platform/sdl/*.cpp)
     file(GLOB PLATFORM_HEADERS GameBoyEmu/platform/sdl/*.h)
+    link_libraries(${SDL2_LIBRARIES})
 endif()
 
 set(PLATFORM_HEADERS ${PLATFORM_HEADERS} GameBoyEmu/platform/dispatch.h)
@@ -51,21 +51,18 @@ add_executable(release "")
 target_sources(release PRIVATE GameBoyEmu/main.cpp ${CORE_SOURCES} ${CORE_HEADERS} ${UTIL_HEADERS} ${PLATFORM_SOURCES} ${PLATFORM_HEADERS})
 target_compile_options(release PRIVATE ${RELEASE_FLAGS})
 target_compile_definitions(release PRIVATE NDEBUG)
-target_link_libraries(release ${SDL2_LIBRARIES})
 
 add_executable(debug "")
 target_sources(debug PRIVATE GameBoyEmu/main.cpp ${CORE_SOURCES} ${CORE_HEADERS} ${UTIL_HEADERS} ${PLATFORM_SOURCES} ${PLATFORM_HEADERS})
 target_compile_options(debug PRIVATE ${DEBUG_FLAGS})
-target_link_libraries(debug ${SDL2_LIBRARIES})
 
 add_executable(sanitize "")
 target_sources(sanitize PRIVATE GameBoyEmu/main.cpp ${CORE_SOURCES} ${CORE_HEADERS} ${UTIL_HEADERS} ${PLATFORM_SOURCES} ${PLATFORM_HEADERS})
 target_compile_options(sanitize PRIVATE ${DEBUG_FLAGS} ${SANITIZE_FLAGS})
-target_link_libraries(sanitize ${SDL2_LIBRARIES} ${SANITIZE_FLAGS}) #pass sanitize flags, to force ASAN linking
+target_link_libraries(sanitize ${SANITIZE_FLAGS}) #pass sanitize flags, to force ASAN linking
 
 add_executable(auto_test "")
 target_sources(auto_test PRIVATE ${TEST_SOURCES} ${TEST_HEADERS})
 target_sources(auto_test PRIVATE GameBoyEmu/main.cpp ${CORE_SOURCES} ${CORE_HEADERS} ${UTIL_HEADERS} ${PLATFORM_SOURCES} ${PLATFORM_HEADERS})
 target_compile_options(auto_test PRIVATE ${DEBUG_FLAGS})
 target_compile_definitions(auto_test PRIVATE ENABLE_AUTO_TESTS)
-target_link_libraries(auto_test ${SDL2_LIBRARIES})
