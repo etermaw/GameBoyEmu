@@ -15,10 +15,19 @@ set(TEST_HEADERS
     GameBoyEmu/sha256.h
 )
 
-file(GLOB PLATFORM_SOURCES GameBoyEmu/platform/*.cpp)
-file(GLOB PLATFORM_HEADERS GameBoyEmu/platform/*.h)
+
 
 option(USE_SDL "Use SDL2 library for platform stuff" ON)
+
+if(USE_SDL)
+    find_package(SDL2 REQUIRED)
+    include_directories(${SDL2_INCLUDE_DIRS})
+
+    file(GLOB PLATFORM_SOURCES GameBoyEmu/platform/sdl/*.cpp)
+    file(GLOB PLATFORM_HEADERS GameBoyEmu/platform/sdl/*.h)
+endif()
+
+set(PLATFORM_HEADERS ${PLATFORM_HEADERS} GameBoyEmu/platform/dispatch.h)
 
 #platform stuff (GCC)
 set(CMAKE_CXX_STANDARD 14)
@@ -27,11 +36,6 @@ set(BUILD_FLAGS -Wall -Wextra -pedantic)
 set(RELEASE_FLAGS -O3 -march=native -flto)
 set(DEBUG_FLAGS -g)
 set(SANITIZE_FLAGS -fno-omit-frame-pointer -fsanitize=address)
-
-if(USE_SDL)
-    find_package(SDL2 REQUIRED)
-    include_directories(${SDL2_INCLUDE_DIRS})
-endif()
 
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
