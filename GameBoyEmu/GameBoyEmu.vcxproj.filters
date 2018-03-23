@@ -15,133 +15,139 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cpu_instructions.cpp">
+    <ClCompile Include="sha256.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mmu.cpp">
+    <ClCompile Include="core\apu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ram.cpp">
+    <ClCompile Include="core\cartrige.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mbc.cpp">
+    <ClCompile Include="core\core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cartrige.cpp">
+    <ClCompile Include="core\cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interrupts.cpp">
+    <ClCompile Include="core\cpu_instructions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="timer.cpp">
+    <ClCompile Include="core\debugger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gpu.cpp">
+    <ClCompile Include="core\gpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="joypad.cpp">
+    <ClCompile Include="core\interrupts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="apu.cpp">
+    <ClCompile Include="core\joypad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="noise_synth.cpp">
+    <ClCompile Include="core\mbc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="square_synth.cpp">
+    <ClCompile Include="core\mmu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="wave_synth.cpp">
+    <ClCompile Include="core\noise_synth.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cpu.cpp">
+    <ClCompile Include="core\ram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="debugger.cpp">
+    <ClCompile Include="core\serial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="serial.cpp">
+    <ClCompile Include="core\square_synth.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="audio_postprocess.cpp">
+    <ClCompile Include="core\timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core.cpp">
+    <ClCompile Include="core\wave_synth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="platform\audio_postprocess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="definitions.h">
+    <ClInclude Include="sha256.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mmu.h">
+    <ClInclude Include="core\apu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IMemory.h">
+    <ClInclude Include="core\cartrige.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ram.h">
+    <ClInclude Include="core\core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mbc.h">
+    <ClInclude Include="core\cpu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cartrige.h">
+    <ClInclude Include="core\debugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="interrupts.h">
+    <ClInclude Include="core\gpu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bit_ops.h">
+    <ClInclude Include="core\IMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="timer.h">
+    <ClInclude Include="core\interrupts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gpu.h">
+    <ClInclude Include="core\joypad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="joypad.h">
+    <ClInclude Include="core\mbc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="apu.h">
+    <ClInclude Include="core\mmu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="noise_synth.h">
+    <ClInclude Include="core\noise_synth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wave_synth.h">
+    <ClInclude Include="core\ram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="square_synth.h">
+    <ClInclude Include="core\serial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cpu.h">
+    <ClInclude Include="core\square_synth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="debugger.h">
+    <ClInclude Include="core\timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="function.h">
+    <ClInclude Include="core\wave_synth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="serial.h">
+    <ClInclude Include="platform\audio_postprocess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="audio_postprocess.h">
+    <ClInclude Include="utils\bit_ops.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core.h">
+    <ClInclude Include="utils\definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <ClInclude Include="utils\function.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
