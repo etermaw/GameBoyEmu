@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-class Audio
+class AudioSDL
 {
 	static const u32 SAMPLE_COUNT = 512;
 	static const u32 BUFFER_SIZE = 1 << 15;
@@ -12,8 +12,8 @@ class Audio
         u32 offset = 0;
 
 	public:
-		Audio();
-		~Audio();
+		AudioSDL();
+		~AudioSDL();
 
 		u8** swap_buffers(u8** buffers, u32 count);
 		void dummy(bool) {}

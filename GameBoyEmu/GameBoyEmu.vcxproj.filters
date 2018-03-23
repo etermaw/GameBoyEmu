@@ -75,7 +75,7 @@
     <ClCompile Include="core\wave_synth.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\audio_postprocess.cpp">
+    <ClCompile Include="platform\sdl\audio_postprocess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,9 +137,6 @@
     <ClInclude Include="core\wave_synth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\audio_postprocess.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utils\bit_ops.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -147,6 +144,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils\function.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="platform\dispatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="platform\sdl\audio_postprocess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

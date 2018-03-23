@@ -1,7 +1,7 @@
 #include "audio_postprocess.h"
 #include <SDL.h>
 
-Audio::Audio()
+AudioSDL::AudioSDL()
 {
     internal_memory = std::make_unique<u8[]>(BUFFER_SIZE * 4);
 
@@ -19,12 +19,12 @@ Audio::Audio()
 	SDL_PauseAudio(0);
 }
 
-Audio::~Audio()
+AudioSDL::~AudioSDL()
 {
 	SDL_CloseAudio();
 }
 
-u8** Audio::swap_buffers(u8** buffs, u32 count)
+u8** AudioSDL::swap_buffers(u8** buffs, u32 count)
 {
 	if (buffs == nullptr)
 		return buffers;
