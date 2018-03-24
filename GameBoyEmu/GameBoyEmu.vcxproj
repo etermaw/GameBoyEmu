@@ -177,6 +177,8 @@
     <ClCompile Include="core\wave_synth.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="platform\sdl\audio_postprocess.cpp" />
+    <ClCompile Include="platform\sdl\gui.cpp" />
+    <ClCompile Include="platform\sdl\renderer.cpp" />
     <ClCompile Include="sha256.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -199,6 +201,8 @@
     <ClInclude Include="core\wave_synth.h" />
     <ClInclude Include="platform\dispatch.h" />
     <ClInclude Include="platform\sdl\audio_postprocess.h" />
+    <ClInclude Include="platform\sdl\gui.h" />
+    <ClInclude Include="platform\sdl\renderer.h" />
     <ClInclude Include="sha256.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="utils\bit_ops.h" />
