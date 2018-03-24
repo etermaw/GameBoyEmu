@@ -108,7 +108,7 @@ bool input_handler(Joypad& input)
 
 int main(int argc, char *argv[])
 {
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	Platform::init();
 
 #ifdef ENABLE_AUTO_TESTS
         if (calculate_screen_hash)
