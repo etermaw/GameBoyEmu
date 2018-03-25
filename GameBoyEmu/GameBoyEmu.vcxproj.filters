@@ -164,5 +164,8 @@
     <ClInclude Include="platform\sdl\gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="platform\linux\test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
