@@ -2,6 +2,10 @@
 #include "core/core.h"
 #include "platform/dispatch.h"
 
+#ifdef ENABLE_AUTO_TESTS
+#include "platform/linux/test.h"
+#endif
+
 int main(int argc, char *argv[])
 {
 	Platform::init();
@@ -21,6 +25,8 @@ int main(int argc, char *argv[])
 	};
 
 	Core emu_core;
+
+#ifndef ENABLE_AUTO_TESTS
 	Platform::Audio audio_post;
 	Platform::Gui gui(3*160, 3*140, "GBE");
 	Platform::Renderer renderer(gui.get_display());
@@ -33,9 +39,21 @@ int main(int argc, char *argv[])
 	endpoints.swap_sample_buffer = make_function(&Platform::Audio::swap_buffers, &audio_post);
 	endpoints.update_input = make_function(&Platform::Gui::input_handler, &gui);
 	endpoints.draw_frame = make_function(&Platform::Renderer::vblank_handler, &renderer);
+#else
+	TesterLinux tester;
+	external_callbacks endpoints;
+
+	endpoints.save_ram = function<void(const u8*, u32)>(ram_saver);
+	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
+	endpoints.audio_control = make_function(&Tester::dummy, &tester);
+	endpoints.swap_sample_buffer = make_function(&Tester::swap_buffers, &tester);
+	endpoints.update_input = make_function(&Tester::input_handler, &tester);
+	endpoints.draw_frame = make_function(&Tester::vblank_handler, &tester);
+#endif
 
 	emu_core.attach_callbacks(endpoints);
 
+#ifndef ENABLE_AUTO_TESTS
 	while (true)
 	{
 		std::cout << "Insert cartrige path:\n";
@@ -57,6 +75,16 @@ int main(int argc, char *argv[])
 
 		std::cout << "Failed to load cartrige!\n";
 	}
+
+#else
+	std::ifstream rom(argv[1]);
+
+	if (rom.is_open())
+	{
+		std::ifstream ram(file_name + "_ram"), rtc(file_name + "_rtc");
+		emu_core.load_cartrige(rom, ram, rtc);
+	}
+#endif
 
 	emu_core.run();
 	return 0;

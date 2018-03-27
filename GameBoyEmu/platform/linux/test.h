@@ -1,4 +1,19 @@
 #pragma once
+#include "stdafx.h"
+#include "sha256.h"
+#include "core/joypad.h"
+
+class Tester
+{
+	private:
+		bool calculate_hash = false;
+
+	public:
+		Tester();
+
+		bool input_stub(Joypad& input);
+		void render_stub(const u32* frame_buffer);
+};
 
 #ifdef ENABLE_AUTO_TESTS
 std::ifstream rom(argv[1]);

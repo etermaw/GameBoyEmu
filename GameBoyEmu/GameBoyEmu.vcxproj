@@ -176,6 +176,9 @@
     <ClCompile Include="core\timer.cpp" />
     <ClCompile Include="core\wave_synth.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="platform\linux\test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="platform\sdl\audio_postprocess.cpp" />
     <ClCompile Include="platform\sdl\gui.cpp" />
     <ClCompile Include="platform\sdl\renderer.cpp" />
@@ -200,7 +203,9 @@
     <ClInclude Include="core\timer.h" />
     <ClInclude Include="core\wave_synth.h" />
     <ClInclude Include="platform\dispatch.h" />
-    <ClInclude Include="platform\linux\test.h" />
+    <ClInclude Include="platform\linux\test.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="platform\sdl\audio_postprocess.h" />
     <ClInclude Include="platform\sdl\gui.h" />
     <ClInclude Include="platform\sdl\renderer.h" />
