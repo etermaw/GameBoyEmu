@@ -80,6 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>D:\Projekty\GameBoyEmu\GameBoyEmu;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -98,7 +99,7 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -133,7 +134,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -154,52 +155,65 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="apu.cpp" />
-    <ClCompile Include="audio_postprocess.cpp" />
-    <ClCompile Include="cartrige.cpp" />
-    <ClCompile Include="core.cpp" />
-    <ClCompile Include="cpu.cpp" />
-    <ClCompile Include="debugger.cpp" />
-    <ClCompile Include="gpu.cpp" />
-    <ClCompile Include="interrupts.cpp" />
-    <ClCompile Include="joypad.cpp" />
-    <ClCompile Include="mbc.cpp" />
-    <ClCompile Include="cpu_instructions.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="mmu.cpp" />
-    <ClCompile Include="noise_synth.cpp" />
-    <ClCompile Include="ram.cpp" />
-    <ClCompile Include="serial.cpp" />
-    <ClCompile Include="square_synth.cpp" />
-    <ClCompile Include="timer.cpp" />
-    <ClCompile Include="wave_synth.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="apu.h" />
-    <ClInclude Include="audio_postprocess.h" />
-    <ClInclude Include="bit_ops.h" />
-    <ClInclude Include="cartrige.h" />
-    <ClInclude Include="core.h" />
-    <ClInclude Include="cpu.h" />
-    <ClInclude Include="debugger.h" />
-    <ClInclude Include="function.h" />
-    <ClInclude Include="gpu.h" />
-    <ClInclude Include="interrupts.h" />
-    <ClInclude Include="joypad.h" />
-    <ClInclude Include="mbc.h" />
-    <ClInclude Include="definitions.h" />
-    <ClInclude Include="IMemory.h" />
-    <ClInclude Include="mmu.h" />
-    <ClInclude Include="noise_synth.h" />
-    <ClInclude Include="ram.h" />
-    <ClInclude Include="serial.h" />
-    <ClInclude Include="square_synth.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="timer.h" />
-    <ClInclude Include="wave_synth.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="core\apu.cpp" />
+    <ClCompile Include="core\cartrige.cpp" />
+    <ClCompile Include="core\core.cpp" />
+    <ClCompile Include="core\cpu.cpp" />
+    <ClCompile Include="core\cpu_instructions.cpp" />
+    <ClCompile Include="core\debugger.cpp" />
+    <ClCompile Include="core\gpu.cpp" />
+    <ClCompile Include="core\interrupts.cpp" />
+    <ClCompile Include="core\joypad.cpp" />
+    <ClCompile Include="core\mbc.cpp" />
+    <ClCompile Include="core\mmu.cpp" />
+    <ClCompile Include="core\noise_synth.cpp" />
+    <ClCompile Include="core\ram.cpp" />
+    <ClCompile Include="core\serial.cpp" />
+    <ClCompile Include="core\square_synth.cpp" />
+    <ClCompile Include="core\timer.cpp" />
+    <ClCompile Include="core\wave_synth.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="platform\linux\test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="platform\sdl\audio_postprocess.cpp" />
+    <ClCompile Include="platform\sdl\gui.cpp" />
+    <ClCompile Include="platform\sdl\renderer.cpp" />
+    <ClCompile Include="sha256.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="core\apu.h" />
+    <ClInclude Include="core\cartrige.h" />
+    <ClInclude Include="core\core.h" />
+    <ClInclude Include="core\cpu.h" />
+    <ClInclude Include="core\debugger.h" />
+    <ClInclude Include="core\gpu.h" />
+    <ClInclude Include="core\IMemory.h" />
+    <ClInclude Include="core\interrupts.h" />
+    <ClInclude Include="core\joypad.h" />
+    <ClInclude Include="core\mbc.h" />
+    <ClInclude Include="core\mmu.h" />
+    <ClInclude Include="core\noise_synth.h" />
+    <ClInclude Include="core\ram.h" />
+    <ClInclude Include="core\serial.h" />
+    <ClInclude Include="core\square_synth.h" />
+    <ClInclude Include="core\timer.h" />
+    <ClInclude Include="core\wave_synth.h" />
+    <ClInclude Include="platform\dispatch.h" />
+    <ClInclude Include="platform\linux\test.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="platform\sdl\audio_postprocess.h" />
+    <ClInclude Include="platform\sdl\gui.h" />
+    <ClInclude Include="platform\sdl\renderer.h" />
+    <ClInclude Include="sha256.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="utils\bit_ops.h" />
+    <ClInclude Include="utils\definitions.h" />
+    <ClInclude Include="utils\function.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

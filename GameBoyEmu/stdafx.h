@@ -15,8 +15,6 @@
 #include <bitset>
 #include <array>
 
-#include <SDL.h>
-
-#include "definitions.h"
-#include "bit_ops.h"
-#include "function.h"
+#include "utils/definitions.h"
+#include "utils/function.h"
+#include "utils/bit_ops.h"
