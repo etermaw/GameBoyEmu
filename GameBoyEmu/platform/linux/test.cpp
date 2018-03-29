@@ -45,6 +45,9 @@ void Tester::render_stub(const u32* frame_buffer)
 
 		fflush(stdout);
 	}
+
+	if (use_renderer)
+		render_callback(frame_buffer);
 }
 
 bool Tester::input_stub(Joypad& input)
@@ -148,4 +151,10 @@ u8** Tester::audio_dummy_swap(u8** ptrs, u32 unused)
 	UNUSED(unused);
 
 	return dummy_ptrs;
+}
+
+void Tester::attach_renderer(function<void(const u32*)> callback)
+{
+	render_callback = callback;
+	use_renderer = true;
 }

@@ -6,6 +6,8 @@
 class Tester
 {
 	private:
+		function<void(const u32*)> render_callback; //real renderer callback
+		bool use_renderer = false;
 		bool calculate_hash = false;
 		u8* dummy_ptrs[4];
 
@@ -17,4 +19,6 @@ class Tester
 		void render_stub(const u32* frame_buffer);
 		void audio_dummy_ctrl(bool unused);
 		u8** audio_dummy_swap(u8** ptr, u32 unused);
+
+		void attach_renderer(function<void(const u32*)> callback);
 };

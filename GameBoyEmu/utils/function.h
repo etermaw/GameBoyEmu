@@ -16,7 +16,7 @@ class function<R(Args...)> final
 		fun_type fun_ptr;
 
 	public:
-		function(void* object = 0, fun_type function = 0) : obj_ptr(object), fun_ptr(function) {}
+		function(void* object = nullptr, fun_type function = nullptr) : obj_ptr(object), fun_ptr(function) {}
 
 		template<class F>
 		function(F&& lambda) : obj_ptr(std::addressof(lambda))
@@ -77,7 +77,7 @@ struct function_call final
 	template<R(*fun)(Args...)>
 	inline static function<R(Args...)> bind()
 	{
-		return function<R(Args...)>(0, &call<fun>);
+		return function<R(Args...)>(nullptr, &call<fun>);
 	}
 };
 

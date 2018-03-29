@@ -40,8 +40,12 @@ int main(int argc, char *argv[])
 	endpoints.update_input = make_function(&Platform::Gui::input_handler, &gui);
 	endpoints.draw_frame = make_function(&Platform::Renderer::vblank_handler, &renderer);
 #else
+	Platform::Gui gui(3*160, 3*140, "GBE");
+	Platform::Renderer renderer(gui.get_display());
 	Tester tester;
 	external_callbacks endpoints;
+
+	tester.attach_renderer(make_function(&Platform::Renderer::vblank_handler, &renderer));
 
 	endpoints.save_ram = function<void(const u8*, u32)>(ram_saver);
 	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
