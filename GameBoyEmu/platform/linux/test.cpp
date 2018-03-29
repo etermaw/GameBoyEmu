@@ -22,6 +22,15 @@ Tester::Tester()
 
 	if (flags2 != -1)
 		fcntl(STDIN_FILENO, F_SETFL, flags2 | O_NONBLOCK);
+
+	for (auto& i : dummy_ptrs)
+		i = new u8[1<<15];
+}
+
+Tester::~Tester()
+{
+	for (auto& i : dummy_ptrs)
+		delete[] i;
 }
 
 void Tester::render_stub(const u32* frame_buffer)
@@ -126,4 +135,17 @@ bool Tester::input_stub(Joypad& input)
 		}
 		return true;
 	}
+}
+
+void Tester::audio_dummy_ctrl(bool unused)
+{
+	UNUSED(unused);
+}
+
+u8** Tester::audio_dummy_swap(u8** ptrs, u32 unused)
+{
+	UNUSED(ptrs);
+	UNUSED(unused);
+
+	return dummy_ptrs;
 }

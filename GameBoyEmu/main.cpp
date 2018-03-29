@@ -40,15 +40,15 @@ int main(int argc, char *argv[])
 	endpoints.update_input = make_function(&Platform::Gui::input_handler, &gui);
 	endpoints.draw_frame = make_function(&Platform::Renderer::vblank_handler, &renderer);
 #else
-	TesterLinux tester;
+	Tester tester;
 	external_callbacks endpoints;
 
 	endpoints.save_ram = function<void(const u8*, u32)>(ram_saver);
 	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
-	endpoints.audio_control = make_function(&Tester::dummy, &tester);
-	endpoints.swap_sample_buffer = make_function(&Tester::swap_buffers, &tester);
-	endpoints.update_input = make_function(&Tester::input_handler, &tester);
-	endpoints.draw_frame = make_function(&Tester::vblank_handler, &tester);
+	endpoints.audio_control = make_function(&Tester::audio_dummy_ctrl, &tester);
+	endpoints.swap_sample_buffer = make_function(&Tester::audio_dummy_swap, &tester);
+	endpoints.update_input = make_function(&Tester::input_stub, &tester);
+	endpoints.draw_frame = make_function(&Tester::render_stub, &tester);
 #endif
 
 	emu_core.attach_callbacks(endpoints);

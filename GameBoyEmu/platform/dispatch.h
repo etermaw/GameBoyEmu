@@ -11,4 +11,4 @@ namespace Platform {
 	using Gui = GuiSDL;
 
 	inline void init() { SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO); }
-};
+}

@@ -9,10 +9,12 @@ file(GLOB UTIL_HEADERS GameBoyEmu/utils/*.h)
 
 set(TEST_SOURCES
     GameBoyEmu/sha256.cpp
+    GameBoyEmu/platform/linux/test.cpp
 )
 
 set(TEST_HEADERS
     GameBoyEmu/sha256.h
+    GameBoyEmu/platform/linux/test.h
 )
 
 
