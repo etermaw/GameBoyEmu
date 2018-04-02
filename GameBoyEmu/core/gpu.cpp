@@ -186,6 +186,12 @@ void Gpu::step_ahead(u32 clock_cycles)
 	}
 }
 
+void Gpu::switch_state(GPU_STATE new_state, u32 duration_cycles)
+{
+	current_state = new_state;
+	cycles_to_next_state = duration_cycles;
+}
+
 void Gpu::launch_dma(u8 adress)
 {
 	const u8* src_ptr = resolve_adress(adress * 0x100);

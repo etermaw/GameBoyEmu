@@ -74,10 +74,7 @@ class Gpu final : public IMemory
 		bool cmp_bit = false;
 		bool prev_stat_line = false;
 
-		void vb_mode();
-		void hb_mode();
-		void oam_mode();
-		void transfer_mode();
+		void switch_state(GPU_STATE new_state, u32 duration_cycles);
 
 		void launch_dma(u8 adress);
 		void launch_gdma();
