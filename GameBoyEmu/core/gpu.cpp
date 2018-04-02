@@ -63,77 +63,6 @@ Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 	cycles_to_next_state = 204; //TODO: what`s GPU status immediately after BIOS launch?
 }
 
-void Gpu::vb_mode()
-{
-	regs[IO_LY]++;
-	check_lyc_ly_bit();
-	check_interrupts();
-
-	if (regs[IO_LY] < 153)
-		cycles_to_next_state = 456;
-
-	else
-	{
-		current_state = GS_LY_153;
-		cycles_to_next_state = 4;
-	}
-}
-
-void Gpu::hb_mode()
-{
-	regs[IO_LY]++;
-	check_lyc_ly_bit();
-	check_interrupts();
-
-	if (regs[IO_LY] < 144)
-	{
-		unlocked_oam = false;
-		change_stat_mode(0x2); //OAM mode
-
-		current_state = GS_OAM;
-		cycles_to_next_state = 80;
-	}
-
-	else
-	{
-		if (cgb_mode)
-			check_interrupts();
-
-		entering_vblank = true;
-
-		current_state = GS_VBLANK_INT_RAISE;
-		cycles_to_next_state = cgb_mode ? 2 : 4;
-	}
-}
-
-void Gpu::oam_mode()
-{
-	unlocked_vram = false;
-	change_stat_mode(0x3); //TRANSFER mode
-
-	current_state = GS_TRANSFER_PREFETCHING;
-	cycles_to_next_state = 6;
-
-	prepare_sprites();
-	current_pixels_drawn = 0;
-}
-
-void Gpu::transfer_mode()
-{
-	if (current_pixels_drawn < 160U)
-		draw_line(current_pixels_drawn, 160U);
-
-	unlocked_oam = true;
-	unlocked_vram = true;
-	change_stat_mode(0x0); //HBLANK mode
-
-	if (hdma_active)
-		launch_hdma();
-
-	current_state = GS_HBLANK;
-	cycles_to_next_state = 204 - (regs[IO_SX] % 8);
-}
-
 void Gpu::step_ahead(u32 clock_cycles)
 {
 	if (dma_cycles > 0)
@@ -159,7 +88,19 @@ void Gpu::step_ahead(u32 clock_cycles)
 				break;
 
 			case GS_VBLANK:
-				vb_mode();
+				regs[IO_LY]++;
+				check_lyc_ly_bit();
+				check_interrupts();
+
+				if (regs[IO_LY] < 153)
+					cycles_to_next_state = 456;
+
+				else
+				{
+					current_state = GS_LY_153;
+					cycles_to_next_state = 4;
+				}
+
 				break;
 
 			case GS_LY_153:
@@ -180,11 +121,41 @@ void Gpu::step_ahead(u32 clock_cycles)
 				break;
 
 			case GS_HBLANK:
-				hb_mode();
+				regs[IO_LY]++;
+				check_lyc_ly_bit();
+				check_interrupts();
+
+				if (regs[IO_LY] < 144)
+				{
+					unlocked_oam = false;
+					change_stat_mode(0x2); //OAM mode
+
+					current_state = GS_OAM;
+					cycles_to_next_state = 80;
+				}
+
+				else
+				{
+					if (cgb_mode)
+						check_interrupts();
+
+					entering_vblank = true;
+
+					current_state = GS_VBLANK_INT_RAISE;
+					cycles_to_next_state = cgb_mode ? 2 : 4;
+				}
+
 				break;
 
 			case GS_OAM:
-				oam_mode();
+				unlocked_vram = false;
+				change_stat_mode(0x3); //TRANSFER mode
+
+				current_state = GS_TRANSFER_PREFETCHING;
+				cycles_to_next_state = 6;
+
+				prepare_sprites();
+				current_pixels_drawn = 0;
 				break;
 
 			case GS_TRANSFER_PREFETCHING:
@@ -193,7 +164,18 @@ void Gpu::step_ahead(u32 clock_cycles)
 				break;
 
 			case GS_TRANSFER_DRAWING:
-				transfer_mode();
+				if (current_pixels_drawn < 160U)
+					draw_line(current_pixels_drawn, 160U);
+
+				unlocked_oam = true;
+				unlocked_vram = true;
+				change_stat_mode(0x0); //HBLANK mode
+
+				if (hdma_active)
+					launch_hdma();
+
+				current_state = GS_HBLANK;
+				cycles_to_next_state = 204 - (regs[IO_SX] % 8);
 				break;
 
 			case GS_TURNING_ON:
