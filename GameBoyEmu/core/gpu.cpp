@@ -59,8 +59,7 @@ Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 	std::memset(color_bgp, 0xFF, sizeof(u32) * 8 * 4);
 	std::memset(color_obp, 0xFF, sizeof(u32) * 8 * 4);
 
-	current_state = GS_HBLANK;
-	cycles_to_next_state = 204; //TODO: what`s GPU status immediately after BIOS launch?
+	switch_state(GS_HBLANK, 204); //TODO: what`s GPU status immediately after BIOS launch?
 }
 
 void Gpu::step_ahead(u32 clock_cycles)
@@ -83,8 +82,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				interrupts.raise(INT_VBLANK);
 				change_stat_mode(0x1); //VBLANK mode
 
-				current_state = GS_VBLANK;
-				cycles_to_next_state = 456 - (cgb_mode ? 2 : 4);
+				switch_state(GS_VBLANK, 456 - (cgb_mode ? 2 : 4));
 				break;
 
 			case GS_VBLANK:
@@ -93,13 +91,10 @@ void Gpu::step_ahead(u32 clock_cycles)
 				check_interrupts();
 
 				if (regs[IO_LY] < 153)
-					cycles_to_next_state = 456;
+					switch_state(GS_VBLANK, 456);
 
 				else
-				{
-					current_state = GS_LY_153;
-					cycles_to_next_state = 4;
-				}
+					switch_state(GS_LY_153, 4);
 
 				break;
 
@@ -108,16 +103,14 @@ void Gpu::step_ahead(u32 clock_cycles)
 				check_lyc_ly_bit();
 				check_interrupts();
 
-				current_state = GS_LY_153_0;
-				cycles_to_next_state = 456 - 4;
+				switch_state(GS_LY_153_0, 456 - 4);
 				break;
 
 			case GS_LY_153_0:
 				unlocked_oam = false;
 				change_stat_mode(0x2); //OAM mode
 				
-				current_state = GS_OAM;
-				cycles_to_next_state = 80;
+				switch_state(GS_OAM, 80);
 				break;
 
 			case GS_HBLANK:
@@ -130,8 +123,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 					unlocked_oam = false;
 					change_stat_mode(0x2); //OAM mode
 
-					current_state = GS_OAM;
-					cycles_to_next_state = 80;
+					switch_state(GS_OAM, 80);
 				}
 
 				else
@@ -141,8 +133,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 					entering_vblank = true;
 
-					current_state = GS_VBLANK_INT_RAISE;
-					cycles_to_next_state = cgb_mode ? 2 : 4;
+					switch_state(GS_VBLANK_INT_RAISE, cgb_mode ? 2 : 4);
 				}
 
 				break;
@@ -151,16 +142,14 @@ void Gpu::step_ahead(u32 clock_cycles)
 				unlocked_vram = false;
 				change_stat_mode(0x3); //TRANSFER mode
 
-				current_state = GS_TRANSFER_PREFETCHING;
-				cycles_to_next_state = 6;
+				switch_state(GS_TRANSFER_PREFETCHING, 6);
 
 				prepare_sprites();
 				current_pixels_drawn = 0;
 				break;
 
 			case GS_TRANSFER_PREFETCHING:
-				current_state = GS_TRANSFER_DRAWING;
-				cycles_to_next_state = 172 - 6 + (regs[IO_SX] % 8);
+				switch_state(GS_TRANSFER_DRAWING, 172 - 6 + (regs[IO_SX] % 8));
 				break;
 
 			case GS_TRANSFER_DRAWING:
@@ -174,13 +163,11 @@ void Gpu::step_ahead(u32 clock_cycles)
 				if (hdma_active)
 					launch_hdma();
 
-				current_state = GS_HBLANK;
-				cycles_to_next_state = 204 - (regs[IO_SX] % 8);
+				switch_state(GS_HBLANK, 204 - (regs[IO_SX] % 8));
 				break;
 
 			case GS_TURNING_ON:
-				current_state = GS_HBLANK;
-				cycles_to_next_state = 204;
+				switch_state(GS_HBLANK, 204);
 				break;
 		}
 	}
@@ -652,8 +639,7 @@ void Gpu::turn_off_lcd()
 	cycles = 0;
 
 	entering_vblank = true; //display white screen
-	current_state = GS_LCD_OFF;
-	cycles_to_next_state = 0;
+	switch_state(GS_LCD_OFF, 0);
 
 	//cmp_bit freezes, we do NOT set it to 0!
 	prev_stat_line = cmp_bit; //if cmp_bit is true, stat INT line won`t go to 0
@@ -661,8 +647,7 @@ void Gpu::turn_off_lcd()
 
 void Gpu::turn_on_lcd()
 {
-	current_state = GS_TURNING_ON;
-	cycles_to_next_state = 240;
+	switch_state(GS_TURNING_ON, 240);
 
 	check_lyc_ly_bit();
 	check_interrupts();
