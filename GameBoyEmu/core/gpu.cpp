@@ -89,7 +89,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				break;
 
 			case GS_TRANSFER_PREFETCHING:
-				switch_state(GS_TRANSFER_DRAWING, 172 - 6 + (regs[IO_SX] % 8));
+				switch_state(GS_TRANSFER_DRAWING, 172 - 6);
 				break;
 
 			case GS_TRANSFER_DRAWING:
@@ -103,7 +103,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				if (hdma_active)
 					launch_hdma();
 
-				switch_state(GS_HBLANK, 204 - (regs[IO_SX] % 8));
+				switch_state(GS_HBLANK, 204);
 				break;
 
 			case GS_HBLANK:
