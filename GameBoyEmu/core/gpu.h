@@ -8,7 +8,7 @@ class Gpu final : public IMemory
 	enum GPU_STATE { GS_OAM,
 					 GS_TRANSFER_PREFETCHING, GS_TRANSFER_DRAWING,
 					 GS_HBLANK,
-					 GS_VBLANK,
+					 GS_VBLANK_INT_RAISE, GS_VBLANK,
 					 GS_LY_153, GS_LY_153_0,
 					 GS_LCD_OFF, GS_TURNING_ON };
 
