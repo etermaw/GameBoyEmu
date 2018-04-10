@@ -126,22 +126,18 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 					entering_vblank = true;
 
-					switch_state(GS_VBLANK_INT_RAISE, cgb_mode ? 2 : 4);
+					switch_state(GS_VBLANK, 456);
 				}
 
-				break;
-
-			case GS_VBLANK_INT_RAISE:
-				interrupts.raise(INT_VBLANK);
-				change_stat_mode(0x1); //VBLANK mode
-
-				switch_state(GS_VBLANK, 456 - (cgb_mode ? 2 : 4));
 				break;
 
 			case GS_VBLANK:
 				regs[IO_LY]++;
 				check_lyc_ly_bit();
 				check_interrupts();
+
+				interrupts.raise(INT_VBLANK);
+				change_stat_mode(0x1); //VBLANK mode
 
 				if (regs[IO_LY] < 153)
 					switch_state(GS_VBLANK, 456);
