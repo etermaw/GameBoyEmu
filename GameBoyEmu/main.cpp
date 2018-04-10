@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	endpoints.update_input = make_function(&Platform::Gui::input_handler, &gui);
 	endpoints.draw_frame = make_function(&Platform::Renderer::vblank_handler, &renderer);
 #else
-	Platform::Gui gui(3*160, 3*140, "GBE");
+	Platform::Gui gui(3*160, 3*144, "GBE");
 	Platform::Renderer renderer(gui.get_display());
 	Tester tester;
 	external_callbacks endpoints;
