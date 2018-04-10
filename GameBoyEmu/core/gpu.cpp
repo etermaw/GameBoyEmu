@@ -78,6 +78,59 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 		switch (current_state)
 		{
+			case GS_OAM:
+				unlocked_vram = false;
+				change_stat_mode(0x3); //TRANSFER mode
+
+				switch_state(GS_TRANSFER_PREFETCHING, 6);
+
+				prepare_sprites();
+				current_pixels_drawn = 0;
+				break;
+
+			case GS_TRANSFER_PREFETCHING:
+				switch_state(GS_TRANSFER_DRAWING, 172 - 6 + (regs[IO_SX] % 8));
+				break;
+
+			case GS_TRANSFER_DRAWING:
+				if (current_pixels_drawn < 160U)
+					draw_line(current_pixels_drawn, 160U);
+
+				unlocked_oam = true;
+				unlocked_vram = true;
+				change_stat_mode(0x0); //HBLANK mode
+
+				if (hdma_active)
+					launch_hdma();
+
+				switch_state(GS_HBLANK, 204 - (regs[IO_SX] % 8));
+				break;
+
+			case GS_HBLANK:
+				regs[IO_LY]++;
+				check_lyc_ly_bit();
+				check_interrupts();
+
+				if (regs[IO_LY] < 144)
+				{
+					unlocked_oam = false;
+					change_stat_mode(0x2); //OAM mode
+
+					switch_state(GS_OAM, 80);
+				}
+
+				else
+				{
+					if (cgb_mode)
+						check_interrupts();
+
+					entering_vblank = true;
+
+					switch_state(GS_VBLANK_INT_RAISE, cgb_mode ? 2 : 4);
+				}
+
+				break;
+
 			case GS_VBLANK_INT_RAISE:
 				interrupts.raise(INT_VBLANK);
 				change_stat_mode(0x1); //VBLANK mode
@@ -111,59 +164,6 @@ void Gpu::step_ahead(u32 clock_cycles)
 				change_stat_mode(0x2); //OAM mode
 				
 				switch_state(GS_OAM, 80);
-				break;
-
-			case GS_HBLANK:
-				regs[IO_LY]++;
-				check_lyc_ly_bit();
-				check_interrupts();
-
-				if (regs[IO_LY] < 144)
-				{
-					unlocked_oam = false;
-					change_stat_mode(0x2); //OAM mode
-
-					switch_state(GS_OAM, 80);
-				}
-
-				else
-				{
-					if (cgb_mode)
-						check_interrupts();
-
-					entering_vblank = true;
-
-					switch_state(GS_VBLANK_INT_RAISE, cgb_mode ? 2 : 4);
-				}
-
-				break;
-
-			case GS_OAM:
-				unlocked_vram = false;
-				change_stat_mode(0x3); //TRANSFER mode
-
-				switch_state(GS_TRANSFER_PREFETCHING, 6);
-
-				prepare_sprites();
-				current_pixels_drawn = 0;
-				break;
-
-			case GS_TRANSFER_PREFETCHING:
-				switch_state(GS_TRANSFER_DRAWING, 172 - 6 + (regs[IO_SX] % 8));
-				break;
-
-			case GS_TRANSFER_DRAWING:
-				if (current_pixels_drawn < 160U)
-					draw_line(current_pixels_drawn, 160U);
-
-				unlocked_oam = true;
-				unlocked_vram = true;
-				change_stat_mode(0x0); //HBLANK mode
-
-				if (hdma_active)
-					launch_hdma();
-
-				switch_state(GS_HBLANK, 204 - (regs[IO_SX] % 8));
 				break;
 
 			case GS_TURNING_ON:
