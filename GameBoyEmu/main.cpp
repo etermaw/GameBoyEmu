@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
 #ifndef ENABLE_AUTO_TESTS
 	Platform::Audio audio_post;
-	Platform::Gui gui(3*160, 3*140, "GBE");
+	Platform::Gui gui(3*160, 3*144, "GBE");
 	Platform::Renderer renderer(gui.get_display());
 
 	external_callbacks endpoints;
