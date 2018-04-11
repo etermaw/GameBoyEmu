@@ -12,6 +12,11 @@ enum LCD_CONTROL {
 
 enum LCD_STATUS { LS_CMP_SIG = 2, LS_HBLANK, LS_VBLANK, LS_OAM, LS_LYC_LY };
 
+static constexpr u32 LINE_CYCLES = 456;
+static constexpr u32 OAM_CYCLES = 80;
+static constexpr u32 TRANSFER_CYCLES = 172;
+static constexpr u32 HBLANK_CYCLES = 204;
+
 template<class T>
 inline T clamp(T value, T min, T max)
 {
@@ -86,7 +91,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				change_stat_mode(0x2);
 
 				next_state = GS_TRANSFER_PREFETCHING;
-				cycles_to_next_state = 80;
+				cycles_to_next_state = OAM_CYCLES;
 				break;
 
 			case GS_OAM:
@@ -98,7 +103,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				change_stat_mode(0x2);
 
 				next_state = GS_TRANSFER_PREFETCHING;
-				cycles_to_next_state = 80;
+				cycles_to_next_state = OAM_CYCLES;
 				break;
 
 			case GS_TRANSFER_PREFETCHING:
@@ -114,7 +119,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 			case GS_TRANSFER_DRAWING:
 				next_state = GS_HBLANK;
-				cycles_to_next_state = 172 - 6;
+				cycles_to_next_state = TRANSFER_CYCLES - 6;
 				break;
 
 			case GS_HBLANK:
@@ -129,7 +134,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 					launch_hdma();
 
 				next_state = (regs[IO_LY] == 143 ? GS_VBLANK_INT : GS_OAM);
-				cycles_to_next_state = 204;
+				cycles_to_next_state = HBLANK_CYCLES;
 				break;
 
 			case GS_VBLANK_INT:
@@ -142,7 +147,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				change_stat_mode(0x1); //VBLANK mode
 
 				next_state = GS_VBLANK;
-				cycles_to_next_state = 456;
+				cycles_to_next_state = LINE_CYCLES;
 				break;
 
 			case GS_VBLANK:
@@ -151,7 +156,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				check_interrupts();
 
 				next_state = (regs[IO_LY] == 152 ? GS_LY_153 : GS_VBLANK);
-				cycles_to_next_state = 456;
+				cycles_to_next_state = LINE_CYCLES;
 				break;
 
 			case GS_LY_153:
@@ -169,12 +174,12 @@ void Gpu::step_ahead(u32 clock_cycles)
 				check_interrupts();
 
 				next_state = GS_LY_0_OAM;
-				cycles_to_next_state = 456 - 4;
+				cycles_to_next_state = LINE_CYCLES - 4;
 				break;
 
 			case GS_TURNING_ON:
 				next_state = GS_HBLANK;
-				cycles_to_next_state = 204;
+				cycles_to_next_state = HBLANK_CYCLES;
 				break;
 		}
 	}
