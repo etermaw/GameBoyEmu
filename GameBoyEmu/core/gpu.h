@@ -75,7 +75,7 @@ class Gpu final : public IMemory
 		bool cmp_bit = false;
 		bool prev_stat_line = false;
 
-		void switch_state(GPU_STATE new_state, u32 duration_cycles);
+		void push_state(GPU_STATE state_next, u32 current_state_duration);
 
 		void launch_dma(u8 adress);
 		void launch_gdma();
