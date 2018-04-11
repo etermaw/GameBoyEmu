@@ -8,7 +8,7 @@ class Gpu final : public IMemory
 	enum GPU_STATE { GS_OAM,
 					 GS_TRANSFER_PREFETCHING, GS_TRANSFER_DRAWING,
 					 GS_HBLANK,
-					 GS_VBLANK,
+					 GS_VBLANK_INT, GS_VBLANK,
 					 GS_LY_153, GS_LY_153_0,
 					 GS_LCD_OFF, GS_TURNING_ON };
 
@@ -35,6 +35,7 @@ class Gpu final : public IMemory
 		IDmaMemory* ram;
 
 		GPU_STATE current_state;
+		GPU_STATE next_state;
 		u32 cycles_to_next_state;
 
 		u32 cycles_ahead = 0;

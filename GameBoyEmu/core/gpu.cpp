@@ -59,7 +59,9 @@ Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 	std::memset(color_bgp, 0xFF, sizeof(u32) * 8 * 4);
 	std::memset(color_obp, 0xFF, sizeof(u32) * 8 * 4);
 
-	switch_state(GS_HBLANK, 204); //TODO: what`s GPU status immediately after BIOS launch?
+	current_state = GS_TURNING_ON;
+	next_state = GS_HBLANK;
+	cycles_to_next_state = 0; //TODO: what`s GPU status immediately after BIOS launch?
 }
 
 void Gpu::step_ahead(u32 clock_cycles)
@@ -75,24 +77,39 @@ void Gpu::step_ahead(u32 clock_cycles)
 	while (cycles >= cycles_to_next_state)
 	{
 		cycles -= cycles_to_next_state;
+		current_state = next_state;
 
 		switch (current_state)
 		{
 			case GS_OAM:
-				unlocked_vram = false;
-				change_stat_mode(0x3); //TRANSFER mode
+				regs[IO_LY]++;
+				check_lyc_ly_bit();
+				check_interrupts();
 
-				switch_state(GS_TRANSFER_PREFETCHING, 6);
+				unlocked_oam = false;
+				change_stat_mode(0x2);
 
-				prepare_sprites();
-				current_pixels_drawn = 0;
+				next_state = GS_TRANSFER_PREFETCHING;
+				cycles_to_next_state = 80;
 				break;
 
 			case GS_TRANSFER_PREFETCHING:
-				switch_state(GS_TRANSFER_DRAWING, 172 - 6);
+				unlocked_vram = false;
+				change_stat_mode(0x3); //TRANSFER mode
+
+				prepare_sprites();
+				current_pixels_drawn = 0;
+
+				next_state = GS_TRANSFER_DRAWING;
+				cycles_to_next_state = 6;
 				break;
 
 			case GS_TRANSFER_DRAWING:
+				next_state = GS_HBLANK;
+				cycles_to_next_state = 172 - 6;
+				break;
+
+			case GS_HBLANK:
 				if (current_pixels_drawn < 160U)
 					draw_line(current_pixels_drawn, 160U);
 
@@ -103,35 +120,21 @@ void Gpu::step_ahead(u32 clock_cycles)
 				if (hdma_active)
 					launch_hdma();
 
-				switch_state(GS_HBLANK, 204);
+				next_state = (regs[IO_LY] == 143 ? GS_VBLANK_INT : GS_OAM);
+				cycles_to_next_state = 204;
 				break;
 
-			case GS_HBLANK:
+			case GS_VBLANK_INT:
 				regs[IO_LY]++;
 				check_lyc_ly_bit();
 				check_interrupts();
 
-				if (regs[IO_LY] < 144)
-				{
-					unlocked_oam = false;
-					change_stat_mode(0x2); //OAM mode
+				entering_vblank = true;
+				interrupts.raise(INT_VBLANK);
+				change_stat_mode(0x1); //VBLANK mode
 
-					switch_state(GS_OAM, 80);
-				}
-
-				else
-				{
-					if (cgb_mode)
-						check_interrupts();
-
-					entering_vblank = true;
-
-					switch_state(GS_VBLANK, 456);
-
-					interrupts.raise(INT_VBLANK);
-					change_stat_mode(0x1); //VBLANK mode
-				}
-
+				next_state = GS_VBLANK;
+				cycles_to_next_state = 456;
 				break;
 
 			case GS_VBLANK:
@@ -139,31 +142,31 @@ void Gpu::step_ahead(u32 clock_cycles)
 				check_lyc_ly_bit();
 				check_interrupts();
 
-				if (regs[IO_LY] < 153)
-					switch_state(GS_VBLANK, 456);
-
-				else
-					switch_state(GS_LY_153, 4);
-
+				next_state = (regs[IO_LY] == 152 ? GS_LY_153 : GS_VBLANK);
+				cycles_to_next_state = 456;
 				break;
 
 			case GS_LY_153:
+				regs[IO_LY] = 153;
+				check_lyc_ly_bit();
+				check_interrupts();
+
+				next_state = GS_LY_153_0;
+				cycles_to_next_state = 4;
+				break;
+
+			case GS_LY_153_0:
 				regs[IO_LY] = 0;
 				check_lyc_ly_bit();
 				check_interrupts();
 
-				switch_state(GS_LY_153_0, 456 - 4);
-				break;
-
-			case GS_LY_153_0:
-				unlocked_oam = false;
-				change_stat_mode(0x2); //OAM mode
-				
-				switch_state(GS_OAM, 80);
+				next_state = GS_OAM;
+				cycles_to_next_state = 456 - 4;
 				break;
 
 			case GS_TURNING_ON:
-				switch_state(GS_HBLANK, 204);
+				next_state = GS_HBLANK;
+				cycles_to_next_state = 204;
 				break;
 		}
 	}
@@ -635,7 +638,9 @@ void Gpu::turn_off_lcd()
 	cycles = 0;
 
 	entering_vblank = true; //display white screen
-	switch_state(GS_LCD_OFF, 0);
+	current_state = GS_LCD_OFF;
+	next_state = GS_LCD_OFF;
+	cycles_to_next_state = 0;
 
 	//cmp_bit freezes, we do NOT set it to 0!
 	prev_stat_line = cmp_bit; //if cmp_bit is true, stat INT line won`t go to 0
@@ -643,7 +648,9 @@ void Gpu::turn_off_lcd()
 
 void Gpu::turn_on_lcd()
 {
-	switch_state(GS_TURNING_ON, 240);
+	current_state = GS_TURNING_ON;
+	next_state = GS_HBLANK;
+	cycles_to_next_state = 240;
 
 	check_lyc_ly_bit();
 	check_interrupts();
