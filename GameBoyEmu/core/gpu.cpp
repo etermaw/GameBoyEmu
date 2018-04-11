@@ -81,6 +81,14 @@ void Gpu::step_ahead(u32 clock_cycles)
 
 		switch (current_state)
 		{
+			case GS_LY_0_OAM:
+				unlocked_oam = false;
+				change_stat_mode(0x2);
+
+				next_state = GS_TRANSFER_PREFETCHING;
+				cycles_to_next_state = 80;
+				break;
+
 			case GS_OAM:
 				regs[IO_LY]++;
 				check_lyc_ly_bit();
@@ -160,7 +168,7 @@ void Gpu::step_ahead(u32 clock_cycles)
 				check_lyc_ly_bit();
 				check_interrupts();
 
-				next_state = GS_OAM;
+				next_state = GS_LY_0_OAM;
 				cycles_to_next_state = 456 - 4;
 				break;
 

@@ -5,7 +5,7 @@
 
 class Gpu final : public IMemory
 {
-	enum GPU_STATE { GS_OAM,
+	enum GPU_STATE { GS_LY_0_OAM, GS_OAM,
 					 GS_TRANSFER_PREFETCHING, GS_TRANSFER_DRAWING,
 					 GS_HBLANK,
 					 GS_VBLANK_INT, GS_VBLANK,
