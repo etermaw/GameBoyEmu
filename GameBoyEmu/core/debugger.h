@@ -9,7 +9,7 @@ class Debugger
 #else
 		std::unordered_set<u16> break_points;
 #endif
-		std::vector<u16> memory_watches;
+		std::unordered_set<u16> memory_watches;
 
 		function<u8(u16, u32)> read_byte_callback;
 		function<void(u16, u8, u32)> write_byte_callback;

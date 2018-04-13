@@ -204,13 +204,12 @@ void Debugger::remove_breakpoint(u16 adress)
 
 void Debugger::insert_watchpoint(u16 adress)
 {
-	memory_watches.push_back(adress);
-	std::sort(memory_watches.begin(), memory_watches.end());
+	memory_watches.insert(adress);
 }
 
 void Debugger::remove_watchpoint(u16 adress)
 {
-	auto it = std::lower_bound(memory_watches.begin(), memory_watches.end(), adress);
+	auto it = memory_watches.find(adress);
 
 	if (it != memory_watches.end())
 		memory_watches.erase(it);
@@ -306,10 +305,7 @@ void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u
 
 void Debugger::check_memory_access(u16 adress, u8 value)
 {
-	if (memory_watches.empty())
-		return;
-
-	if (std::binary_search(memory_watches.begin(), memory_watches.end(), adress))
+	if (!memory_watches.empty() && (memory_watches.find(adress) != memory_watches.end()))
 	{
 		memory_changed = true;
 		new_val = value;
