@@ -4,10 +4,10 @@
 class Debugger
 {
 	private:
-#ifndef ENABLE_AUTO_TESTS 
-		std::vector<u16> break_points = { 0x100 };
+#ifdef ENABLE_AUTO_TESTS
+		std::unordered_set<u16> break_points = {0x100};
 #else
-		std::vector<u16> break_points;
+		std::unordered_set<u16> break_points;
 #endif
 		std::vector<u16> memory_watches;
 

@@ -23,7 +23,7 @@ static const char help[] = "continue - y, run for x vblanks - z,\n"
 
 bool Debugger::is_breakpoint()
 {
-	return !break_points.empty() && std::binary_search(break_points.begin(), break_points.end(), *pc);
+	return !break_points.empty() && (break_points.find(*pc) != break_points.end());
 }
 
 void Debugger::enter_trap()
@@ -191,13 +191,12 @@ void Debugger::enter_trap()
 
 void Debugger::insert_breakpoint(u16 adress)
 {
-	break_points.push_back(adress);
-	std::sort(break_points.begin(), break_points.end());
+	break_points.insert(adress);
 }
 
 void Debugger::remove_breakpoint(u16 adress)
 {
-	auto it = std::lower_bound(break_points.begin(), break_points.end(), adress);
+	auto it = break_points.find(adress);
 
 	if (it != break_points.end())
 		break_points.erase(it);

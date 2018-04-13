@@ -13,6 +13,7 @@
 #include <cstring>
 #include <climits>
 #include <bitset>
+#include <unordered_set>
 #include <array>
 
 #include "utils/definitions.h"
