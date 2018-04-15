@@ -4,11 +4,7 @@
 class Debugger
 {
 	private:
-#ifdef ENABLE_AUTO_TESTS
-		std::unordered_set<u16> break_points = {0x100};
-#else
 		std::unordered_set<u16> break_points;
-#endif
 		std::unordered_set<u16> memory_watches;
 
 		function<u8(u16, u32)> read_byte_callback;
@@ -56,4 +52,5 @@ class Debugger
 		void check_memory_access(u16 adress, u8 value);
 		void step();
 		void after_vblank();
+		void setup_entry_point();
 };

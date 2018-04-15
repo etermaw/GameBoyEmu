@@ -134,3 +134,8 @@ void Core::attach_callbacks(const external_callbacks& endpoints)
 	draw_frame_callback = endpoints.draw_frame;
 	pump_input_callback = endpoints.update_input;
 }
+
+void Core::enable_debugger()
+{
+	debugger.setup_entry_point();
+}

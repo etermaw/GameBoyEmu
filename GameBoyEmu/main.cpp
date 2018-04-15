@@ -58,6 +58,8 @@ int main(int argc, char *argv[])
 	emu_core.attach_callbacks(endpoints);
 
 #ifndef ENABLE_AUTO_TESTS
+	emu_core.enable_debugger();
+
 	while (true)
 	{
 		std::cout << "Insert cartrige path:\n";
