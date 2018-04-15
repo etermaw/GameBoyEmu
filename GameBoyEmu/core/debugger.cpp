@@ -227,11 +227,11 @@ void Debugger::dump_registers()
 
 	auto f = regs[4] & 0xFF;
 
+	printf("\nAF: 0x%04x    A: 0x%02x    F: 0x%02x", regs[4], (regs[4] >> 8) & 0xFF, regs[4] & 0xFF);
 	printf("\nBC: 0x%04x    B: 0x%02x    C: 0x%02x", regs[0], (regs[0] >> 8) & 0xFF, regs[0] & 0xFF);
 	printf("\nDE: 0x%04x    D: 0x%02x    E: 0x%02x", regs[1], (regs[1] >> 8) & 0xFF, regs[1] & 0xFF);
 	printf("\nHL: 0x%04x    H: 0x%02x    L: 0x%02x", regs[2], (regs[2] >> 8) & 0xFF, regs[2] & 0xFF);
 	printf("\nSP: 0x%04x", regs[3]);
-	printf("\nAF: 0x%04x    A: 0x%02x    F: 0x%02x", regs[4], (regs[4] >> 8) & 0xFF, regs[4] & 0xFF);
 
 	printf("\n\nFlags (F register): Z:%d N:%d H:%d C:%d\n", check_bit(f, 7), check_bit(f, 6), check_bit(f, 5), check_bit(f, 4));
 	printf("Interrupts (IME): %s\n", ime ? "enabled" : "disabled");
