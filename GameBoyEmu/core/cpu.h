@@ -49,11 +49,8 @@ class CPU
 
 		void fill_instruction_maps();
 
-		void get_cpu_state(std::array<u16, 5>& regs, bool& ints)
-		{
-			std::memcpy(regs.data(), reg_16, sizeof(u16) * 5);
-			ints = interrupts;
-		}
+		//function for debugger
+		void get_cpu_state(std::array<u16, 5>& regs, bool& ints);
 
 	public: //cpu.cpp
 		CPU(MMU& memory_controller, Interrupts& ints);
@@ -68,11 +65,8 @@ class CPU
 		void serialize(std::ostream& save_stream);
 		void deserialize(std::istream& load_stream);
 
-		void attach_debugger(std::tuple<u16**, function<void(std::array<u16, 5>&, bool&)>*> params)
-		{
-			*std::get<0>(params) = &pc;
-			*std::get<1>(params) = make_function(&CPU::get_cpu_state, this);
-		}
+		//function for debugger
+		void attach_debugger(std::tuple<u16**, function<void(std::array<u16, 5>&, bool&)>*> params);
 
 	private: //CPU instructions (lots of them, implementations in cpu_instructions.cpp)
 		u32 illegal_op(u8 opcode);
