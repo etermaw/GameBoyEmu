@@ -23,16 +23,16 @@ static const char help[] = "continue - y, run for x vblanks - z,\n"
 
 bool Debugger::is_breakpoint()
 {
-	return !break_points.empty() && (break_points.find(*pc) != break_points.end());
+	return !break_points.empty() && (break_points.find(current_pc) != break_points.end());
 }
 
 void Debugger::wait_for_user()
 {
-	u8 opcode = read_byte_callback(*pc, 0);
+	u8 opcode = read_byte_callback(current_pc, 0);
 	char choice = 0;
 	next_instruction = false;
 
-	if (step_over_adress == *pc)
+	if (step_over_adress == current_pc)
 		step_over = false;
 
 	while (choice != CONTINUE)
@@ -50,7 +50,7 @@ void Debugger::wait_for_user()
 				return;
 
 			case STEP_INSTR:
-				step_over_adress = *pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
+				step_over_adress = current_pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
 				step_over = true;
 				return;
 
@@ -173,16 +173,16 @@ void Debugger::wait_for_user()
 
 void Debugger::enter_trap()
 {
-	u8 opcode = read_byte_callback(*pc, 0),
-	   b1 = read_byte_callback(*pc + 1, 0),
-	   b2 = read_byte_callback(*pc + 2, 0);
+	u8 opcode = read_byte_callback(current_pc, 0),
+	   b1 = read_byte_callback(current_pc + 1, 0),
+	   b2 = read_byte_callback(current_pc + 2, 0);
 
 	char buffer[32];
 	const char* op = dispatch_opcode(opcode, b1);
 	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
 
 	printf("\nBREAK POINT! (h - help)\n");
-	printf("0x%04x: %s\n", *pc, buffer);
+	printf("0x%04x: %s\n", current_pc, buffer);
 }
 
 void Debugger::enter_memory_trap()
@@ -335,7 +335,7 @@ void Debugger::step()
 {
 	current_pc = *pc;
 
-	if (next_instruction || is_breakpoint() || (step_over && *pc == step_over_adress))
+	if (next_instruction || is_breakpoint() || (step_over && current_pc == step_over_adress))
 	{
 		enter_trap();
 		wait_for_user();
