@@ -17,6 +17,7 @@ class Debugger
 		u32 vblanks_left = 0;
 		u16 step_over_adress = 0;
 		u16 change_adress = 0;
+		u16 current_pc = 0;
 		u8 new_val = 0;
 		bool next_instruction = false;
 		bool memory_changed = false;
@@ -24,6 +25,7 @@ class Debugger
 
 		bool is_breakpoint();
 		void enter_trap();
+		void enter_memory_trap();
 
 		const char* dispatch_opcode(u8 opcode, u8 byte_1);
 		u8 get_opcode_bytes(u8 opcode);
@@ -53,6 +55,7 @@ class Debugger
 
 		void check_memory_access(u16 adress, u8 value);
 		void step();
+		void check_mmu();
 		void after_vblank();
 		void setup_entry_point();
 };

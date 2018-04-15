@@ -114,6 +114,8 @@ void Core::run()
 			apu.step(sync_cycles);
 			timer.step(sync_cycles);
 
+			debugger.check_mmu();
+
 			gpu.set_speed(speed.double_speed);
 			apu.set_speed(speed.double_speed);
 		}

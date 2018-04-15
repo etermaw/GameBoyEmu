@@ -182,14 +182,14 @@ void Debugger::enter_trap()
 	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
 
 	printf("\nBREAK POINT! (h - help)\n");
-
-	if (memory_changed)
-	{
-		memory_changed = false;
-		printf("MEMORY WATCH: CPU wrote 0x%02x to adress 0x%04x\n", new_val, change_adress);
-	}
-
 	printf("0x%04x: %s\n", *pc, buffer);
+}
+
+void Debugger::enter_memory_trap()
+{
+	printf("\nMEMORY WATCH (h - help):\n");
+	printf("CPU wrote 0x%02X to memory location 0x%04X\n", new_val, change_adress);
+	printf("Watch triggered on address: 0x%04X\n", current_pc);
 }
 
 void Debugger::insert_breakpoint(u16 adress)
@@ -321,9 +321,21 @@ void Debugger::check_memory_access(u16 adress, u8 value)
 	}
 }
 
+void Debugger::check_mmu()
+{
+	if (memory_changed)
+	{
+		memory_changed = false;
+		enter_memory_trap();
+		wait_for_user();
+	}
+}
+
 void Debugger::step()
 {
-	if (next_instruction || is_breakpoint() || memory_changed || (step_over && *pc == step_over_adress))
+	current_pc = *pc;
+
+	if (next_instruction || is_breakpoint() || (step_over && *pc == step_over_adress))
 	{
 		enter_trap();
 		wait_for_user();
