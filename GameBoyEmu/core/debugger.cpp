@@ -14,12 +14,17 @@ static constexpr char DMP_MEM = 'm';
 static constexpr char HELP = 'h';
 static constexpr char GPU_STATUS = 'g';
 
-static const char help[] = "continue - y, run for x vblanks - z,\n"
-						   "dump registers - d, memory dump - m,\n"
-						   "new breakpoint - i, remove breakpoint - r,\n"
-						   "insert memory watch - q, remove memory watch - x,\n"
-						   "next instruction - n, step over instruction - l,\n"
-						   "dump GPU regs - g\n";
+#define DELIM "\t\t"
+
+static constexpr char help[] =
+"y - continue      " DELIM "z - run for x vblanks\n"
+"d - dump registers" DELIM "m - memory dump\n"
+"i - new breakpoint" DELIM "r - remove breakpoint\n"
+"q - insert memory watch" DELIM "x - remove memory watch\n"
+"n - next instruction" DELIM "l - step over instruction\n"
+"g - dump GPU regs\n";
+
+#undef DELIM
 
 bool Debugger::is_breakpoint()
 {
