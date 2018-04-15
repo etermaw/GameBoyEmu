@@ -38,6 +38,8 @@ class Debugger
 		void dump_memory_region(u16 start, u16 end);
 		void dump_gpu_regs();
 
+		void wait_for_user();
+
 	public:
 		void attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte);
 		//void attach_mbc(u32* bank_num);

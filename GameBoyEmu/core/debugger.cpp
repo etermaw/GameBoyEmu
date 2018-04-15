@@ -26,26 +26,9 @@ bool Debugger::is_breakpoint()
 	return !break_points.empty() && (break_points.find(*pc) != break_points.end());
 }
 
-void Debugger::enter_trap()
+void Debugger::wait_for_user()
 {
-	u8 opcode = read_byte_callback(*pc, 0),
-	   b1 = read_byte_callback(*pc + 1, 0),
-	   b2 = read_byte_callback(*pc + 2, 0);
-
-	char buffer[32];
-	const char* op = dispatch_opcode(opcode, b1);
-	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
-
-	printf("\nBREAK POINT! (h - help)\n");
-
-	if (memory_changed)
-	{
-		memory_changed = false;
-		printf("MEMORY WATCH: CPU wrote 0x%02x to adress 0x%04x\n", new_val, change_adress);
-	}
-
-	printf("0x%04x: %s\n", *pc, buffer);
-	
+	u8 opcode = read_byte_callback(*pc, 0);
 	char choice = 0;
 	next_instruction = false;
 
@@ -185,8 +168,28 @@ void Debugger::enter_trap()
 				printf("%s\n", help);
 				break;
 		}
-
 	}
+}
+
+void Debugger::enter_trap()
+{
+	u8 opcode = read_byte_callback(*pc, 0),
+	   b1 = read_byte_callback(*pc + 1, 0),
+	   b2 = read_byte_callback(*pc + 2, 0);
+
+	char buffer[32];
+	const char* op = dispatch_opcode(opcode, b1);
+	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
+
+	printf("\nBREAK POINT! (h - help)\n");
+
+	if (memory_changed)
+	{
+		memory_changed = false;
+		printf("MEMORY WATCH: CPU wrote 0x%02x to adress 0x%04x\n", new_val, change_adress);
+	}
+
+	printf("0x%04x: %s\n", *pc, buffer);
 }
 
 void Debugger::insert_breakpoint(u16 adress)
@@ -321,7 +324,10 @@ void Debugger::check_memory_access(u16 adress, u8 value)
 void Debugger::step()
 {
 	if (next_instruction || is_breakpoint() || memory_changed || (step_over && *pc == step_over_adress))
+	{
 		enter_trap();
+		wait_for_user();
+	}
 }
 
 void Debugger::after_vblank()
