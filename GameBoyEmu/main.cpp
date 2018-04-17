@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 		std::cout << "Insert cartrige path:\n";
 		std::cin >> file_name;
 
-		std::ifstream rom(file_name);
+		std::ifstream rom(file_name, std::ios::binary | std::ios::in);
 
 		if (rom.is_open())
 		{
