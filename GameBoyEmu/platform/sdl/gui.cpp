@@ -3,6 +3,15 @@
 GuiSDL::GuiSDL(u32 w, u32 h, const std::string& title)
 {
 	window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, 0);
+
+	key_map[SDLK_RIGHT] = KEYS::K_RIGHT;
+	key_map[SDLK_LEFT] = KEYS::K_LEFT;
+	key_map[SDLK_UP] = KEYS::K_UP;
+	key_map[SDLK_DOWN] = KEYS::K_DOWN;
+	key_map[SDLK_a] = KEYS::K_A;
+	key_map[SDLK_b] = KEYS::K_B;
+	key_map[SDLK_RETURN] = KEYS::K_SELECT;
+	key_map[SDLK_s] = KEYS::K_START;
 }
 
 GuiSDL::~GuiSDL()
@@ -23,23 +32,20 @@ void* GuiSDL::get_display() const
 bool GuiSDL::input_handler(Joypad& input)
 {
 	SDL_Event ev;
-	static const u32 key_map[8] = { SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_a, SDLK_b, SDLK_RETURN, SDLK_s };
 
 	while (SDL_PollEvent(&ev))
 	{
 		if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
 		{
-			auto key_code = std::find(std::begin(key_map), std::end(key_map), ev.key.keysym.sym);
+			const auto key_code = key_map.find(ev.key.keysym.sym);
 
-			if (key_code != std::end(key_map))
+			if (key_code != key_map.end())
 			{
-				auto index = std::distance(std::begin(key_map), key_code);
-
 				if (ev.type == SDL_KEYDOWN)
-					input.push_key(static_cast<KEYS>(index));
+					input.push_key(key_code->second);
 
 				else
-					input.release_key(static_cast<KEYS>(index));
+					input.release_key(key_code->second);
 			}
 
 			else if (ev.key.keysym.sym == SDLK_ESCAPE)

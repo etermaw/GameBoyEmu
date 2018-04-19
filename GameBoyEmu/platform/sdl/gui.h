@@ -7,6 +7,7 @@
 class GuiSDL
 {
 	private:
+		std::unordered_map<SDL_Keycode, KEYS> key_map;
 		SDL_Window* window = nullptr;
 
 	public:
