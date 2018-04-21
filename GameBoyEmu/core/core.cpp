@@ -159,6 +159,16 @@ void Core::run_one_frame()
 	debugger.after_vblank();
 }
 
+void Core::push_key(KEYS key)
+{
+	joypad.push_key(key);
+}
+
+void Core::release_key(KEYS key)
+{
+	joypad.release_key(key);
+}
+
 void Core::attach_callbacks(const external_callbacks& endpoints)
 {
 	cart.attach_endpoints(endpoints.save_ram, endpoints.save_rtc);

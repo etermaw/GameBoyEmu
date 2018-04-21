@@ -131,7 +131,10 @@ class Core
 		void load_state(std::istream& load_stream);
 		void save_state(std::ostream& save_stream);
 		void run();
+
 		void run_one_frame();
+		void push_key(KEYS key);
+		void release_key(KEYS key);
 
 		void attach_callbacks(const external_callbacks& endpoints);
 };
