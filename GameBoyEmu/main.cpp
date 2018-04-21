@@ -37,7 +37,6 @@ int main(int argc, char *argv[])
 	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
 	endpoints.audio_control = make_function(&Platform::Audio::dummy, &audio_post);
 	endpoints.swap_sample_buffer = make_function(&Platform::Audio::swap_buffers, &audio_post);
-	endpoints.update_input = make_function(&Platform::Gui::input_handler, &gui);
 	endpoints.draw_frame = make_function(&Platform::Renderer::vblank_handler, &renderer);
 #else
 	Platform::Gui gui(3*160, 3*144, "GBE");
@@ -93,7 +92,6 @@ int main(int argc, char *argv[])
 	while (gui.is_running())
 	{
 		gui.pump_input(emu_core);
-
 		emu_core.run_one_frame();
 	}
 

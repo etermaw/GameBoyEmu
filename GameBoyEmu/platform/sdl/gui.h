@@ -3,7 +3,6 @@
 #include <SDL.h>
 
 #include "core/core.h"
-#include "core/joypad.h"
 
 class GuiSDL
 {
@@ -21,6 +20,4 @@ class GuiSDL
 
 		void pump_input(Core& emu_core);
 		bool is_running() const;
-
-		bool input_handler(Joypad& input);
 };
