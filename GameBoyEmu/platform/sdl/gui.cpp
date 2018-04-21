@@ -35,41 +35,47 @@ bool GuiSDL::input_handler(Joypad& input)
 
 	while (SDL_PollEvent(&ev))
 	{
-		if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+		switch (ev.type)
 		{
-			const auto key_code = key_map.find(ev.key.keysym.sym);
-
-			if (key_code != key_map.end())
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
 			{
-				if (ev.type == SDL_KEYDOWN)
-					input.push_key(key_code->second);
+				const auto key_code = key_map.find(ev.key.keysym.sym);
 
-				else
-					input.release_key(key_code->second);
-			}
-
-			else if (ev.key.keysym.sym == SDLK_ESCAPE)
-			{
-				if (ev.type == SDL_KEYDOWN)
+				if (key_code != key_map.end())
 				{
-					input.push_key(K_A);
-					input.push_key(K_B);
-					input.push_key(K_SELECT);
-					input.push_key(K_START);
+					if (ev.type == SDL_KEYDOWN)
+						input.push_key(key_code->second);
+
+					else
+						input.release_key(key_code->second);
 				}
 
-				else
+				else if (ev.key.keysym.sym == SDLK_ESCAPE)
 				{
-					input.release_key(K_A);
-					input.release_key(K_B);
-					input.release_key(K_SELECT);
-					input.release_key(K_START);
+					if (ev.type == SDL_KEYDOWN)
+					{
+						input.push_key(K_A);
+						input.push_key(K_B);
+						input.push_key(K_SELECT);
+						input.push_key(K_START);
+					}
+
+					else
+					{
+						input.release_key(K_A);
+						input.release_key(K_B);
+						input.release_key(K_SELECT);
+						input.release_key(K_START);
+					}
 				}
+
+				break;
 			}
+
+			case SDL_QUIT:
+				return false;
 		}
-
-		else if (ev.type == SDL_QUIT)
-			return false;
 	}
 
 	return true;
