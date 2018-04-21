@@ -29,6 +29,65 @@ void* GuiSDL::get_display() const
 	return window;
 }
 
+void GuiSDL::pump_input(Core& emu_core)
+{
+	SDL_Event ev;
+	bool new_running = true;
+
+	while (SDL_PollEvent(&ev))
+	{
+		switch (ev.type)
+		{
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
+			{
+				const auto key_code = key_map.find(ev.key.keysym.sym);
+
+				if (key_code != key_map.end())
+				{
+					if (ev.type == SDL_KEYDOWN)
+						emu_core.push_key(key_code->second);
+
+					else
+						emu_core.release_key(key_code->second);
+				}
+
+				else if (ev.key.keysym.sym == SDLK_ESCAPE)
+				{
+					if (ev.type == SDL_KEYDOWN)
+					{
+						emu_core.push_key(K_A);
+						emu_core.push_key(K_B);
+						emu_core.push_key(K_SELECT);
+						emu_core.push_key(K_START);
+					}
+
+					else
+					{
+						emu_core.release_key(K_A);
+						emu_core.release_key(K_B);
+						emu_core.release_key(K_SELECT);
+						emu_core.release_key(K_START);
+					}
+				}
+
+				break;
+			}
+
+			case SDL_QUIT:
+				new_running = false;
+				break;
+		}
+	}
+
+	running = new_running;
+}
+
+bool GuiSDL::is_running() const
+{
+	return running;
+}
+
 bool GuiSDL::input_handler(Joypad& input)
 {
 	SDL_Event ev;
