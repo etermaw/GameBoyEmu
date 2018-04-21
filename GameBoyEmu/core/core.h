@@ -131,6 +131,7 @@ class Core
 		void load_state(std::istream& load_stream);
 		void save_state(std::ostream& save_stream);
 		void run();
+		void run_one_frame();
 
 		void attach_callbacks(const external_callbacks& endpoints);
 };

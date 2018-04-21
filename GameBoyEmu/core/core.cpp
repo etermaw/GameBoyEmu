@@ -126,6 +126,39 @@ void Core::run()
 	}
 }
 
+void Core::run_one_frame()
+{
+	//we have input already
+	//save state is handled outside
+
+	while (!gpu.is_entering_vblank()) //TODO: if someone turn off lcd, this loop may spin forever
+	{
+		u32 sync_cycles = 0;
+
+		if (ints.is_any_raised())
+		{
+			cpu.unhalt();
+
+			if (cpu.is_interrupt_enabled())
+				sync_cycles = cpu.handle_interrupt();
+		}
+
+		debugger.step();
+
+		sync_cycles += cpu.step(sync_cycles);
+		sync_cycles += gpu.step(sync_cycles);
+		apu.step(sync_cycles);
+		timer.step(sync_cycles);
+
+		gpu.set_speed(speed.double_speed);
+		apu.set_speed(speed.double_speed);
+	}
+
+	draw_frame_callback(gpu.get_frame_buffer());
+	gpu.clear_frame_buffer();
+	debugger.after_vblank();
+}
+
 void Core::attach_callbacks(const external_callbacks& endpoints)
 {
 	cart.attach_endpoints(endpoints.save_ram, endpoints.save_rtc);
