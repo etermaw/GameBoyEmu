@@ -90,6 +90,12 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	emu_core.run();
+	while (gui.is_running())
+	{
+		gui.pump_input(emu_core);
+
+		emu_core.run_one_frame();
+	}
+
 	return 0;
 }
