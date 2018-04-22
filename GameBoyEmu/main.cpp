@@ -50,7 +50,6 @@ int main(int argc, char *argv[])
 	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
 	endpoints.audio_control = make_function(&Tester::audio_dummy_ctrl, &tester);
 	endpoints.swap_sample_buffer = make_function(&Tester::audio_dummy_swap, &tester);
-	endpoints.update_input = make_function(&Tester::input_stub, &tester);
 	endpoints.draw_frame = make_function(&Tester::render_stub, &tester);
 #endif
 
