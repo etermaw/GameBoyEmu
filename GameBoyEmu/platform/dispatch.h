@@ -13,7 +13,7 @@ namespace Platform {
 	using Gui = GuiSDL;
 
 	inline void init() { SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO); }
-	inline void after_attach(AudioSDL& a, RendererSDL& r, GuiSDL& g) {}
+	inline void after_attach(Audio& a, Renderer& r, Gui& g) {}
 }
 
 #else

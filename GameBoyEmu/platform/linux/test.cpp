@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "sha256.h"
 
 enum TEST_COMMANDS {
 	TC_EXIT = 0, TC_CALCULATE_HASH, TC_PUSH_ALL_KEYS, TC_RELEASE_ALL_KEYS,
@@ -181,6 +182,9 @@ void RendererTEST::attach_impl(std::shared_ptr<Tester> u)
 
 GuiTEST::GuiTEST(u32 u1, u32 u2, const std::string & u3)
 {
+	UNUSED(u1);
+	UNUSED(u2);
+	UNUSED(u3);
 }
 
 void* GuiTEST::get_display()

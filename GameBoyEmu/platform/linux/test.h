@@ -1,7 +1,5 @@
 #pragma once
 #include "stdafx.h"
-#include "sha256.h"
-#include "core/joypad.h"
 #include "core/core.h"
 
 class Tester
