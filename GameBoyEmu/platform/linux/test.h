@@ -16,9 +16,45 @@ class Tester
 		~Tester();
 
 		bool input_stub(Joypad& input);
-		void render_stub(const u32* frame_buffer);
-		void audio_dummy_ctrl(bool unused);
-		u8** audio_dummy_swap(u8** ptr, u32 unused);
 
 		void attach_renderer(function<void(const u32*)> callback);
+};
+
+//test stubs, for compability
+
+class AudioTEST
+{
+	private:
+
+	public:
+		void dummy(bool unused);
+		u8** swap_buffers(u8** ptr, u32 unused);
+
+		void attach_impl(std::shared_ptr<Tester> u);
+};
+
+class RendererTEST
+{
+	private:
+		std::shared_ptr<Tester> pimpl;
+
+	public:
+		RendererTEST(void* ptr);
+
+		void vblank_handler(const u32* frame_buffer);
+		void attach_impl(std::shared_ptr<Tester> u);
+};
+
+class GuiTEST
+{
+	private:
+		std::shared_ptr<Tester> pimpl;
+
+	public:
+		GuiTEST(u32 u1, u32 u2, const std::string& u3);
+
+		void* get_display();
+		bool is_running() const;
+		void pump_input(Core& emu_core);
+		void attach_impl(std::shared_ptr<Tester> u);
 };
