@@ -14,6 +14,7 @@
 #include <climits>
 #include <bitset>
 #include <array>
+#include <unordered_map>
 
 #include "utils/definitions.h"
 #include "utils/function.h"
