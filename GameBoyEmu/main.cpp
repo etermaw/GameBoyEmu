@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 	}
 
 #else
-	std::ifstream rom(argv[1]);
+	std::ifstream rom(argv[1], std::ios::binary | std::ios::in);
 
 	if (rom.is_open())
 	{
