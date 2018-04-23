@@ -44,11 +44,11 @@ int main(int argc, char *argv[])
 		std::cout << "Insert cartrige path:\n";
 		std::cin >> file_name;
 
-		std::ifstream rom(file_name, std::ios::binary | std::ios::in);
+		std::ifstream rom(file_name, std::ios::binary);
 
 		if (rom.is_open())
 		{
-			std::ifstream ram(file_name + "_ram"), rtc(file_name + "_rtc");
+			std::ifstream ram(file_name + "_ram", std::ios::binary), rtc(file_name + "_rtc", std::ios::binary);
 
 			emu_core.load_cartrige(rom, ram, rtc);
 			std::string cart_name = emu_core.get_cart_name();
@@ -62,11 +62,11 @@ int main(int argc, char *argv[])
 	}
 
 #else
-	std::ifstream rom(argv[1], std::ios::binary | std::ios::in);
+	std::ifstream rom(argv[1], std::ios::binary);
 
 	if (rom.is_open())
 	{
-		std::ifstream ram(file_name + "_ram"), rtc(file_name + "_rtc");
+		std::ifstream ram(file_name + "_ram", std::ios::binary), rtc(file_name + "_rtc", std::ios::binary);
 		emu_core.load_cartrige(rom, ram, rtc);
 	}
 #endif
