@@ -13,6 +13,36 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\core">
+      <UniqueIdentifier>{9eeb5d3e-fe56-483c-87e9-dfe9df7c2517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core">
+      <UniqueIdentifier>{37311073-9fbc-49dc-ad4a-3c45b34cbfb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{05957cb5-1177-4fc0-bea7-05b9ccdbb5b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\platform">
+      <UniqueIdentifier>{635a948c-a24b-496c-9378-a415d1405bac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\platform\sdl">
+      <UniqueIdentifier>{4901afed-fc79-4e55-9d00-2cd64c37fb7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\platform\test">
+      <UniqueIdentifier>{5d46d1ed-d1d1-4e54-98a2-79dcbe5acb32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\platform">
+      <UniqueIdentifier>{ce1c007f-3344-4865-948d-d8f48783b503}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\platform\sdl">
+      <UniqueIdentifier>{4b5d9be4-0161-487a-9efa-74a49e62f3ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{5ac62833-eeca-4389-a991-5749dfa7464c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\platform\test">
+      <UniqueIdentifier>{6577c8b2-e298-438d-a072-9dab4c7b74e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -21,154 +51,154 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sha256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core\apu.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\cartrige.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\core.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\cpu.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\cpu_instructions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="core\debugger.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\gpu.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\debugger.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\interrupts.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\joypad.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\mbc.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\mmu.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\noise_synth.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\ram.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\serial.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\square_synth.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\timer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="core\wave_synth.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="platform\sdl\audio_postprocess.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform\sdl\renderer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\platform\sdl</Filter>
     </ClCompile>
     <ClCompile Include="platform\sdl\gui.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\platform\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="platform\sdl\renderer.cpp">
+      <Filter>Source Files\platform\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="sha256.cpp">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
     <ClCompile Include="platform\linux\test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\platform\test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\apu.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\cartrige.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\core.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\cpu.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\debugger.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\gpu.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\IMemory.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\interrupts.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\joypad.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\mbc.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\mmu.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\noise_synth.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\ram.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\serial.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\square_synth.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\timer.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\wave_synth.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\bit_ops.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\function.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
     <ClInclude Include="sha256.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\utils</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\apu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\cartrige.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\cpu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\debugger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\gpu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\IMemory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\interrupts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\joypad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\mbc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\mmu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\noise_synth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\ram.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\serial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\square_synth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="core\wave_synth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\bit_ops.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utils\definitions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\function.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\utils</Filter>
     </ClInclude>
     <ClInclude Include="platform\dispatch.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\platform</Filter>
     </ClInclude>
     <ClInclude Include="platform\sdl\audio_postprocess.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\sdl\renderer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\platform\sdl</Filter>
     </ClInclude>
     <ClInclude Include="platform\sdl\gui.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\platform\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="platform\sdl\renderer.h">
+      <Filter>Header Files\platform\sdl</Filter>
     </ClInclude>
     <ClInclude Include="platform\linux\test.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\platform\test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
