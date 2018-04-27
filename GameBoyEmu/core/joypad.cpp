@@ -1,4 +1,4 @@
-#include "stdafx.h"
+////#include "stdafx.h"
 #include "joypad.h"
 #include "utils/bit_ops.h"
 

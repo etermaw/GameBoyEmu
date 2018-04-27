@@ -1,4 +1,4 @@
-#include "stdafx.h"
+////#include "stdafx.h"
 #include "core/core.h"
 #include "platform/dispatch.h"
 
