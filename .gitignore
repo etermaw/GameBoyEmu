@@ -245,3 +245,4 @@ ModelManifest.xml
 tests*/
 build/
 CMakeFiles/
+GameBoyEmu/packages.config
