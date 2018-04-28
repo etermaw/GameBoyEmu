@@ -1,7 +1,0 @@
-['platform/sdl/audio_postprocess.cpp',
-'platform/sdl/audio_postprocess.h',
-'platform/sdl/gui.cpp',
-'platform/sdl/gui.h',
-'platform/sdl/renderer.cpp',
-'platform/sdl/renderer.h',
-]

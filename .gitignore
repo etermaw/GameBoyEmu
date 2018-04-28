@@ -246,3 +246,4 @@ tests*/
 build/
 CMakeFiles/
 GameBoyEmu/packages.config
+GameBoyEmu/list.txt
