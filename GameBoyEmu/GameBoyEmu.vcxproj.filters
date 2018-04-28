@@ -43,6 +43,12 @@
     <Filter Include="Source Files\platform\test">
       <UniqueIdentifier>{6577c8b2-e298-438d-a072-9dab4c7b74e3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\pch">
+      <UniqueIdentifier>{1ab98c92-8f0b-4c80-9ccf-7fc2acd0452e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\pch">
+      <UniqueIdentifier>{abccb963-24ee-4e92-a975-9f84115e1bb0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -111,11 +117,14 @@
     <ClCompile Include="platform\sdl\renderer.cpp">
       <Filter>Source Files\platform\sdl</Filter>
     </ClCompile>
-    <ClCompile Include="sha256.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
     <ClCompile Include="platform\linux\test.cpp">
       <Filter>Source Files\platform\test</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\sha256.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="pch\stdafx.cpp">
+      <Filter>Source Files\pch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -176,12 +185,6 @@
     <ClInclude Include="utils\function.h">
       <Filter>Header Files\utils</Filter>
     </ClInclude>
-    <ClInclude Include="sha256.h">
-      <Filter>Header Files\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utils\definitions.h">
       <Filter>Header Files\utils</Filter>
     </ClInclude>
@@ -199,6 +202,12 @@
     </ClInclude>
     <ClInclude Include="platform\linux\test.h">
       <Filter>Header Files\platform\test</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\sha256.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="pch\stdafx.h">
+      <Filter>Header Files\pch</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
