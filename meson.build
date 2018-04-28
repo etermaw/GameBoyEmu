@@ -38,4 +38,4 @@ if get_option('auto_test') == true
     args = ['-DENABLE_AUTO_TESTS']
 endif
 
-prog = executable('emu', sources: final_src, dependencies: sdl, cpp_args: args, cpp_pch: 'GameBoyEmu/stdafx.h', include_directories : incdir)
+prog = executable('emu', sources: final_src, dependencies: sdl, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
