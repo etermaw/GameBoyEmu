@@ -4,7 +4,10 @@
 # except:
 !.gitignore
 !.gitattributes
-!GameBoyEmu/*
+!GameBoyEmu/*.cpp
+!GameBoyEmu/*.h
+!GameBoyEmu/*.vcxproj
+!GameBoyEmu/*.vcxproj.filters
 !auto_tester/*
 !meson_options.txt
 !meson.build
