@@ -69,10 +69,8 @@ def print_result(test_name, exp, act):
     if exp != act:
         add_info = ' [{} unexpected results]'.format(abs(exp-act))
 
-    if exp == 0:
-        exp = 1
-
     act = abs(act)
+    perc = act/exp*100 if exp != 0 else 0
 
     print("expected to {0}: {1} actually {0}ed: {2} ({3}%){4}".format(test_name, exp, act, act/exp*100, add_info))
 
