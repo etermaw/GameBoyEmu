@@ -1,4 +1,3 @@
-////#include "stdafx.h"
 #include "cartrige.h"
 
 struct rom_header

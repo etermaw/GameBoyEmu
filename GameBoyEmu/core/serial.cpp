@@ -1,4 +1,4 @@
-////#include "stdafx.h"
+
 #include "serial.h"
 
 Serial::Serial(Interrupts& ints) : int_handler(ints), cgb_mode(false), double_speed(false) {}

@@ -1,5 +1,5 @@
 #pragma once
-//#include "stdafx.h"
+
 #include "IMemory.h"
 #include "square_synth.h"
 #include "wave_synth.h"

@@ -1,5 +1,5 @@
 #pragma once
-//#include "stdafx.h"
+
 #include "IMemory.h"
 
 enum KEYS {K_RIGHT, K_LEFT, K_UP, K_DOWN, K_A, K_B, K_SELECT, K_START};
