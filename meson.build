@@ -1,6 +1,4 @@
-project('GBE', 'cpp', version: '0.21')
-
-add_project_arguments('-std=c++1y', '-Wall', '-Wextra', '-pedantic', language: 'cpp')
+project('GBE', 'cpp', version: '0.21', default_options: ['cpp_std=c++14', 'warning_level=3'])
 
 sdl = dependency('sdl2')
 incdir = include_directories('GameBoyEmu')
@@ -29,4 +27,15 @@ platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',
 'GameBoyEmu/platform/sdl/gui.cpp',
 'GameBoyEmu/platform/sdl/renderer.cpp']
 
-prog = executable('release', sources: ['GameBoyEmu/main.cpp'] + core_src + utils_src + platform_src, dependencies: sdl, cpp_pch: 'GameBoyEmu/stdafx.h', include_directories : incdir)
+test_src = ['GameBoyEmu/platform/linux/test.cpp']
+
+
+final_src = ['GameBoyEmu/main.cpp'] + core_src + platform_src
+args = []
+
+if get_option('auto_test') == true
+    final_src += test_src + utils_src
+    args = ['-DENABLE_AUTO_TESTS']
+endif
+
+prog = executable('emu', sources: final_src, dependencies: sdl, cpp_args: args, cpp_pch: 'GameBoyEmu/stdafx.h', include_directories : incdir)
