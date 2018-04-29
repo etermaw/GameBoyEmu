@@ -3,7 +3,7 @@
 #include <errno.h>
 
 #include "test.h"
-#include "sha256.h"
+#include "utils/sha256.h"
 
 enum TEST_COMMANDS {
 	TC_EXIT = 0, TC_CALCULATE_HASH, TC_PUSH_ALL_KEYS, TC_RELEASE_ALL_KEYS,

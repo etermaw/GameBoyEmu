@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+
 #include "IMemory.h"
 
 class MBCBase

@@ -1,0 +1,1 @@
+option('auto_test', type: 'boolean', value: false, description: 'Disable window,sound and attach auto tester module (linux only)')
