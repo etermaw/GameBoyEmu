@@ -74,6 +74,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>D:\Projekty\GameBoyEmu\GameBoyEmu;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -103,6 +104,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ForcedIncludeFiles>pch\stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,6 +148,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <ForcedIncludeFiles>pch\stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -176,13 +179,15 @@
     <ClCompile Include="core\timer.cpp" />
     <ClCompile Include="core\wave_synth.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="pch\stdafx.cpp" />
     <ClCompile Include="platform\linux\test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="platform\sdl\audio_postprocess.cpp" />
     <ClCompile Include="platform\sdl\gui.cpp" />
     <ClCompile Include="platform\sdl\renderer.cpp" />
-    <ClCompile Include="sha256.cpp" />
+    <ClCompile Include="utils\sha256.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\apu.h" />
@@ -202,18 +207,19 @@
     <ClInclude Include="core\square_synth.h" />
     <ClInclude Include="core\timer.h" />
     <ClInclude Include="core\wave_synth.h" />
+    <ClInclude Include="pch\stdafx.h" />
     <ClInclude Include="platform\dispatch.h" />
     <ClInclude Include="platform\linux\test.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="platform\sdl\audio_postprocess.h" />
     <ClInclude Include="platform\sdl\gui.h" />
     <ClInclude Include="platform\sdl\renderer.h" />
-    <ClInclude Include="sha256.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="utils\bit_ops.h" />
     <ClInclude Include="utils\definitions.h" />
     <ClInclude Include="utils\function.h" />
+    <ClInclude Include="utils\sha256.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

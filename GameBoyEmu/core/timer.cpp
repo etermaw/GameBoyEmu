@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "timer.h"
 
 void Timer::step_ahead(u32 cycles)

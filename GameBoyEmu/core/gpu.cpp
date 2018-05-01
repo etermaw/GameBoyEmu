@@ -12,6 +12,11 @@ enum LCD_CONTROL {
 
 enum LCD_STATUS { LS_CMP_SIG = 2, LS_HBLANK, LS_VBLANK, LS_OAM, LS_LYC_LY };
 
+static constexpr u32 LINE_CYCLES = 456;
+static constexpr u32 OAM_CYCLES = 80;
+static constexpr u32 TRANSFER_CYCLES = 172;
+static constexpr u32 HBLANK_CYCLES = 204;
+
 template<class T>
 inline T clamp(T value, T min, T max)
 {
@@ -59,79 +64,8 @@ Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 	std::memset(color_bgp, 0xFF, sizeof(u32) * 8 * 4);
 	std::memset(color_obp, 0xFF, sizeof(u32) * 8 * 4);
 
-	current_state = GS_HBLANK;
-	cycles_to_next_state = 204; //TODO: what`s GPU status immediately after BIOS launch?
-}
-
-void Gpu::vb_mode()
-{
-	regs[IO_LY]++;
-	check_lyc_ly_bit();
-	check_interrupts();
-
-	if (regs[IO_LY] < 153)
-		cycles_to_next_state = 456;
-
-	else
-	{
-		current_state = GS_LY_153;
-		cycles_to_next_state = 4;
-	}
-}
-
-void Gpu::hb_mode()
-{
-	regs[IO_LY]++;
-	check_lyc_ly_bit();
-	check_interrupts();
-
-	if (regs[IO_LY] < 144)
-	{
-		unlocked_oam = false;
-		change_stat_mode(0x2); //OAM mode
-
-		current_state = GS_OAM;
-		cycles_to_next_state = 80;
-	}
-
-	else
-	{
-		if (cgb_mode)
-			check_interrupts();
-
-		entering_vblank = true;
-
-		current_state = GS_VBLANK_INT_RAISE;
-		cycles_to_next_state = cgb_mode ? 2 : 4;
-	}
-}
-
-void Gpu::oam_mode()
-{
-	unlocked_vram = false;
-	change_stat_mode(0x3); //TRANSFER mode
-
-	current_state = GS_TRANSFER_PREFETCHING;
-	cycles_to_next_state = 6;
-
-	prepare_sprites();
-	current_pixels_drawn = 0;
-}
-
-void Gpu::transfer_mode()
-{
-	if (current_pixels_drawn < 160U)
-		draw_line(current_pixels_drawn, 160U);
-
-	unlocked_oam = true;
-	unlocked_vram = true;
-	change_stat_mode(0x0); //HBLANK mode
-
-	if (hdma_active)
-		launch_hdma();
-
-	current_state = GS_HBLANK;
-	cycles_to_next_state = 204 - (regs[IO_SX] % 8);
+	current_state = GS_TURNING_ON;
+	push_state(GS_HBLANK, 0); //TODO: what`s GPU status immediately after BIOS launch?
 }
 
 void Gpu::step_ahead(u32 clock_cycles)
@@ -147,61 +81,103 @@ void Gpu::step_ahead(u32 clock_cycles)
 	while (cycles >= cycles_to_next_state)
 	{
 		cycles -= cycles_to_next_state;
+		current_state = next_state;
 
 		switch (current_state)
 		{
-			case GS_VBLANK_INT_RAISE:
+			case GS_LY_0_OAM:
+				unlocked_oam = false;
+				change_stat_mode(0x2);
+
+				push_state(GS_TRANSFER_PREFETCHING, OAM_CYCLES);
+				break;
+
+			case GS_OAM:
+				regs[IO_LY]++;
+				check_lyc_ly_bit();
+				check_interrupts();
+
+				unlocked_oam = false;
+				change_stat_mode(0x2);
+
+				push_state(GS_TRANSFER_PREFETCHING, OAM_CYCLES);
+				break;
+
+			case GS_TRANSFER_PREFETCHING:
+				unlocked_vram = false;
+				change_stat_mode(0x3); //TRANSFER mode
+
+				prepare_sprites();
+				current_pixels_drawn = 0;
+
+				push_state(GS_TRANSFER_DRAWING, 6);
+				break;
+
+			case GS_TRANSFER_DRAWING:
+				push_state(GS_HBLANK, TRANSFER_CYCLES - 6);
+				break;
+
+			case GS_HBLANK:
+				if (current_pixels_drawn < 160U)
+					draw_line(current_pixels_drawn, 160U);
+
+				unlocked_oam = true;
+				unlocked_vram = true;
+				change_stat_mode(0x0); //HBLANK mode
+
+				if (hdma_active)
+					launch_hdma();
+
+				push_state(regs[IO_LY] == 143 ? GS_VBLANK_INT : GS_OAM, HBLANK_CYCLES);
+				break;
+
+			case GS_VBLANK_INT:
+				regs[IO_LY]++;
+				check_lyc_ly_bit();
+				check_interrupts();
+
+				entering_vblank = true;
 				interrupts.raise(INT_VBLANK);
 				change_stat_mode(0x1); //VBLANK mode
 
-				current_state = GS_VBLANK;
-				cycles_to_next_state = 456 - (cgb_mode ? 2 : 4);
+				push_state(GS_VBLANK, LINE_CYCLES);
 				break;
 
 			case GS_VBLANK:
-				vb_mode();
+				regs[IO_LY]++;
+				check_lyc_ly_bit();
+				check_interrupts();
+
+				push_state(regs[IO_LY] == 152 ? GS_LY_153 : GS_VBLANK, LINE_CYCLES);
 				break;
 
 			case GS_LY_153:
+				regs[IO_LY] = 153;
+				check_lyc_ly_bit();
+				check_interrupts();
+
+				push_state(GS_LY_153_0, 4);
+				break;
+
+			case GS_LY_153_0:
 				regs[IO_LY] = 0;
 				check_lyc_ly_bit();
 				check_interrupts();
 
-				current_state = GS_LY_153_0;
-				cycles_to_next_state = 456 - 4;
-				break;
-
-			case GS_LY_153_0:
-				unlocked_oam = false;
-				change_stat_mode(0x2); //OAM mode
-				
-				current_state = GS_OAM;
-				cycles_to_next_state = 80;
-				break;
-
-			case GS_HBLANK:
-				hb_mode();
-				break;
-
-			case GS_OAM:
-				oam_mode();
-				break;
-
-			case GS_TRANSFER_PREFETCHING:
-				current_state = GS_TRANSFER_DRAWING;
-				cycles_to_next_state = 172 - 6 + (regs[IO_SX] % 8);
-				break;
-
-			case GS_TRANSFER_DRAWING:
-				transfer_mode();
+				push_state(GS_LY_0_OAM, LINE_CYCLES - 4);
 				break;
 
 			case GS_TURNING_ON:
-				current_state = GS_HBLANK;
-				cycles_to_next_state = 204;
+				push_state(GS_HBLANK, HBLANK_CYCLES);
 				break;
 		}
 	}
+}
+
+void Gpu::push_state(GPU_STATE state_next, u32 current_state_duration)
+{
+	next_state = state_next;
+	cycles_to_next_state = current_state_duration;
 }
 
 void Gpu::launch_dma(u8 adress)
@@ -665,7 +641,7 @@ void Gpu::turn_off_lcd()
 
 	entering_vblank = true; //display white screen
 	current_state = GS_LCD_OFF;
-	cycles_to_next_state = 0;
+	push_state(GS_LCD_OFF, 0);
 
 	//cmp_bit freezes, we do NOT set it to 0!
 	prev_stat_line = cmp_bit; //if cmp_bit is true, stat INT line won`t go to 0
@@ -674,7 +650,7 @@ void Gpu::turn_off_lcd()
 void Gpu::turn_on_lcd()
 {
 	current_state = GS_TURNING_ON;
-	cycles_to_next_state = 240;
+	push_state(GS_HBLANK, 240);
 
 	check_lyc_ly_bit();
 	check_interrupts();
@@ -985,4 +961,16 @@ void Gpu::deserialize(std::istream& stream)
 		color_bgp[i / 8][(i % 8) / 2] = cgb_to_rgb(cgb_bgp[i]);
 		color_obp[i / 8][(i % 8) / 2] = cgb_to_rgb(cgb_obp[i]);
 	}
+}
+
+void Gpu::get_gpu_status(std::array<u8, 12>& dmg, std::array<u8, 8>& cgb)
+{
+	std::memcpy(dmg.data(), regs, sizeof(u8) * 12);
+
+	dmg[1] = change_bit(set_bit(dmg[1], 7), cmp_bit, 2);
+
+	std::memcpy(cgb.data(), hdma_regs, sizeof(u8) * 5);
+	cgb[5] = cgb_bgp_index;
+	cgb[6] = cgb_obp_index;
+	cgb[7] = vram_bank;
 }

@@ -1,15 +1,15 @@
 #pragma once
-#include "stdafx.h"
+
 #include "IMemory.h"
 #include "interrupts.h"
 
 class Gpu final : public IMemory
 {
-	enum GPU_STATE { GS_VBLANK_INT_RAISE, GS_VBLANK,
-					 GS_LY_153, GS_LY_153_0,
-					 GS_HBLANK,
-					 GS_OAM,
+	enum GPU_STATE { GS_LY_0_OAM, GS_OAM,
 					 GS_TRANSFER_PREFETCHING, GS_TRANSFER_DRAWING,
+					 GS_HBLANK,
+					 GS_VBLANK_INT, GS_VBLANK,
+					 GS_LY_153, GS_LY_153_0,
 					 GS_LCD_OFF, GS_TURNING_ON };
 
 	struct oam_entry
@@ -35,6 +35,7 @@ class Gpu final : public IMemory
 		IDmaMemory* ram;
 
 		GPU_STATE current_state;
+		GPU_STATE next_state;
 		u32 cycles_to_next_state;
 
 		u32 cycles_ahead = 0;
@@ -74,10 +75,7 @@ class Gpu final : public IMemory
 		bool cmp_bit = false;
 		bool prev_stat_line = false;
 
-		void vb_mode();
-		void hb_mode();
-		void oam_mode();
-		void transfer_mode();
+		void push_state(GPU_STATE state_next, u32 current_state_duration);
 
 		void launch_dma(u8 adress);
 		void launch_gdma();
@@ -106,17 +104,8 @@ class Gpu final : public IMemory
 		
 		void step_ahead(u32 cycles);
 
-		void get_gpu_status(std::array<u8, 12>& dmg, std::array<u8, 8>& cgb)
-		{
-			std::memcpy(dmg.data(), regs, sizeof(u8) * 12);
-
-			dmg[1] = change_bit(set_bit(dmg[1], 7), cmp_bit, 2);
-
-			std::memcpy(cgb.data(), hdma_regs, sizeof(u8) * 5);
-			cgb[5] = cgb_bgp_index;
-			cgb[6] = cgb_obp_index;
-			cgb[7] = vram_bank;
-		}
+		//debugger use it to get current GPU info
+		void get_gpu_status(std::array<u8, 12>& dmg, std::array<u8, 8>& cgb);
 
 	public:
 		Gpu(Interrupts& ints);

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "cpu.h"
 
 CPU::CPU(MMU& memory_controller, Interrupts& ints) : mmu(memory_controller), ints(ints)
@@ -97,4 +97,16 @@ void CPU::deserialize(std::istream& load_stream)
 {
 	load_stream.read(reinterpret_cast<char*>(reg_16), sizeof(u16) * REGISTER_16::R16_SIZE);
 	load_stream >> pc >> interrupts >> is_halted >> delayed_ei >> cgb_mode;
+}
+
+void CPU::get_cpu_state(std::array<u16, 5>& regs, bool& ints)
+{
+	std::memcpy(regs.data(), reg_16, sizeof(u16) * 5);
+	ints = interrupts;
+}
+
+void CPU::attach_debugger(std::tuple<u16**, function<void(std::array<u16, 5>&, bool&)>*> params)
+{
+	*std::get<0>(params) = &pc;
+	*std::get<1>(params) = make_function(&CPU::get_cpu_state, this);
 }

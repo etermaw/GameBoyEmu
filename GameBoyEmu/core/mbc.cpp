@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "mbc.h"
 
 void MBCBase::switch_rom_bank(u32 new_bank_rom)

@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "utils/sha256.h"
 
 enum TEST_COMMANDS {
 	TC_EXIT = 0, TC_CALCULATE_HASH, TC_PUSH_ALL_KEYS, TC_RELEASE_ALL_KEYS,
@@ -22,15 +23,6 @@ Tester::Tester()
 
 	if (flags2 != -1)
 		fcntl(STDIN_FILENO, F_SETFL, flags2 | O_NONBLOCK);
-
-	for (auto& i : dummy_ptrs)
-		i = new u8[1<<15];
-}
-
-Tester::~Tester()
-{
-	for (auto& i : dummy_ptrs)
-		delete[] i;
 }
 
 void Tester::render_stub(const u32* frame_buffer)
@@ -50,24 +42,26 @@ void Tester::render_stub(const u32* frame_buffer)
 		render_callback(frame_buffer);
 }
 
-bool Tester::input_stub(Joypad& input)
+bool Tester::is_running() const
+{
+	return running;
+}
+
+void Tester::input_stub(Core& emu_core)
 {
 	char buffer[1] = {}; //TODO: handle more messages per call
 	int ret = read(0, buffer, 1);
 
 	if (ret == -1)
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return true;
-
-		else
-			return false;
+		if (!(errno == EAGAIN || errno == EWOULDBLOCK))
+			running = false;
 	}
 
 	else
 	{
 		if (ret == 0 || buffer[0] == TC_EXIT)
-			return false; //TODO: print into stderr
+			running = false; //TODO: print into stderr
 
 		if (ret == 1)
 		{
@@ -79,37 +73,37 @@ bool Tester::input_stub(Joypad& input)
 
 				case TC_PUSH_ALL_KEYS:
 					for (u32 i = 0; i < 8; ++i)
-						input.push_key(static_cast<KEYS>(i));
+						emu_core.push_key(static_cast<KEYS>(i));
 					break;
 
 
 				case TC_RELEASE_ALL_KEYS:
 					for (u32 i = 0; i < 8; ++i)
-						input.release_key(static_cast<KEYS>(i));
+						emu_core.release_key(static_cast<KEYS>(i));
 					break;
 
 
 				case TC_PUSH_ARROWS:
 					for (u32 i = 0; i < 4; ++i)
-						input.push_key(static_cast<KEYS>(i));
+						emu_core.push_key(static_cast<KEYS>(i));
 					break;
 
 
 				case TC_RELEASE_ARROWS:
 					for (u32 i = 0; i < 4; ++i)
-						input.release_key(static_cast<KEYS>(i));
+						emu_core.release_key(static_cast<KEYS>(i));
 					break;
 
 
 				case TC_PUSH_ABSS:
 					for (u32 i = 4; i < 8; ++i)
-						input.push_key(static_cast<KEYS>(i));
+						emu_core.push_key(static_cast<KEYS>(i));
 					break;
 
 
 				case TC_RELEASE_ABSS:
 					for (u32 i = 4; i < 8; ++i)
-						input.release_key(static_cast<KEYS>(i));
+						emu_core.release_key(static_cast<KEYS>(i));
 					break;
 
 
@@ -121,7 +115,7 @@ bool Tester::input_stub(Joypad& input)
 				case TC_PUSH_DOWN:
 				case TC_PUSH_LEFT:
 				case TC_PUSH_RIGHT:
-					input.push_key(static_cast<KEYS>(buffer[0] - TC_PUSH_RIGHT));
+					emu_core.push_key(static_cast<KEYS>(buffer[0] - TC_PUSH_RIGHT));
 					break;
 
 				case TC_RELEASE_A:
@@ -132,29 +126,83 @@ bool Tester::input_stub(Joypad& input)
 				case TC_RELEASE_DOWN:
 				case TC_RELEASE_LEFT:
 				case TC_RELEASE_RIGHT:
-					input.release_key(static_cast<KEYS>(buffer[0] - TC_PUSH_RIGHT));
+					emu_core.release_key(static_cast<KEYS>(buffer[0] - TC_PUSH_RIGHT));
 					break;
 			}
 		}
-		return true;
 	}
-}
-
-void Tester::audio_dummy_ctrl(bool unused)
-{
-	UNUSED(unused);
-}
-
-u8** Tester::audio_dummy_swap(u8** ptrs, u32 unused)
-{
-	UNUSED(ptrs);
-	UNUSED(unused);
-
-	return dummy_ptrs;
 }
 
 void Tester::attach_renderer(function<void(const u32*)> callback)
 {
 	render_callback = callback;
 	use_renderer = true;
+}
+
+AudioTEST::AudioTEST()
+{
+	internal_buffer = std::make_unique<u8[]>(4 * (1 << 15));
+
+	u8* ptr = internal_buffer.get();
+
+	for (int i = 0; i < 4; ++i)
+		dummy_buffers[i] = &ptr[i * (1 << 15)];
+}
+
+void AudioTEST::dummy(bool unused)
+{
+	UNUSED(unused);
+}
+
+u8** AudioTEST::swap_buffers(u8** ptr, u32 unused)
+{
+	UNUSED(unused);
+	return dummy_buffers;
+}
+
+void AudioTEST::attach_impl(std::shared_ptr<Tester> u)
+{
+	UNUSED(u);
+}
+
+RendererTEST::RendererTEST(void* ptr)
+{
+	UNUSED(ptr);
+}
+
+void RendererTEST::vblank_handler(const u32* frame_buffer)
+{
+	pimpl->render_stub(frame_buffer);
+}
+
+void RendererTEST::attach_impl(std::shared_ptr<Tester> u)
+{
+	pimpl = u;
+}
+
+GuiTEST::GuiTEST(u32 u1, u32 u2, const std::string & u3)
+{
+	UNUSED(u1);
+	UNUSED(u2);
+	UNUSED(u3);
+}
+
+void* GuiTEST::get_display()
+{
+	return nullptr;
+}
+
+bool GuiTEST::is_running() const
+{
+	return pimpl->is_running();
+}
+
+void GuiTEST::pump_input(Core& emu_core)
+{
+	pimpl->input_stub(emu_core);
+}
+
+void GuiTEST::attach_impl(std::shared_ptr<Tester> u)
+{
+	pimpl = u;
 }

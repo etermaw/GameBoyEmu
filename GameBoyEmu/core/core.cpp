@@ -87,43 +87,50 @@ void Core::save_state(std::ostream& save_stream)
 	speed.serialize(save_stream);
 }
 
-void Core::run()
+void Core::run_one_frame()
 {
-	bool spin = true;
+	//we have input already
+	//save state is handled outside
 
-	while (spin)
+	while (!gpu.is_entering_vblank()) //TODO: if someone turn off lcd, this loop may spin forever
 	{
-		spin = pump_input_callback(joypad);
+		u32 sync_cycles = 0;
 
-		while (!gpu.is_entering_vblank()) //TODO: if someone turn off lcd, this loop may spin forever
+		if (ints.is_any_raised())
 		{
-			u32 sync_cycles = 0;
+			cpu.unhalt();
 
-			if (ints.is_any_raised())
-			{
-				cpu.unhalt();
-
-				if (cpu.is_interrupt_enabled())
-					sync_cycles = cpu.handle_interrupt();
-			}
-
-			debugger.step();
-
-			sync_cycles += cpu.step(sync_cycles);
-			sync_cycles += gpu.step(sync_cycles);
-			apu.step(sync_cycles);
-			timer.step(sync_cycles);
-
-			gpu.set_speed(speed.double_speed);
-			apu.set_speed(speed.double_speed);
+			if (cpu.is_interrupt_enabled())
+				sync_cycles = cpu.handle_interrupt();
 		}
 
-		draw_frame_callback(gpu.get_frame_buffer());
-		gpu.clear_frame_buffer();
-		debugger.after_vblank();
+		debugger.step();
 
-		//TODO: if save state request, we should do it now
+		sync_cycles += cpu.step(sync_cycles);
+		sync_cycles += gpu.step(sync_cycles);
+		apu.step(sync_cycles);
+		timer.step(sync_cycles);
+		
+		debugger.check_mmu();
+
+		gpu.set_speed(speed.double_speed);
+		apu.set_speed(speed.double_speed);
 	}
+
+	draw_frame_callback(gpu.get_frame_buffer());
+	gpu.clear_frame_buffer();
+	debugger.after_vblank();
+}
+
+
+void Core::push_key(KEYS key)
+{
+	joypad.push_key(key);
+}
+
+void Core::release_key(KEYS key)
+{
+	joypad.release_key(key);
 }
 
 void Core::attach_callbacks(const external_callbacks& endpoints)
@@ -132,5 +139,9 @@ void Core::attach_callbacks(const external_callbacks& endpoints)
 	apu.attach_endpoints(endpoints.swap_sample_buffer, endpoints.audio_control);
 
 	draw_frame_callback = endpoints.draw_frame;
-	pump_input_callback = endpoints.update_input;
+}
+
+void Core::enable_debugger()
+{
+	debugger.setup_entry_point();
 }
