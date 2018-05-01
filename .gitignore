@@ -2,13 +2,21 @@
 *
 
 # except:
+# git files
 !.gitignore
 !.gitattributes
-!GameBoyEmu/*.cpp
-!GameBoyEmu/*.h
-!GameBoyEmu/*.vcxproj
-!GameBoyEmu/*.vcxproj.filters
-!auto_tester/*
+
+# C++ and python files in project directories
+!*/
+!*.cpp
+!*.h
+!*.py
+
+# Meson build files
 !meson_options.txt
 !meson.build
+
+# MSVC specific files
 !GameBoyEmu.sln
+!GameBoyEmu.vcxproj
+!GameBoyEmu.vcxproj.filters
