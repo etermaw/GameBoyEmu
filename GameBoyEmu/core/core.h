@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+
 #include "cpu.h"
 #include "mmu.h"
 #include "ram.h"
@@ -17,7 +17,6 @@ struct external_callbacks
 	function<void(std::chrono::seconds, const u8*, u32)> save_rtc;
 
 	function<void(const u32*)> draw_frame;
-	function<bool(Joypad&)> update_input;
 
 	function<u8**(u8**, u32)> swap_sample_buffer;
 	function<void(bool)> audio_control;
@@ -118,7 +117,6 @@ class Core
 		Debugger debugger;
 
 		function<void(const u32*)> draw_frame_callback;
-		function<bool(Joypad&)> pump_input_callback;
 
 	public:
 		Core();
@@ -130,7 +128,10 @@ class Core
 
 		void load_state(std::istream& load_stream);
 		void save_state(std::ostream& save_stream);
-		void run();
+
+		void run_one_frame();
+		void push_key(KEYS key);
+		void release_key(KEYS key);
 
 		void attach_callbacks(const external_callbacks& endpoints);
 		void enable_debugger();

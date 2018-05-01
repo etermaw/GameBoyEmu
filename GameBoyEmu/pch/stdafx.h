@@ -15,6 +15,7 @@
 #include <bitset>
 #include <unordered_set>
 #include <array>
+#include <unordered_map>
 
 #include "utils/definitions.h"
 #include "utils/function.h"

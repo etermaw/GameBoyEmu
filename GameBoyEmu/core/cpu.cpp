@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "cpu.h"
 
 CPU::CPU(MMU& memory_controller, Interrupts& ints) : mmu(memory_controller), ints(ints)

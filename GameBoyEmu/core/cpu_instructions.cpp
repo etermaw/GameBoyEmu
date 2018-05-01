@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "cpu.h"
 
 static constexpr u8 reg_map[] = { B, C, D, E, H, L, 0xFF, A }; //instead of 0xFF, add 1 reg to reg_8 named as REG_GUARD

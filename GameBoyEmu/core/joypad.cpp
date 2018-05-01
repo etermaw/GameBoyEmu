@@ -1,6 +1,5 @@
-#include "stdafx.h"
+
 #include "joypad.h"
-#include "utils/bit_ops.h"
 
 u8 Joypad::read_byte(u16 adress, u32 cycles_passed)
 {

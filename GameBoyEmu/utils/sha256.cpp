@@ -18,14 +18,6 @@ static const std::array<u32, 64> k = {
 
 static const std::array<u32, 8> init = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,0x1f83d9ab, 0x5be0cd19};
 
-template<class U>
-inline U ror(U num, u32 shift)
-{
-	static_assert(std::is_integral<U>::value && std::is_unsigned<U>::value, "Ror is only for unsigned ints!");
-	
-	return (num >> shift) | (num << (sizeof(U) * CHAR_BIT - shift));
-}
-
 static void process_chunk(const u8* chunk, std::array<u32, 8>& state)
 {
     std::array<u32, 64> w;

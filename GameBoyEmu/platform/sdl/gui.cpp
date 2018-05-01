@@ -3,6 +3,15 @@
 GuiSDL::GuiSDL(u32 w, u32 h, const std::string& title)
 {
 	window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, 0);
+
+	key_map[SDLK_RIGHT] = KEYS::K_RIGHT;
+	key_map[SDLK_LEFT] = KEYS::K_LEFT;
+	key_map[SDLK_UP] = KEYS::K_UP;
+	key_map[SDLK_DOWN] = KEYS::K_DOWN;
+	key_map[SDLK_a] = KEYS::K_A;
+	key_map[SDLK_b] = KEYS::K_B;
+	key_map[SDLK_RETURN] = KEYS::K_SELECT;
+	key_map[SDLK_s] = KEYS::K_START;
 }
 
 GuiSDL::~GuiSDL()
@@ -20,51 +29,61 @@ void* GuiSDL::get_display() const
 	return window;
 }
 
-bool GuiSDL::input_handler(Joypad& input)
+void GuiSDL::pump_input(Core& emu_core)
 {
 	SDL_Event ev;
-	static const u32 key_map[8] = { SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_a, SDLK_b, SDLK_RETURN, SDLK_s };
+	bool new_running = true;
 
 	while (SDL_PollEvent(&ev))
 	{
-		if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+		switch (ev.type)
 		{
-			auto key_code = std::find(std::begin(key_map), std::end(key_map), ev.key.keysym.sym);
-
-			if (key_code != std::end(key_map))
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
 			{
-				auto index = std::distance(std::begin(key_map), key_code);
+				const auto key_code = key_map.find(ev.key.keysym.sym);
 
-				if (ev.type == SDL_KEYDOWN)
-					input.push_key(static_cast<KEYS>(index));
-
-				else
-					input.release_key(static_cast<KEYS>(index));
-			}
-
-			else if (ev.key.keysym.sym == SDLK_ESCAPE)
-			{
-				if (ev.type == SDL_KEYDOWN)
+				if (key_code != key_map.end())
 				{
-					input.push_key(K_A);
-					input.push_key(K_B);
-					input.push_key(K_SELECT);
-					input.push_key(K_START);
+					if (ev.type == SDL_KEYDOWN)
+						emu_core.push_key(key_code->second);
+
+					else
+						emu_core.release_key(key_code->second);
 				}
 
-				else
+				else if (ev.key.keysym.sym == SDLK_ESCAPE)
 				{
-					input.release_key(K_A);
-					input.release_key(K_B);
-					input.release_key(K_SELECT);
-					input.release_key(K_START);
+					if (ev.type == SDL_KEYDOWN)
+					{
+						emu_core.push_key(K_A);
+						emu_core.push_key(K_B);
+						emu_core.push_key(K_SELECT);
+						emu_core.push_key(K_START);
+					}
+
+					else
+					{
+						emu_core.release_key(K_A);
+						emu_core.release_key(K_B);
+						emu_core.release_key(K_SELECT);
+						emu_core.release_key(K_START);
+					}
 				}
+
+				break;
 			}
+
+			case SDL_QUIT:
+				new_running = false;
+				break;
 		}
-
-		else if (ev.type == SDL_QUIT)
-			return false;
 	}
 
-	return true;
+	running = new_running;
+}
+
+bool GuiSDL::is_running() const
+{
+	return running;
 }
