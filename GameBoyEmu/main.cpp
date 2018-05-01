@@ -38,6 +38,8 @@ int main(int argc, char *argv[])
 	Platform::after_attach(audio_post, renderer, gui);
 
 #ifndef ENABLE_AUTO_TESTS
+	emu_core.enable_debugger();
+
 	while (true)
 	{
 		std::cout << "Insert cartrige path:\n";

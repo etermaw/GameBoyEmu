@@ -962,3 +962,15 @@ void Gpu::deserialize(std::istream& stream)
 		color_obp[i / 8][(i % 8) / 2] = cgb_to_rgb(cgb_obp[i]);
 	}
 }
+
+void Gpu::get_gpu_status(std::array<u8, 12>& dmg, std::array<u8, 8>& cgb)
+{
+	std::memcpy(dmg.data(), regs, sizeof(u8) * 12);
+
+	dmg[1] = change_bit(set_bit(dmg[1], 7), cmp_bit, 2);
+
+	std::memcpy(cgb.data(), hdma_regs, sizeof(u8) * 5);
+	cgb[5] = cgb_bgp_index;
+	cgb[6] = cgb_obp_index;
+	cgb[7] = vram_bank;
+}

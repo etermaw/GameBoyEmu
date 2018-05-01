@@ -14,42 +14,30 @@ static constexpr char DMP_MEM = 'm';
 static constexpr char HELP = 'h';
 static constexpr char GPU_STATUS = 'g';
 
-static const char help[] = "continue - y, run for x vblanks - z,\n"
-						   "dump registers - d, memory dump - m,\n"
-						   "new breakpoint - i, remove breakpoint - r,\n"
-						   "insert memory watch - q, remove memory watch - x,\n"
-						   "next instruction - n, step over instruction - l,\n"
-						   "dump GPU regs - g\n";
+#define DELIM "\t\t"
+
+static constexpr char help[] =
+"y - continue      " DELIM "z - run for x vblanks\n"
+"d - dump registers" DELIM "m - memory dump\n"
+"i - new breakpoint" DELIM "r - remove breakpoint\n"
+"q - insert memory watch" DELIM "x - remove memory watch\n"
+"n - next instruction" DELIM "l - step over instruction\n"
+"g - dump GPU regs\n";
+
+#undef DELIM
 
 bool Debugger::is_breakpoint()
 {
-	return !break_points.empty() && std::binary_search(break_points.begin(), break_points.end(), *pc);
+	return !break_points.empty() && (break_points.find(current_pc) != break_points.end());
 }
 
-void Debugger::enter_trap()
+void Debugger::wait_for_user()
 {
-	u8 opcode = read_byte_callback(*pc, 0),
-	   b1 = read_byte_callback(*pc + 1, 0),
-	   b2 = read_byte_callback(*pc + 2, 0);
-
-	char buffer[32];
-	const char* op = dispatch_opcode(opcode, b1);
-	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
-
-	printf("\nBREAK POINT! (h - help)\n");
-
-	if (memory_changed)
-	{
-		memory_changed = false;
-		printf("MEMORY WATCH: CPU wrote 0x%02x to adress 0x%04x\n", new_val, change_adress);
-	}
-
-	printf("0x%04x: %s\n", *pc, buffer);
-	
+	u8 opcode = read_byte_callback(current_pc, 0);
 	char choice = 0;
 	next_instruction = false;
 
-	if (step_over_adress == *pc)
+	if (step_over_adress == current_pc)
 		step_over = false;
 
 	while (choice != CONTINUE)
@@ -67,7 +55,7 @@ void Debugger::enter_trap()
 				return;
 
 			case STEP_INSTR:
-				step_over_adress = *pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
+				step_over_adress = current_pc + (opcode == 0xCB ? 2 : get_opcode_bytes(opcode));
 				step_over = true;
 				return;
 
@@ -185,19 +173,38 @@ void Debugger::enter_trap()
 				printf("%s\n", help);
 				break;
 		}
-
 	}
+}
+
+void Debugger::enter_trap()
+{
+	u8 opcode = read_byte_callback(current_pc, 0),
+	   b1 = read_byte_callback(current_pc + 1, 0),
+	   b2 = read_byte_callback(current_pc + 2, 0);
+
+	char buffer[32];
+	const char* op = dispatch_opcode(opcode, b1);
+	sprintf(buffer, op, get_opcode_bytes(opcode) == 2 ? b1 : (b2 << 8) | b1);
+
+	printf("\nBREAK POINT! (h - help)\n");
+	printf("0x%04x: %s\n", current_pc, buffer);
+}
+
+void Debugger::enter_memory_trap()
+{
+	printf("\nMEMORY WATCH (h - help):\n");
+	printf("CPU wrote 0x%02X to memory location 0x%04X\n", new_val, change_adress);
+	printf("Watch triggered on address: 0x%04X\n", current_pc);
 }
 
 void Debugger::insert_breakpoint(u16 adress)
 {
-	break_points.push_back(adress);
-	std::sort(break_points.begin(), break_points.end());
+	break_points.insert(adress);
 }
 
 void Debugger::remove_breakpoint(u16 adress)
 {
-	auto it = std::lower_bound(break_points.begin(), break_points.end(), adress);
+	auto it = break_points.find(adress);
 
 	if (it != break_points.end())
 		break_points.erase(it);
@@ -205,13 +212,12 @@ void Debugger::remove_breakpoint(u16 adress)
 
 void Debugger::insert_watchpoint(u16 adress)
 {
-	memory_watches.push_back(adress);
-	std::sort(memory_watches.begin(), memory_watches.end());
+	memory_watches.insert(adress);
 }
 
 void Debugger::remove_watchpoint(u16 adress)
 {
-	auto it = std::lower_bound(memory_watches.begin(), memory_watches.end(), adress);
+	auto it = memory_watches.find(adress);
 
 	if (it != memory_watches.end())
 		memory_watches.erase(it);
@@ -226,11 +232,11 @@ void Debugger::dump_registers()
 
 	auto f = regs[4] & 0xFF;
 
+	printf("\nAF: 0x%04x    A: 0x%02x    F: 0x%02x", regs[4], (regs[4] >> 8) & 0xFF, regs[4] & 0xFF);
 	printf("\nBC: 0x%04x    B: 0x%02x    C: 0x%02x", regs[0], (regs[0] >> 8) & 0xFF, regs[0] & 0xFF);
 	printf("\nDE: 0x%04x    D: 0x%02x    E: 0x%02x", regs[1], (regs[1] >> 8) & 0xFF, regs[1] & 0xFF);
 	printf("\nHL: 0x%04x    H: 0x%02x    L: 0x%02x", regs[2], (regs[2] >> 8) & 0xFF, regs[2] & 0xFF);
 	printf("\nSP: 0x%04x", regs[3]);
-	printf("\nAF: 0x%04x    A: 0x%02x    F: 0x%02x", regs[4], (regs[4] >> 8) & 0xFF, regs[4] & 0xFF);
 
 	printf("\n\nFlags (F register): Z:%d N:%d H:%d C:%d\n", check_bit(f, 7), check_bit(f, 6), check_bit(f, 5), check_bit(f, 4));
 	printf("Interrupts (IME): %s\n", ime ? "enabled" : "disabled");
@@ -299,6 +305,11 @@ void Debugger::dump_gpu_regs()
 	printf("\nvram bank: %d\n", cgb_regs[7]);
 }
 
+void Debugger::setup_entry_point()
+{
+	insert_breakpoint(0x100);
+}
+
 void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u8, u32)> write_byte)
 {
 	read_byte_callback = read_byte;
@@ -307,10 +318,7 @@ void Debugger::attach_mmu(function<u8(u16, u32)> read_byte, function<void(u16, u
 
 void Debugger::check_memory_access(u16 adress, u8 value)
 {
-	if (memory_watches.empty())
-		return;
-
-	if (std::binary_search(memory_watches.begin(), memory_watches.end(), adress))
+	if (!memory_watches.empty() && (memory_watches.find(adress) != memory_watches.end()))
 	{
 		memory_changed = true;
 		new_val = value;
@@ -318,10 +326,25 @@ void Debugger::check_memory_access(u16 adress, u8 value)
 	}
 }
 
+void Debugger::check_mmu()
+{
+	if (memory_changed)
+	{
+		memory_changed = false;
+		enter_memory_trap();
+		wait_for_user();
+	}
+}
+
 void Debugger::step()
 {
-	if (next_instruction || is_breakpoint() || memory_changed || (step_over && *pc == step_over_adress))
+	current_pc = *pc;
+
+	if (next_instruction || is_breakpoint() || (step_over && current_pc == step_over_adress))
+	{
 		enter_trap();
+		wait_for_user();
+	}
 }
 
 void Debugger::after_vblank()

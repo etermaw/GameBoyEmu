@@ -134,5 +134,6 @@ class Core
 		void release_key(KEYS key);
 
 		void attach_callbacks(const external_callbacks& endpoints);
+		void enable_debugger();
 };
 

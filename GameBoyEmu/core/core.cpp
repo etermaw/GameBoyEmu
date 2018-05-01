@@ -110,6 +110,8 @@ void Core::run_one_frame()
 		sync_cycles += gpu.step(sync_cycles);
 		apu.step(sync_cycles);
 		timer.step(sync_cycles);
+		
+		debugger.check_mmu();
 
 		gpu.set_speed(speed.double_speed);
 		apu.set_speed(speed.double_speed);
@@ -119,6 +121,7 @@ void Core::run_one_frame()
 	gpu.clear_frame_buffer();
 	debugger.after_vblank();
 }
+
 
 void Core::push_key(KEYS key)
 {
@@ -136,4 +139,9 @@ void Core::attach_callbacks(const external_callbacks& endpoints)
 	apu.attach_endpoints(endpoints.swap_sample_buffer, endpoints.audio_control);
 
 	draw_frame_callback = endpoints.draw_frame;
+}
+
+void Core::enable_debugger()
+{
+	debugger.setup_entry_point();
 }
