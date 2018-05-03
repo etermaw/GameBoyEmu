@@ -1,6 +1,5 @@
 #pragma once
 
-
 class AudioSDL
 {
 	static const u32 SAMPLE_COUNT = 512;

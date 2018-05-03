@@ -9,9 +9,9 @@ GuiSDL::GuiSDL(u32 w, u32 h, const std::string& title)
 	key_map[SDLK_UP] = KEYS::K_UP;
 	key_map[SDLK_DOWN] = KEYS::K_DOWN;
 	key_map[SDLK_a] = KEYS::K_A;
-	key_map[SDLK_b] = KEYS::K_B;
-	key_map[SDLK_RETURN] = KEYS::K_SELECT;
-	key_map[SDLK_s] = KEYS::K_START;
+	key_map[SDLK_s] = KEYS::K_B;
+	key_map[SDLK_z] = KEYS::K_SELECT;
+	key_map[SDLK_x] = KEYS::K_START;
 }
 
 GuiSDL::~GuiSDL()
