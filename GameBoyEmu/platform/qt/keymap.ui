@@ -43,9 +43,6 @@
      <layout class="QFormLayout" name="formLayout_5">
       <item row="0" column="0">
        <layout class="QFormLayout" name="formLayout_6">
-        <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="a_key_field"/>
-        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_14">
           <property name="minimumSize">
@@ -67,6 +64,9 @@
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="KeyCaptureEdit" name="a_keycapture"/>
         </item>
        </layout>
       </item>
@@ -95,7 +95,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="up_key_field"/>
+         <widget class="KeyCaptureEdit" name="up_keycapture"/>
         </item>
        </layout>
       </item>
@@ -124,7 +124,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="b_key_field"/>
+         <widget class="KeyCaptureEdit" name="b_keycapture"/>
         </item>
        </layout>
       </item>
@@ -153,7 +153,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="down_key_field"/>
+         <widget class="KeyCaptureEdit" name="down_keycapture"/>
         </item>
        </layout>
       </item>
@@ -182,7 +182,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="start_key_field"/>
+         <widget class="KeyCaptureEdit" name="start_keycapture"/>
         </item>
        </layout>
       </item>
@@ -211,7 +211,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="left_key_field"/>
+         <widget class="KeyCaptureEdit" name="left_keycapture"/>
         </item>
        </layout>
       </item>
@@ -240,7 +240,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="select_key_field"/>
+         <widget class="KeyCaptureEdit" name="select_keycapture"/>
         </item>
        </layout>
       </item>
@@ -269,7 +269,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="right_key_field"/>
+         <widget class="KeyCaptureEdit" name="right_keycapture"/>
         </item>
        </layout>
       </item>
@@ -278,15 +278,22 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KeyCaptureEdit</class>
+   <extends>QLineEdit</extends>
+   <header>keycaptureedit.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
-  <tabstop>a_key_field</tabstop>
-  <tabstop>b_key_field</tabstop>
-  <tabstop>start_key_field</tabstop>
-  <tabstop>select_key_field</tabstop>
-  <tabstop>up_key_field</tabstop>
-  <tabstop>down_key_field</tabstop>
-  <tabstop>left_key_field</tabstop>
-  <tabstop>right_key_field</tabstop>
+  <tabstop>a_keycapture</tabstop>
+  <tabstop>b_keycapture</tabstop>
+  <tabstop>start_keycapture</tabstop>
+  <tabstop>select_keycapture</tabstop>
+  <tabstop>up_keycapture</tabstop>
+  <tabstop>down_keycapture</tabstop>
+  <tabstop>left_keycapture</tabstop>
+  <tabstop>right_keycapture</tabstop>
  </tabstops>
  <resources/>
  <connections/>
