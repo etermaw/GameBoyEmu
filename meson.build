@@ -52,8 +52,7 @@ else
 
     platform_src = ['GameBoyEmu/platform/qt/main.cpp', 'GameBoyEmu/platform/qt/mainwindow.cpp','GameBoyEmu/platform/qt/keymap.cpp']
 
-    final_src += moc
-    final_src += core_src + platform_src
+    final_src += moc + core_src + platform_src
     prog = executable('emu', sources: final_src, dependencies: qt5_dep, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
 
 endif

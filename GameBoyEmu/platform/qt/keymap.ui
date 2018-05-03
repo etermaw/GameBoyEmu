@@ -44,7 +44,7 @@
       <item row="0" column="0">
        <layout class="QFormLayout" name="formLayout_6">
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="keySequenceEdit_6"/>
+         <widget class="QKeySequenceEdit" name="a_key_field"/>
         </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_14">
@@ -95,7 +95,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="keySequenceEdit_7"/>
+         <widget class="QKeySequenceEdit" name="up_key_field"/>
         </item>
        </layout>
       </item>
@@ -124,7 +124,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="keySequenceEdit_8"/>
+         <widget class="QKeySequenceEdit" name="b_key_field"/>
         </item>
        </layout>
       </item>
@@ -153,7 +153,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="keySequenceEdit_9"/>
+         <widget class="QKeySequenceEdit" name="down_key_field"/>
         </item>
        </layout>
       </item>
@@ -182,7 +182,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="keySequenceEdit_10"/>
+         <widget class="QKeySequenceEdit" name="start_key_field"/>
         </item>
        </layout>
       </item>
@@ -211,7 +211,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="keySequenceEdit_12"/>
+         <widget class="QKeySequenceEdit" name="left_key_field"/>
         </item>
        </layout>
       </item>
@@ -240,7 +240,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="keySequenceEdit_11"/>
+         <widget class="QKeySequenceEdit" name="select_key_field"/>
         </item>
        </layout>
       </item>
@@ -269,7 +269,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QKeySequenceEdit" name="keySequenceEdit_13"/>
+         <widget class="QKeySequenceEdit" name="right_key_field"/>
         </item>
        </layout>
       </item>
@@ -279,14 +279,14 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>keySequenceEdit_6</tabstop>
-  <tabstop>keySequenceEdit_8</tabstop>
-  <tabstop>keySequenceEdit_10</tabstop>
-  <tabstop>keySequenceEdit_11</tabstop>
-  <tabstop>keySequenceEdit_7</tabstop>
-  <tabstop>keySequenceEdit_9</tabstop>
-  <tabstop>keySequenceEdit_12</tabstop>
-  <tabstop>keySequenceEdit_13</tabstop>
+  <tabstop>a_key_field</tabstop>
+  <tabstop>b_key_field</tabstop>
+  <tabstop>start_key_field</tabstop>
+  <tabstop>select_key_field</tabstop>
+  <tabstop>up_key_field</tabstop>
+  <tabstop>down_key_field</tabstop>
+  <tabstop>left_key_field</tabstop>
+  <tabstop>right_key_field</tabstop>
  </tabstops>
  <resources/>
  <connections/>
