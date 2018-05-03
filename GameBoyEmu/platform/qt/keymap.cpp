@@ -1,10 +1,11 @@
+#include <QRegularExpression>
+
 #include "keymap.h"
 #include "ui_keymap.h"
 
 KeyMap::KeyMap(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::KeyMap),
-    field_regex("[[:alnum:]]+\\+[[:alnum:]]+")
+    ui(new Ui::KeyMap)
 {
     ui->setupUi(this);
 }
@@ -16,6 +17,7 @@ KeyMap::~KeyMap()
 
 void KeyMap::check_highlight_field(QKeySequenceEdit* edit)
 {
+    static const QRegularExpression field_regex("[[:alnum:]]+\\+[[:alnum:]]+"); //TODO: why making it class field introduces segfaults on exit?
     const QString keys = edit->keySequence().toString();
 
     if (keys.contains(field_regex))

@@ -1,7 +1,6 @@
 #ifndef KEYMAP_H
 #define KEYMAP_H
 
-#include <QRegularExpression>
 #include <QKeySequenceEdit>
 #include <QDialog>
 
@@ -29,7 +28,6 @@ class KeyMap : public QDialog
 
     private:
         Ui::KeyMap *ui;
-        const QRegularExpression field_regex;
 
         void check_highlight_field(QKeySequenceEdit* edit);
 };
