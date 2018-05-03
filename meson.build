@@ -1,7 +1,7 @@
 project('GBE', 'cpp', version: '0.21', default_options: ['cpp_std=c++14', 'warning_level=3'])
 
 sdl = dependency('sdl2')
-incdir = include_directories('GameBoyEmu')
+incdir = [include_directories('GameBoyEmu')]
 
 core_src = ['GameBoyEmu/core/apu.cpp',
             'GameBoyEmu/core/cartrige.cpp',
@@ -47,10 +47,12 @@ else
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
 
-    moc = qt5.preprocess(moc_headers: ['GameBoyEmu/platform/qt/mainwindow.h', 'GameBoyEmu/platform/qt/keymap.h'],
+    moc = qt5.preprocess(moc_headers: ['GameBoyEmu/platform/qt/mainwindow.h', 'GameBoyEmu/platform/qt/keymap.h', 'GameBoyEmu/platform/qt/keycaptureedit.h'],
                          ui_files: ['GameBoyEmu/platform/qt/mainwindow.ui', 'GameBoyEmu/platform/qt/keymap.ui'])
 
-    platform_src = ['GameBoyEmu/platform/qt/main.cpp', 'GameBoyEmu/platform/qt/mainwindow.cpp','GameBoyEmu/platform/qt/keymap.cpp']
+    platform_src = ['GameBoyEmu/platform/qt/main.cpp', 'GameBoyEmu/platform/qt/mainwindow.cpp','GameBoyEmu/platform/qt/keymap.cpp', 'GameBoyEmu/platform/qt/keycaptureedit.cpp']
+
+    incdir += include_directories('GameBoyEmu/platform/qt') #it`s required for compiling custom KeyEdit
 
     final_src += moc + core_src + platform_src
     prog = executable('emu', sources: final_src, dependencies: qt5_dep, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
