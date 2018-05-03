@@ -22,40 +22,37 @@ core_src = ['GameBoyEmu/core/apu.cpp',
             'GameBoyEmu/core/wave_synth.cpp']
 
 utils_src = ['GameBoyEmu/utils/sha256.cpp']
-
 test_src = ['GameBoyEmu/platform/linux/test.cpp']
 
 args = []
 final_src = []
 
 if get_option('auto_test') == true
-    final_src += test_src + utils_src
-    args = ['-DENABLE_AUTO_TESTS']
-endif
-
-if get_option('platform_handler') == 'sdl2'
-    platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',
-                    'GameBoyEmu/platform/sdl/gui.cpp',
-                    'GameBoyEmu/platform/sdl/renderer.cpp',
-                    'GameBoyEmu/platform/sdl/main.cpp']
-
-
-    final_src += core_src + platform_src
-    prog = executable('emu', sources: final_src, dependencies: sdl, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
-
+    final_src += test_src + utils_src + ['GameBoyEmu/platform/linux/main.cpp']
 else
-    qt5 = import('qt5')
-    qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
+    if get_option('platform_handler') == 'sdl2'
+        platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',
+                        'GameBoyEmu/platform/sdl/gui.cpp',
+                        'GameBoyEmu/platform/sdl/renderer.cpp',
+                        'GameBoyEmu/platform/sdl/main.cpp']
 
-    moc = qt5.preprocess(moc_headers: ['GameBoyEmu/platform/qt/mainwindow.h', 'GameBoyEmu/platform/qt/keymap.h', 'GameBoyEmu/platform/qt/keycaptureedit.h'],
-                         ui_files: ['GameBoyEmu/platform/qt/mainwindow.ui', 'GameBoyEmu/platform/qt/keymap.ui'])
 
-    platform_src = ['GameBoyEmu/platform/qt/main.cpp', 'GameBoyEmu/platform/qt/mainwindow.cpp','GameBoyEmu/platform/qt/keymap.cpp', 'GameBoyEmu/platform/qt/keycaptureedit.cpp']
+        final_src += core_src + platform_src
+        prog = executable('emu', sources: final_src, dependencies: sdl, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
 
-    incdir += include_directories('GameBoyEmu/platform/qt') #it`s required for compiling custom KeyEdit
+    else
+        qt5 = import('qt5')
+        qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
 
-    final_src += moc + core_src + platform_src
-    prog = executable('emu', sources: final_src, dependencies: qt5_dep, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
+        moc = qt5.preprocess(moc_headers: ['GameBoyEmu/platform/qt/mainwindow.h', 'GameBoyEmu/platform/qt/keymap.h', 'GameBoyEmu/platform/qt/keycaptureedit.h'],
+                            ui_files: ['GameBoyEmu/platform/qt/mainwindow.ui', 'GameBoyEmu/platform/qt/keymap.ui'])
 
+        platform_src = ['GameBoyEmu/platform/qt/main.cpp', 'GameBoyEmu/platform/qt/mainwindow.cpp','GameBoyEmu/platform/qt/keymap.cpp', 'GameBoyEmu/platform/qt/keycaptureedit.cpp']
+
+        incdir += include_directories('GameBoyEmu/platform/qt') #it`s required for compiling custom KeyEdit
+
+        final_src += moc + core_src + platform_src
+        prog = executable('emu', sources: final_src, dependencies: qt5_dep, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
+
+    endif
 endif
-

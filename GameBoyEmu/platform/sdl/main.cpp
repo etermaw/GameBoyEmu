@@ -37,8 +37,6 @@ int main(int argc, char *argv[])
 	endpoints.draw_frame = make_function(&RendererSDL::vblank_handler, &renderer);
 
 	emu_core.attach_callbacks(endpoints);
-
-#ifndef ENABLE_AUTO_TESTS
 	emu_core.enable_debugger();
 
 	while (true)
@@ -62,16 +60,6 @@ int main(int argc, char *argv[])
 
 		std::cout << "Failed to load cartrige!\n";
 	}
-
-#else
-	std::ifstream rom(argv[1], std::ios::binary);
-
-	if (rom.is_open())
-	{
-		std::ifstream ram(file_name + "_ram", std::ios::binary), rtc(file_name + "_rtc", std::ios::binary);
-		emu_core.load_cartrige(rom, ram, rtc);
-	}
-#endif
 
 	while (gui.is_running())
 	{
