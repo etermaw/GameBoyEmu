@@ -13,7 +13,7 @@
 !*.py
 
 # Qt5 UI files (but only in qt platform folder)
-!*.ui
+!*/platform/qt/*.ui
 
 # Meson build files
 !meson_options.txt
