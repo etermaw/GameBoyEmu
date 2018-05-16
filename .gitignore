@@ -11,6 +11,8 @@
 !*.cpp
 !*.h
 !*.py
+!*.vert
+!*.frag
 
 # Qt5 UI files (but only in qt platform folder)
 !*/platform/qt/*.ui
