@@ -20,6 +20,7 @@ class RenderWidget : public QOpenGLWidget, protected QOpenGLFunctions
         QOpenGLShaderProgram shaders;
         int vertex_location;
         int color_location;
+        GLuint vert_vbo, color_vbo;
 };
 
 #endif // RENDERWIDGET_H
