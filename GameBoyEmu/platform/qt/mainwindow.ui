@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>390</width>
-    <height>262</height>
+    <width>479</width>
+    <height>453</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,13 +20,13 @@
    <string>Emu</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QOpenGLWidget" name="openGLWidget">
+   <widget class="RenderWidget" name="openGLWidget">
     <property name="geometry">
      <rect>
       <x>-1</x>
       <y>-1</y>
-      <width>391</width>
-      <height>241</height>
+      <width>480</width>
+      <height>432</height>
      </rect>
     </property>
    </widget>
@@ -36,7 +36,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>390</width>
+     <width>479</width>
      <height>22</height>
     </rect>
    </property>
@@ -67,6 +67,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>RenderWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>renderwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

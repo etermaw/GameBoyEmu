@@ -1,11 +1,25 @@
 #ifndef RENDERWIDGET_H
 #define RENDERWIDGET_H
 
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
 
-class RenderWidget
+class RenderWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     public:
-        RenderWidget();
+        explicit RenderWidget(QWidget* parent = nullptr);
+        ~RenderWidget();
+
+    protected:
+        void initializeGL() override;
+        void resizeGL(int w, int h) override;
+        void paintGL() override;
+
+    private:
+        QOpenGLShaderProgram shaders;
+        int vertex_location;
+        int color_location;
 };
 
 #endif // RENDERWIDGET_H

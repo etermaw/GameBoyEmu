@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "keymap.h"
+//#include "corethread.h"
 
 namespace Ui {
     class MainWindow;
@@ -23,6 +24,8 @@ class MainWindow : public QMainWindow
     private:
         Ui::MainWindow *ui;
         KeyMap* keymap_dialog;
+        
+        //CoreThread core_thread;
 };
 
 #endif // MAINWINDOW_H
