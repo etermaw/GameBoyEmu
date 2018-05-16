@@ -6,7 +6,7 @@
 !.gitignore
 !.gitattributes
 
-# C++ and python files in project directories
+# C++, python and shader files in project directories
 !*/
 !*.cpp
 !*.h
