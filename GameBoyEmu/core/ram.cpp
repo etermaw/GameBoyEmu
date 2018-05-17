@@ -63,6 +63,15 @@ const u8* Ram::get_dma_ptr(u16 adress)
 		return nullptr;
 }
 
+void Ram::reset()
+{
+	std::memset(memory.get(), 0, sizeof(u8) * 0x8000);
+	std::memset(high_ram, 0, sizeof(u8) * 0x80);
+
+	bank_num = 1;
+	cgb_mode = false;
+}
+
 void Ram::serialize(std::ostream& stream)
 {
 	stream.write(reinterpret_cast<char*>(memory.get()), sizeof(u8) * 0x8000);

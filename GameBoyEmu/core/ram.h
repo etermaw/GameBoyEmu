@@ -22,6 +22,7 @@ class Ram final : public IMemory, public IDmaMemory
 
 		const u8* get_dma_ptr(u16 adress) override;
 
+		void reset();
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
 };
