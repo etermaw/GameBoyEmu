@@ -33,7 +33,8 @@ class Cartrige
 		bool is_cgb_ready() const;
 
         std::string get_name() const;
-
+		
+		void reset();
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
 };

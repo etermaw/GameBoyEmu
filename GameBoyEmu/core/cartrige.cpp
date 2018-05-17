@@ -167,6 +167,11 @@ bool Cartrige::is_cgb_ready() const
 	return (header->cgb_flag == 0x80) || (header->cgb_flag == 0xC0);
 }
 
+void Cartrige::reset()
+{
+	//TODO: what to do here?
+}
+
 void Cartrige::serialize(std::ostream& stream)
 {
 	//TODO: update rtc regs before serialization
