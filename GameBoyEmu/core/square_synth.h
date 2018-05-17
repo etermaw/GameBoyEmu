@@ -35,7 +35,6 @@ class SquareSynth
 		SquareSynth();
 
 		bool is_enabled() const;
-		void reset();
 		void update_sweep();
 		void update_length();
 		void update_envelope();
@@ -46,6 +45,7 @@ class SquareSynth
 		
 		u8 get_volume() const;
 
+		void reset();
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
 };

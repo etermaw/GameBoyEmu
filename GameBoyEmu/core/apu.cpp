@@ -172,6 +172,24 @@ void APU::step(u32 cycles)
 	cycles_ahead = 0;
 }
 
+void APU::reset()
+{
+	channel_1.reset();
+	channel_2.reset();
+	channel_3.reset();
+	channel_4.reset();
+
+	cur_pos = 0;
+	cycles_ahead = 0;
+	sequencer_cycles = 0;
+	sequencer_frame = 0;
+	std::memset(dummy_regs, 0, sizeof(dummy_regs));
+
+	enabled = false;
+	double_speed = false;
+	cgb_mode = false;
+}
+
 void APU::serialize(std::ostream& stream)
 {
 	channel_1.serialize(stream);

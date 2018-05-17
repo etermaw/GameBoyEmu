@@ -41,6 +41,7 @@ class APU final : public IMemory
 		void set_speed(bool speed) { double_speed = speed; }
 		void enable_cgb_mode(bool mode) { cgb_mode = mode; }
 
+		void reset();
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
 };

@@ -23,7 +23,6 @@ class WaveSynth
 		WaveSynth();
 
 		bool is_enabled() const;
-		void reset();
 
 		void update_length();
 		void step(u32 cycles, u8* sample_buffer = nullptr);
@@ -35,7 +34,8 @@ class WaveSynth
 		void write_ram(u16 adress, u8 value);
 
 		u8 get_volume() const;
-
+		
+		void reset();
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
 };
