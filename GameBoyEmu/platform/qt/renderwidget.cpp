@@ -6,6 +6,9 @@ RenderWidget::RenderWidget(QWidget* parent) : QOpenGLWidget(parent)
 
 RenderWidget::~RenderWidget()
 {
+    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ibo);
+    glDeleteTextures(2, textures);
 }
 
 void RenderWidget::initializeGL()
