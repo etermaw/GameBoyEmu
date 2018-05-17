@@ -145,3 +145,20 @@ void Core::enable_debugger()
 {
 	debugger.setup_entry_point();
 }
+
+void Core::reset()
+{
+	ints.reset();
+	//mmu.reset();
+	cpu.reset();
+	gpu.reset();
+	apu.reset();
+	timer.reset();
+	cart.reset();
+	ram.reset();
+	//serial port
+	joypad.reset();
+	speed.reset();
+
+	debugger.reset();
+}

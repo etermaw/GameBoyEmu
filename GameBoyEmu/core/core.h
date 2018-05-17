@@ -128,7 +128,7 @@ class Core
 		Core();
 		//~Core();
 
-		//void reset();
+		void reset();
 		bool load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file);
         std::string get_cart_name();
 
