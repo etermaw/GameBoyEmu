@@ -45,6 +45,8 @@ void RenderWidget::initializeGL()
         0, 0    //bl
     };
 
+    GLubyte indexes[] = {0,1,2, 0,2,3};
+
     glGenBuffers(1, &vert_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vert_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -54,6 +56,12 @@ void RenderWidget::initializeGL()
     glBufferData(GL_ARRAY_BUFFER, sizeof(tex_coords), tex_coords, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     glGenTextures(2, textures);
 
@@ -75,8 +83,6 @@ void RenderWidget::resizeGL(int w, int h)
 
 void RenderWidget::paintGL()
 {
-    static const GLbyte indexes[] = {0,1,2, 0,2,3};
-
     glClear(GL_COLOR_BUFFER_BIT);
 
     shaders.bind();
@@ -89,14 +95,17 @@ void RenderWidget::paintGL()
     glEnableVertexAttribArray(texc_location);
     glVertexAttribPointer(texc_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textures[current_texture]);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textures[(current_texture + 1) % 2]);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indexes);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisableVertexAttribArray(texc_location);
