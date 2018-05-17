@@ -86,6 +86,12 @@ struct SpeedSwitch : public IMemory
 		//else ignore
 	}
 
+	void reset()
+	{
+		double_speed = false;
+		switch_speed = false;
+	}
+
 	void serialize(std::ostream& stream)
 	{
 		stream << switch_speed << double_speed;
