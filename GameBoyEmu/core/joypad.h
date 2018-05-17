@@ -12,7 +12,7 @@ class Joypad final : public IMemory
 		bool sel_keys;
 
 	public:
-		Joypad() { for (auto& i : keys) i = true; dir_keys = false; sel_keys = false; }
+		Joypad();
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
@@ -20,6 +20,7 @@ class Joypad final : public IMemory
 		void push_key(KEYS keycode);
 		void release_key(KEYS keycode);
 
+		void reset();
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
 };

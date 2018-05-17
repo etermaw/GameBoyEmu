@@ -1,6 +1,11 @@
 
 #include "joypad.h"
 
+Joypad::Joypad()
+{
+	reset();
+}
+
 u8 Joypad::read_byte(u16 adress, u32 cycles_passed)
 {
 	UNUSED(adress);
@@ -34,6 +39,15 @@ void Joypad::push_key(KEYS keycode)
 void Joypad::release_key(KEYS keycode)
 {
 	keys[keycode] = true;
+}
+
+void Joypad::reset()
+{
+	for (auto& i : keys)
+		i = true;
+		
+	dir_keys = false;
+	sel_keys = false;
 }
 
 void Joypad::serialize(std::ostream& stream)
