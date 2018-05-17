@@ -56,12 +56,12 @@ class CPU
 		CPU(MMU& memory_controller, Interrupts& ints);
 
 		void enable_cgb_mode(bool enable) { cgb_mode = enable; }
-		void reset();
 		u32 step(u32 cycles);
 		u32 handle_interrupt();
 		bool is_interrupt_enabled() const;
 		void unhalt();
-
+		
+		void reset();
 		void serialize(std::ostream& save_stream);
 		void deserialize(std::istream& load_stream);
 
