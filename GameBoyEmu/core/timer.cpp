@@ -135,6 +135,21 @@ void Timer::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	}
 }
 
+void Timer::reset()
+{
+	cycles_ahead = 0;
+	divider_cycles = 0;
+	counter_cycles = 0;
+	control = 0;
+	divider = 0;
+	counter = 0;
+	mod = 0;
+		
+	enabled = false;
+	overflow = false;
+	reload = false;
+}
+
 void Timer::serialize(std::ostream& stream)
 {
 	stream << cycles_ahead << divider_cycles << counter_cycles;
