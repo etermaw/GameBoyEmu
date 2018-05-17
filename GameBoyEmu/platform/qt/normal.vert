@@ -1,10 +1,10 @@
 attribute vec2 position;
-attribute vec3 color;
+attribute vec2 tex_coord;
 
-varying vec3 col;
+varying vec2 texc;
 
 void main()
 {
-   col = color;
+   texc = tex_coord;
    gl_Position = vec4(position, 0, 1);
 }
