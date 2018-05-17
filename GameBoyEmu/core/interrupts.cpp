@@ -57,6 +57,12 @@ void Interrupts::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	//else ignore
 }
 
+void Interrupts::reset()
+{
+	interrupt_flags = 0;
+	interrupt_mask = 0;
+}
+
 void Interrupts::serialize(std::ostream& stream)
 {
 	stream << interrupt_mask << interrupt_flags;
