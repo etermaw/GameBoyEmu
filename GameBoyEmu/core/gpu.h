@@ -128,6 +128,7 @@ class Gpu final : public IMemory
 			ram = ram_memory;
 		}
 
+		void reset();
 		void serialize(std::ostream& stream);
 		void deserialize(std::istream& stream);
 

@@ -922,6 +922,57 @@ u32 Gpu::step(u32 clock_cycles)
 	return cycles_passed;
 }
 
+void Gpu::reset()
+{		
+	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
+	std::memset(vram[0].get(), 0, sizeof(u8) * 0x2000);
+	std::memset(vram[1].get(), 0, sizeof(u8) * 0x2000);
+	std::memset(oam.get(), 0xFF, sizeof(u8) * 0xA0);
+
+	std::memset(regs, 0, sizeof(regs));
+	std::memset(sorted_sprites, 0, sizeof(sorted_sprites));
+	std::memset(cgb_bgp, 0xFF, sizeof(cgb_bgp));
+	std::memset(cgb_obp, 0xFF, sizeof(cgb_obp));
+	std::memset(color_bgp, 0xFF, sizeof(color_bgp));
+	std::memset(color_obp, 0xFF, sizeof(color_obp));
+	std::memset(hdma_regs, 0, sizeof(hdma_regs));
+
+	priority_buffer.reset();
+	alpha_buffer.reset();
+
+	current_state = GS_TURNING_ON;
+	push_state(GS_HBLANK, 0);
+	
+	cycles_to_next_state = 0;
+	cycles_ahead = 0;
+	cycles = 0;
+	dma_cycles = 0;
+	enable_delay = 0;
+	current_pixels_drawn = 0;
+	sprite_count = 0;
+	hdma_cur = 0;
+	new_dma_cycles = 0;
+	cgb_bgp_index = 0;
+	cgb_obp_index = 0;
+	vram_bank = 0;
+
+	unlocked_vram = true;
+	unlocked_oam = true;
+	entering_vblank = false;
+	cgb_mode = false;
+	cgb_bgp_autoinc = false;
+	cgb_obp_autoinc = false;
+	hdma_active = false;
+	double_speed = false;
+	cmp_bit = false;
+	prev_stat_line = false;
+
+	regs[IO_LCD_CONTROL] = 0x91;
+	regs[IO_BGP] = 0xFC;
+	regs[IO_OBP_0] = 0xFF;
+	regs[IO_OBP_1] = 0xFF;
+}
+
 void Gpu::serialize(std::ostream& stream)
 {
 	stream.write(reinterpret_cast<char*>(vram[0].get()), sizeof(u8) * 0x2000);
