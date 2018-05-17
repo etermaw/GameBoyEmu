@@ -21,7 +21,7 @@ class RenderWidget : public QOpenGLWidget, protected QOpenGLFunctions
         int vertex_location = 0;
         int texc_location = 0;
         unsigned current_texture = 0;
-        GLuint vert_vbo, texc_vbo, ibo;
+        GLuint vbo, ibo;
         GLuint textures[2];
 };
 
