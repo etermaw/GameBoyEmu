@@ -356,6 +356,23 @@ void Debugger::after_vblank()
 		--vblanks_left;
 }
 
+void Debugger::reset()
+{
+	break_points.clear();
+	memory_watches.clear();
+	break_points.insert(0x100);
+		
+	vblanks_left = 0;
+	step_over_adress = 0;
+	change_adress = 0;
+	current_pc = 0;
+	new_val = 0;
+
+	next_instruction = false;
+	memory_changed = false;
+	step_over = false;
+}
+
 const char* Debugger::dispatch_opcode(u8 opcode, u8 byte_1)
 {
 	static const char* opcodes[] = {

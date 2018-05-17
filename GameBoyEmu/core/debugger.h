@@ -58,4 +58,6 @@ class Debugger
 		void check_mmu();
 		void after_vblank();
 		void setup_entry_point();
+
+		void reset();
 };
