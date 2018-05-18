@@ -13,9 +13,14 @@ class KeyCaptureEdit : public QLineEdit
     public:
         explicit KeyCaptureEdit(QWidget* parent);
 
+        void set_key(int key);
+        int get_key() const;
+
     protected:
         void keyPressEvent(QKeyEvent* event) override;
 
+    private:
+        int current_key;
 };
 
 #endif // KEYCAPTUREEDIT_H
