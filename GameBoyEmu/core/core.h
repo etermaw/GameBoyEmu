@@ -20,7 +20,6 @@ struct external_callbacks
 
 	function<u8**(u8**, u32)> swap_sample_buffer;
 	function<void(bool)> audio_control;
-	function<void()> audio_synchronize; //TODO: reserved for future use
 };
 
 struct TestReader final : public IMemory
