@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
 	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
 	endpoints.audio_control = make_function(&Platform::Audio::dummy, &audio_post);
 	endpoints.swap_sample_buffer = make_function(&Platform::Audio::swap_buffers, &audio_post);
-	endpoints.draw_frame = make_function(&Platform::Renderer::vblank_handler, &renderer);
 
 	emu_core.attach_callbacks(endpoints);
 

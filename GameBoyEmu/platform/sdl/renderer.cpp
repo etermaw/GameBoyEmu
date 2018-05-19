@@ -18,20 +18,6 @@ RendererSDL::~RendererSDL()
 	SDL_DestroyRenderer(rend);
 }
 
-void RendererSDL::vblank_handler(const u32* frame_buffer)
-{
-	void* pixels = nullptr;
-	int pitch = 0;
-
-	SDL_LockTexture(tex, NULL, &pixels, &pitch);
-	std::memcpy(pixels, frame_buffer, sizeof(u32) * 160 * 144);
-	SDL_UnlockTexture(tex);
-
-	SDL_RenderClear(rend);
-	SDL_RenderCopy(rend, tex, NULL, NULL);
-	SDL_RenderPresent(rend);
-}
-
 u32* RendererSDL::draw_frame()
 {
 	void* pixels = nullptr;

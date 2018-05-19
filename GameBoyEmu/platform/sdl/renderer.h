@@ -15,6 +15,5 @@ class RendererSDL
 		RendererSDL(void* display);
 		~RendererSDL();
 
-		void vblank_handler(const u32* buffer);
 		u32* draw_frame();
 };
