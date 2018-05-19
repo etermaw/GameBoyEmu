@@ -3,6 +3,8 @@
 
 RendererSDL::RendererSDL(void* display)
 {
+	frame_buffer = std::make_unique<u32[]>(160*144);
+
 	SDL_Window* window = reinterpret_cast<SDL_Window*>(display);
 
 	rend = SDL_CreateRenderer(window, -1, 0);
