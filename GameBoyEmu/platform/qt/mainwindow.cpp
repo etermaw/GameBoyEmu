@@ -9,6 +9,18 @@ MainWindow::MainWindow(QWidget *parent) :
     keymap_dialog(new KeyMap(this))
 {
     ui->setupUi(this);
+
+    keymap_dialog->keys[0] = Qt::Key_A;
+    keymap_dialog->keys[1] = Qt::Key_B;
+    keymap_dialog->keys[2] = Qt::Key_Z;
+    keymap_dialog->keys[3] = Qt::Key_X;
+
+    keymap_dialog->keys[4] = Qt::Key_Up;
+    keymap_dialog->keys[5] = Qt::Key_Down;
+    keymap_dialog->keys[6] = Qt::Key_Right;
+    keymap_dialog->keys[7] = Qt::Key_Left;
+
+    keymap_dialog->reset_keys_to_default();
 }
 
 MainWindow::~MainWindow()

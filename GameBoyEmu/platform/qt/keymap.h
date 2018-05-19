@@ -15,6 +15,13 @@ class KeyMap : public QDialog
         explicit KeyMap(QWidget *parent = 0);
         ~KeyMap();
 
+        int keys[8];
+        void reset_keys_to_default();
+
+    private slots:
+        void on_buttonBox_accepted();
+        void on_buttonBox_rejected();
+
     private:
         Ui::KeyMap *ui;
 };
