@@ -135,5 +135,7 @@ class Core
 
 		void attach_callbacks(const external_callbacks& endpoints);
 		void enable_debugger();
+
+		void set_frame_buffer(u32* new_frame_buffer);
 };
 

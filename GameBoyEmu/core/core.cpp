@@ -117,8 +117,6 @@ void Core::run_one_frame()
 		apu.set_speed(speed.double_speed);
 	}
 
-	draw_frame_callback(gpu.get_frame_buffer());
-	gpu.clear_frame_buffer();
 	debugger.after_vblank();
 }
 
@@ -144,4 +142,9 @@ void Core::attach_callbacks(const external_callbacks& endpoints)
 void Core::enable_debugger()
 {
 	debugger.setup_entry_point();
+}
+
+void Core::set_frame_buffer(u32* new_frame_buffer)
+{
+	gpu.set_frame_buffer(new_frame_buffer);
 }

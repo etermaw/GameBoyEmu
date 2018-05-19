@@ -4,6 +4,7 @@
 RendererSDL::RendererSDL(void* display)
 {
 	frame_buffer = std::make_unique<u32[]>(160*144);
+	std::memset(frame_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
 
 	SDL_Window* window = reinterpret_cast<SDL_Window*>(display);
 
@@ -29,4 +30,21 @@ void RendererSDL::vblank_handler(const u32* frame_buffer)
 	SDL_RenderClear(rend);
 	SDL_RenderCopy(rend, tex, NULL, NULL);
 	SDL_RenderPresent(rend);
+}
+
+u32* RendererSDL::draw_frame()
+{
+	void* pixels = nullptr;
+	int pitch = 0;
+
+	SDL_LockTexture(tex, NULL, &pixels, &pitch);
+	std::memcpy(pixels, frame_buffer.get(), sizeof(u32) * 160 * 144);
+	SDL_UnlockTexture(tex);
+
+	SDL_RenderClear(rend);
+	SDL_RenderCopy(rend, tex, NULL, NULL);
+	SDL_RenderPresent(rend);
+
+	std::memset(frame_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
+	return frame_buffer.get();
 }

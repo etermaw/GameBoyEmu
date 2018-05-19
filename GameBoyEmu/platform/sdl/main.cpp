@@ -72,10 +72,13 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+	emu_core.set_frame_buffer(renderer.draw_frame());
+
 	while (gui.is_running())
 	{
 		gui.pump_input(emu_core);
 		emu_core.run_one_frame();
+		emu_core.set_frame_buffer(renderer.draw_frame());
 	}
 
 	return 0;
