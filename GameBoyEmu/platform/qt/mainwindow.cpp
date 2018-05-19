@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include <QKeyEvent>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -21,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     keymap_dialog->keys[7] = Qt::Key_Left;
 
     keymap_dialog->reset_keys_to_default();
+
+    installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -36,4 +39,29 @@ void MainWindow::on_actionLoad_ROM_triggered()
 void MainWindow::on_actionKeys_triggered()
 {
     keymap_dialog->show();
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    switch (event->type())
+    {
+        case QEvent::KeyPress:
+        {
+            QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+            const auto key = key_event->key();
+            //TODO: push given key to input queue for emu thread
+            return true;
+        }
+
+        case QEvent::KeyRelease:
+        {
+            QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+            const auto key = key_event->key();
+            //TODO: push given key to input queue for emu thread
+            return true;
+        }
+
+        default:
+            return QObject::eventFilter(obj, event);
+    }
 }

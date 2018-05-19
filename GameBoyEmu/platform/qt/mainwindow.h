@@ -21,6 +21,9 @@ class MainWindow : public QMainWindow
         void on_actionLoad_ROM_triggered();
         void on_actionKeys_triggered();
 
+    protected:
+        bool eventFilter(QObject* obj, QEvent* event) override;
+
     private:
         Ui::MainWindow *ui;
         KeyMap* keymap_dialog;
