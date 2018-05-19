@@ -16,12 +16,12 @@ def get_files(directory):
     return ret
 
 
-def main(directory, out_file_name):
+def main(program_name, directory, out_file_name):
     files = get_files(directory)
 
     with open(out_file_name, 'w') as f:
         for file in files:
-            p = subprocess.Popen(['./emu', file], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            p = subprocess.Popen([program_name, file], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
             print("Is this correct result? [y, n, b]")
             ans = input()
@@ -43,8 +43,8 @@ def main(directory, out_file_name):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 3:
-        main(sys.argv[1], sys.argv[2])
+    if len(sys.argv) == 4:
+        main(sys.argv[1], sys.argv[2], sys.argv[3])
 
     else:
-        print("setup_tests.py <directory with tests> <output file name>")
+        print("setup_tests.py <program path> <directory with tests> <output file name>")
