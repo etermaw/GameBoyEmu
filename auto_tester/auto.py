@@ -5,6 +5,7 @@ import sys
 import asyncio
 import async_timeout
 
+EXIT_CMD = bytearray([0])
 CALCULATE_HASH_CMD = bytearray([1])
 
 
@@ -23,7 +24,17 @@ async def worker_func(prog_path, file_names, wait_time, result_dict):
         async with async_timeout.timeout(wait_time):
             result_dict[file_name] = await process.stdout.read(64)  # get screen hash (sha256)
 
-        process.kill()
+        process.stdin.write(EXIT_CMD)
+        await process.stdin.drain()
+
+        async with async_timeout.timeout(1):
+            await process.wait()  # let process end gracefully
+
+        try:
+            process.kill()  # let process end... less gracefully
+
+        except ProcessLookupError:  # ok, process is already dead
+            pass
 
 
 def get_files(directory):
@@ -74,6 +85,7 @@ def print_result(test_name, exp, act):
 
     print("expected to {0}: {1} actually {0}ed: {2} ({3}%){4}".format(test_name, exp, act, perc, add_info))
 
+
 if __name__ == '__main__':
     if len(sys.argv) != 6:
         print('Args: <emulator path> <result file> <top test directory> <number of parallel tests> <wait time for tests>')
@@ -89,7 +101,7 @@ if __name__ == '__main__':
         work_chunks = [file_list[n::workers_num] for n in range(0, workers_num)]
 
         results = dict()
-        tests_to_run = asyncio.gather(*[worker_func(program_path, w, sleep_time, results) for w in work_chunks], return_exceptions=True)
+        tests_to_run = asyncio.gather(*[worker_func(program_path, w, sleep_time, results) for w in work_chunks])
 
         loop = asyncio.get_event_loop()
         crashed_tests = loop.run_until_complete(tests_to_run)
