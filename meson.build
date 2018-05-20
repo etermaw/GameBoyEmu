@@ -23,27 +23,24 @@ core_src = ['GameBoyEmu/core/apu.cpp',
 
 utils_src = ['GameBoyEmu/utils/sha256.cpp']
 
-platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',
-                'GameBoyEmu/platform/sdl/gui.cpp',
-                'GameBoyEmu/platform/sdl/renderer.cpp']
-
-test_src = ['GameBoyEmu/platform/linux/test.cpp']
+test_src = ['GameBoyEmu/platform/linux/test.cpp', 'GameBoyEmu/platform/linux/main.cpp']
 
 args = []
 final_src = []
 
 if get_option('auto_test') == true
     final_src += test_src + utils_src
-    args = ['-DENABLE_AUTO_TESTS']
-endif
+    args += ['-DENABLE_AUTO_TESTS']
 
-if get_option('platform_handler') == 'sdl2'
+elif get_option('platform_handler') == 'sdl2'
     platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',
                     'GameBoyEmu/platform/sdl/gui.cpp',
                     'GameBoyEmu/platform/sdl/renderer.cpp',
                     'GameBoyEmu/platform/sdl/main.cpp']
+
+    final_src += platform_src
 endif
 
-final_src += core_src + platform_src
+final_src += core_src
 
 prog = executable('emu', sources: final_src, dependencies: sdl, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
