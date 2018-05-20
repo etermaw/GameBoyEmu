@@ -22,13 +22,21 @@ core_src = ['GameBoyEmu/core/apu.cpp',
             'GameBoyEmu/core/wave_synth.cpp']
 
 utils_src = ['GameBoyEmu/utils/sha256.cpp']
-test_src = ['GameBoyEmu/platform/linux/test.cpp']
+
+test_src = ['GameBoyEmu/platform/linux/test.cpp', 'GameBoyEmu/platform/linux/main.cpp']
 
 args = []
 final_src = []
 
-if get_option('auto_test') == true
-    final_src += test_src + utils_src + ['GameBoyEmu/platform/linux/main.cpp']
+auto_tester_module = get_option('auto_test_module')
+
+if auto_tester_module == 'basic'
+    final_src += test_src + utils_src
+
+elif auto_tester_module == 'setup'
+    final_src += test_src + utils_src + ['GameBoyEmu/platform/sdl/gui.cpp', 'GameBoyEmu/platform/sdl/renderer.cpp']
+    args += ['-DENABLE_TEST_DISPLAY']
+    
 else
     if get_option('platform_handler') == 'sdl2'
         platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',

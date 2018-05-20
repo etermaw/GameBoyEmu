@@ -16,8 +16,6 @@ struct external_callbacks
 	function<void(const u8*, u32)> save_ram;
 	function<void(std::chrono::seconds, const u8*, u32)> save_rtc;
 
-	function<void(const u32*)> draw_frame;
-
 	function<u8**(u8**, u32)> swap_sample_buffer;
 	function<void(bool)> audio_control;
 };
@@ -140,5 +138,7 @@ class Core
 
 		void attach_callbacks(const external_callbacks& endpoints);
 		void enable_debugger();
+
+		void set_frame_buffer(u32* new_frame_buffer);
 };
 

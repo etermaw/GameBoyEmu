@@ -53,12 +53,9 @@ Gpu::Gpu(Interrupts& ints) : interrupts(ints)
 
 	vram[0] = std::make_unique<u8[]>(0x2000);
 	vram[1] = std::make_unique<u8[]>(0x2000);
-	screen_buffer = std::make_unique<u32[]>(144 * 160);
 	oam = std::make_unique<u8[]>(0xA0);
 
-	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
 	std::memset(oam.get(), 0xFF, sizeof(u8) * 0xA0);
-
 	std::memset(cgb_bgp, 0xFF, sizeof(cgb_bgp));
 	std::memset(cgb_obp, 0xFF, sizeof(cgb_obp));
 	std::memset(color_bgp, 0xFF, sizeof(u32) * 8 * 4);
@@ -632,7 +629,6 @@ void Gpu::draw_line(u32 pixel_start, u32 pixel_end)
 
 void Gpu::turn_off_lcd()
 {
-	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 160 * 144);
 	regs[IO_LY] = 0;
 	regs[IO_LCD_STATUS] &= 0xFC; //HBLANK mode
 	unlocked_oam = true;
@@ -924,7 +920,6 @@ u32 Gpu::step(u32 clock_cycles)
 
 void Gpu::reset()
 {		
-	std::memset(screen_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
 	std::memset(vram[0].get(), 0, sizeof(u8) * 0x2000);
 	std::memset(vram[1].get(), 0, sizeof(u8) * 0x2000);
 	std::memset(oam.get(), 0xFF, sizeof(u8) * 0xA0);
@@ -971,6 +966,11 @@ void Gpu::reset()
 	regs[IO_BGP] = 0xFC;
 	regs[IO_OBP_0] = 0xFF;
 	regs[IO_OBP_1] = 0xFF;
+}
+
+void Gpu::set_frame_buffer(u32* new_frame_buffer)
+{
+	screen_buffer = new_frame_buffer;
 }
 
 void Gpu::serialize(std::ostream& stream)

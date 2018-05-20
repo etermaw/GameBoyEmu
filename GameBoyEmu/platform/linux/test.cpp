@@ -23,14 +23,25 @@ Tester::Tester()
 
 	if (flags2 != -1)
 		fcntl(STDIN_FILENO, F_SETFL, flags2 | O_NONBLOCK);
+
+	
+	frame_buffer = std::make_unique<u32[]>(144*160);
+	internal_buffer = std::make_unique<u8[]>(4 * (1 << 15));
+
+	u8* ptr = internal_buffer.get();
+
+	for (int i = 0; i < 4; ++i)
+		dummy_buffers[i] = &ptr[i * (1 << 15)];
+
+	frame_buffer_ptr = frame_buffer.get();
 }
 
-void Tester::render_stub(const u32* frame_buffer)
+u32* Tester::draw_frame()
 {
 	if (calculate_hash)
 	{
 		calculate_hash = false;
-		auto hash = sha256(reinterpret_cast<const u8*>(frame_buffer), sizeof(u32) * 160 * 144);
+		auto hash = sha256(reinterpret_cast<const u8*>(frame_buffer_ptr), sizeof(u32) * 160 * 144);
 
 		for (auto i : hash)
 			printf("%08x", i);
@@ -39,7 +50,9 @@ void Tester::render_stub(const u32* frame_buffer)
 	}
 
 	if (use_renderer)
-		render_callback(frame_buffer);
+		frame_buffer_ptr = render_callback();
+
+	return frame_buffer_ptr;
 }
 
 bool Tester::is_running() const
@@ -47,7 +60,7 @@ bool Tester::is_running() const
 	return running;
 }
 
-void Tester::input_stub(Core& emu_core)
+void Tester::pump_input(Core& emu_core)
 {
 	char buffer[1] = {}; //TODO: handle more messages per call
 	int ret = read(0, buffer, 1);
@@ -133,76 +146,20 @@ void Tester::input_stub(Core& emu_core)
 	}
 }
 
-void Tester::attach_renderer(function<void(const u32*)> callback)
+void Tester::attach_renderer(function<u32*()> callback)
 {
 	render_callback = callback;
 	use_renderer = true;
+	frame_buffer_ptr = render_callback(); //override default buffer
 }
 
-AudioTEST::AudioTEST()
-{
-	internal_buffer = std::make_unique<u8[]>(4 * (1 << 15));
-
-	u8* ptr = internal_buffer.get();
-
-	for (int i = 0; i < 4; ++i)
-		dummy_buffers[i] = &ptr[i * (1 << 15)];
-}
-
-void AudioTEST::dummy(bool unused)
+void Tester::dummy(bool unused)
 {
 	UNUSED(unused);
 }
 
-u8** AudioTEST::swap_buffers(u8** ptr, u32 unused)
+u8** Tester::swap_buffers(u8** ptr, u32 unused)
 {
 	UNUSED(unused);
 	return dummy_buffers;
-}
-
-void AudioTEST::attach_impl(std::shared_ptr<Tester> u)
-{
-	UNUSED(u);
-}
-
-RendererTEST::RendererTEST(void* ptr)
-{
-	UNUSED(ptr);
-}
-
-void RendererTEST::vblank_handler(const u32* frame_buffer)
-{
-	pimpl->render_stub(frame_buffer);
-}
-
-void RendererTEST::attach_impl(std::shared_ptr<Tester> u)
-{
-	pimpl = u;
-}
-
-GuiTEST::GuiTEST(u32 u1, u32 u2, const std::string & u3)
-{
-	UNUSED(u1);
-	UNUSED(u2);
-	UNUSED(u3);
-}
-
-void* GuiTEST::get_display()
-{
-	return nullptr;
-}
-
-bool GuiTEST::is_running() const
-{
-	return pimpl->is_running();
-}
-
-void GuiTEST::pump_input(Core& emu_core)
-{
-	pimpl->input_stub(emu_core);
-}
-
-void GuiTEST::attach_impl(std::shared_ptr<Tester> u)
-{
-	pimpl = u;
 }

@@ -1,9 +1,14 @@
+#ifdef ENABLE_TEST_DISPLAY
+#include "platform/sdl/gui.h"
+#include "platform/sdl/renderer.h"
+#endif
+
+#include "platform/linux/test.h"
 #include "core/core.h"
-#include "test.h"
 
 int main(int argc, char *argv[])
 {
-    std::string file_name;
+	std::string file_name;
 
 	auto ram_saver = [&](const u8* data, u32 size)
 	{
@@ -19,17 +24,20 @@ int main(int argc, char *argv[])
 	};
 
 	Core emu_core;
+	Tester auto_tester;
+#ifdef ENABLE_TEST_DISPLAY
+	GuiSDL gui(3*160, 3*144, "GBE");
+	RendererSDL renderer(gui.get_display());
 
-    Tester test;
-    AudioTEST audio_stub;
+	auto_tester.attach_renderer(make_function(&RendererSDL::draw_frame, &renderer));
+#endif
 
 	external_callbacks endpoints;
 
 	endpoints.save_ram = function<void(const u8*, u32)>(ram_saver);
 	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
-	endpoints.audio_control = make_function(&AudioTEST::dummy, &audio_stub);
-	endpoints.swap_sample_buffer = make_function(&AudioTEST::swap_buffers, &audio_stub);
-	endpoints.draw_frame = make_function(&Tester::render_stub, &test);
+	endpoints.audio_control = make_function(&Tester::dummy, &auto_tester);
+	endpoints.swap_sample_buffer = make_function(&Tester::swap_buffers, &auto_tester);
 
 	emu_core.attach_callbacks(endpoints);
 
@@ -39,13 +47,16 @@ int main(int argc, char *argv[])
 	{
 		std::ifstream ram(file_name + "_ram", std::ios::binary), rtc(file_name + "_rtc", std::ios::binary);
 		emu_core.load_cartrige(rom, ram, rtc);
+	}
 
-        while (test.is_running())
-        {
-            test.input_stub(emu_core);
-            emu_core.run_one_frame();
-        }
-	}	
+	emu_core.set_frame_buffer(auto_tester.draw_frame());
+
+	while (auto_tester.is_running())
+	{
+		auto_tester.pump_input(emu_core);
+		emu_core.run_one_frame();
+		emu_core.set_frame_buffer(auto_tester.draw_frame());
+	}
 
 	return 0;
 }

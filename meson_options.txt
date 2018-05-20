@@ -1,2 +1,2 @@
-option('auto_test', type: 'boolean', value: false, description: 'Disable window,sound and attach auto tester module (linux only)')
-option('platform_handler', type: 'combo', choices: ['sdl2', 'qt'], value: 'sdl2', description: 'What library will be used to handle GUI, platform stuff')
+option('auto_test_module', type: 'combo', choices: ['none', 'basic', 'setup'], value: 'none', description: 'Disable sound (and window in basic mode), attach auto tester module (linux only, sdl2 required for setup mode, overrides platform handler)')
+option('platform_handler', type: 'combo', choices: ['sdl2'], value: 'sdl2', description: 'What library will be used to handle GUI, platform stuff')

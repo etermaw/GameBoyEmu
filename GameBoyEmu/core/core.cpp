@@ -117,8 +117,6 @@ void Core::run_one_frame()
 		apu.set_speed(speed.double_speed);
 	}
 
-	draw_frame_callback(gpu.get_frame_buffer());
-	gpu.clear_frame_buffer();
 	debugger.after_vblank();
 }
 
@@ -137,8 +135,6 @@ void Core::attach_callbacks(const external_callbacks& endpoints)
 {
 	cart.attach_endpoints(endpoints.save_ram, endpoints.save_rtc);
 	apu.attach_endpoints(endpoints.swap_sample_buffer, endpoints.audio_control);
-
-	draw_frame_callback = endpoints.draw_frame;
 }
 
 void Core::enable_debugger()
@@ -161,4 +157,9 @@ void Core::reset()
 	speed.reset();
 
 	debugger.reset();
+}
+
+void Core::set_frame_buffer(u32* new_frame_buffer)
+{
+	gpu.set_frame_buffer(new_frame_buffer);
 }

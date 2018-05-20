@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
 	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
 	endpoints.audio_control = make_function(&AudioSDL::dummy, &audio_post);
 	endpoints.swap_sample_buffer = make_function(&AudioSDL::swap_buffers, &audio_post);
-	endpoints.draw_frame = make_function(&RendererSDL::vblank_handler, &renderer);
 
 	emu_core.attach_callbacks(endpoints);
 	emu_core.enable_debugger();
@@ -61,10 +60,13 @@ int main(int argc, char *argv[])
 		std::cout << "Failed to load cartrige!\n";
 	}
 
+	emu_core.set_frame_buffer(renderer.draw_frame());
+
 	while (gui.is_running())
 	{
 		gui.pump_input(emu_core);
 		emu_core.run_one_frame();
+		emu_core.set_frame_buffer(renderer.draw_frame());
 	}
 
 	return 0;
