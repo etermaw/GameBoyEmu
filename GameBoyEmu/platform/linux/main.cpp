@@ -1,3 +1,8 @@
+#ifdef ENABLE_TEST_DISPLAY
+#include "platform/sdl/gui.h"
+#include "platform/sdl/renderer.h"
+#endif
+
 #include "platform/linux/test.h"
 #include "core/core.h"
 
@@ -20,6 +25,12 @@ int main(int argc, char *argv[])
 
 	Core emu_core;
 	Tester auto_tester;
+#ifdef ENABLE_TEST_DISPLAY
+	GuiSDL gui(3*160, 3*144, "GBE");
+	RendererSDL renderer(gui.get_display());
+
+	auto_tester.attach_renderer(make_function(&RendererSDL::draw_frame, &renderer));
+#endif
 
 	external_callbacks endpoints;
 

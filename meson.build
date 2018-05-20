@@ -28,17 +28,24 @@ test_src = ['GameBoyEmu/platform/linux/test.cpp', 'GameBoyEmu/platform/linux/mai
 args = []
 final_src = []
 
-if get_option('auto_test') == true
+auto_tester_module = get_option('auto_test_module')
+
+if auto_tester_module == 'basic'
     final_src += test_src + utils_src
-    args += ['-DENABLE_AUTO_TESTS']
 
-elif get_option('platform_handler') == 'sdl2'
-    platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',
-                    'GameBoyEmu/platform/sdl/gui.cpp',
-                    'GameBoyEmu/platform/sdl/renderer.cpp',
-                    'GameBoyEmu/platform/sdl/main.cpp']
+elif auto_tester_module == 'setup'
+    final_src += test_src + utils_src + ['GameBoyEmu/platform/sdl/gui.cpp', 'GameBoyEmu/platform/sdl/renderer.cpp']
+    args += ['-DENABLE_TEST_DISPLAY']
 
-    final_src += platform_src
+else
+    if get_option('platform_handler') == 'sdl2'
+        platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',
+                        'GameBoyEmu/platform/sdl/gui.cpp',
+                        'GameBoyEmu/platform/sdl/renderer.cpp',
+                        'GameBoyEmu/platform/sdl/main.cpp']
+
+        final_src += platform_src
+    endif
 endif
 
 final_src += core_src
