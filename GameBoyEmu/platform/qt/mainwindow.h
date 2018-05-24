@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include "keymap.h"
-//#include "corethread.h"
+#include "corethread.h"
 
 namespace Ui {
     class MainWindow;
@@ -21,6 +21,8 @@ class MainWindow : public QMainWindow
         void on_actionLoad_ROM_triggered();
         void on_actionKeys_triggered();
 
+        void update_frame(u16* frame);
+
     protected:
         bool eventFilter(QObject* obj, QEvent* event) override;
 
@@ -28,7 +30,7 @@ class MainWindow : public QMainWindow
         Ui::MainWindow *ui;
         KeyMap* keymap_dialog;
         
-        //CoreThread core_thread;
+        CoreThread* core_thread;
 };
 
 #endif // MAINWINDOW_H

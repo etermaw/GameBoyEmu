@@ -7,10 +7,12 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    keymap_dialog(new KeyMap(this))
+    keymap_dialog(new KeyMap(this)),
+    core_thread(new CoreThread(this))
 {
     ui->setupUi(this);
 
+    //setup key binding ui
     keymap_dialog->keys[0] = Qt::Key_A;
     keymap_dialog->keys[1] = Qt::Key_B;
     keymap_dialog->keys[2] = Qt::Key_Z;
@@ -23,11 +25,21 @@ MainWindow::MainWindow(QWidget *parent) :
 
     keymap_dialog->reset_keys_to_default();
 
+    //set up input filter
     installEventFilter(this);
+
+    //set up worker thread
+    core_thread->setObjectName("emulator_core");
+    connect(core_thread, &CoreThread::finished, this, &QObject::deleteLater);
+    connect(core_thread, &CoreThread::frame_ready, this, &MainWindow::update_frame, Qt::QueuedConnection);
+    core_thread->start();
+    core_thread->start_emulation();
 }
 
 MainWindow::~MainWindow()
 {
+    core_thread->stop();
+    core_thread->wait();
     delete ui;
 }
 
@@ -39,6 +51,11 @@ void MainWindow::on_actionLoad_ROM_triggered()
 void MainWindow::on_actionKeys_triggered()
 {
     keymap_dialog->show();
+}
+
+void MainWindow::update_frame(u16* frame)
+{
+    ui->openGLWidget->update_frame(frame);
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* event)

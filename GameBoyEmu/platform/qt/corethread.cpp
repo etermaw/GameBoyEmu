@@ -1,21 +1,16 @@
 #include "corethread.h"
 
-CoreThread::CoreThread(QObject *parent) : QObject(parent)
+CoreThread::CoreThread(QObject* parent) : QThread(parent)
 {
-    thread_running.store(true);
-    core_running.store(false);
+    frame_buffer = std::make_unique<u16[]>(144*160);
+    //emu_core.set_frame_buffer(frame_buffer.get());
 
-    core_thread = std::thread(&CoreThread::core_main, this);
+    std::memset(frame_buffer.get(), 0xFF, sizeof(u16) * 144 * 160);
 }
 
 CoreThread::~CoreThread()
 {
-    thread_running.store(false);
-    core_running.store(false);
-    core_waiter.notify_all();
-
-    if (core_thread.joinable())
-        core_thread.join();
+    stop();
 }
 
 void CoreThread::halt_emulation()
@@ -26,24 +21,58 @@ void CoreThread::halt_emulation()
 void CoreThread::start_emulation()
 {
     core_running.store(true);
+
+    waiter_lock.lock();
+    wake_up_waiter = true;
+    waiter_lock.unlock();
+
+    core_waiter.notify_one();
+}
+
+void CoreThread::stop()
+{
+    thread_running.store(false);
+    core_running.store(false);
+
+    waiter_lock.lock();
+    wake_up_waiter = true;
+    waiter_lock.unlock();
+
     core_waiter.notify_all();
 }
 
-void CoreThread::core_main()
+void CoreThread::run()
 {
-    //general paranoic rule: anything shared MUST be either atomic or protected by mutex
-
     while (thread_running)
     {
-        std::unique_lock<std::mutex> lock(core_lock);
-        core_waiter.wait(lock);
+        //if core is not running, sleep
+        std::unique_lock<std::mutex> lock(waiter_lock);
+
+        core_waiter.wait(lock, [this](){ return wake_up_waiter; });
+        wake_up_waiter = false;
+
         lock.unlock();
 
         while (core_running)
         {
-            //TODO: get input from internal input queue (access MUST be mutexed)
-            emu_core.run_one_frame();
-            //TODO: push out frame (also MUST be mutexed)
+            const auto begin = std::chrono::high_resolution_clock::now();
+
+            //waiter_lock.lock();
+            //TODO: get input from internal input queue
+            //waiter_lock.unlock();
+
+            //emu_core.run_one_frame();
+
+            //this will block untill we deal with buffer
+            emit frame_ready(frame_buffer.get()); //call me if you find better way of updating GUI thread in Qt
+
+            const auto end = std::chrono::high_resolution_clock::now();
+            const auto usecs_passed = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+
+            if (usecs_passed < 16000)
+                usleep(16000 - usecs_passed);
         }
+
+        //DON`T put here condition variable, it may deadlock on exit!
     }
 }

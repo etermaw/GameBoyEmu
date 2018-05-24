@@ -1,15 +1,11 @@
 #ifndef CORETHREAD_H
 #define CORETHREAD_H
 
-#include <QObject>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <atomic>
+#include <QThread>
 
 #include "core/core.h"
 
-class CoreThread : public QObject
+class CoreThread : public QThread
 {
     Q_OBJECT
     public:
@@ -19,20 +15,28 @@ class CoreThread : public QObject
         void halt_emulation();
         void start_emulation();
 
-    signals:
+        void push_into_event_queue(int key);
 
-    public slots:
+        void run() override;
+
+        void stop();
+
+    signals:
+        void frame_ready(u16*);
+        void before_cond();
+        void after_cond();
 
     private:
-        std::thread core_thread;
-        std::mutex core_lock;
+        //Core emu_core;
+
+        std::mutex waiter_lock;
         std::condition_variable core_waiter;
-        std::atomic<bool> core_running;
-        std::atomic<bool> thread_running;
+        std::atomic<bool> core_running{false};
+        std::atomic<bool> thread_running{true};
 
-        Core emu_core;
+        bool wake_up_waiter = false;
 
-        void core_main();
+        std::unique_ptr<u16[]> frame_buffer;
 };
 
 #endif // CORETHREAD_H

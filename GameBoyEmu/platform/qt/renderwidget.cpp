@@ -11,6 +11,15 @@ RenderWidget::~RenderWidget()
     glDeleteTextures(2, textures);
 }
 
+void RenderWidget::update_frame(u16* new_frame)
+{
+    current_texture = (current_texture + 1) % 2;
+    
+    glBindTexture(GL_TEXTURE_2D, textures[current_texture]);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 160, 144, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, new_frame);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void RenderWidget::initializeGL()
 {
     initializeOpenGLFunctions();
@@ -69,7 +78,7 @@ void RenderWidget::initializeGL()
         glBindTexture(GL_TEXTURE_2D, tex);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -109,4 +118,6 @@ void RenderWidget::paintGL()
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 
     current_texture = (current_texture + 1) % 2;
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
