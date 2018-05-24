@@ -63,7 +63,7 @@ void CoreThread::run()
 
             //emu_core.run_one_frame();
 
-            //this will block untill we deal with buffer
+            //TODO: it`s async, watch out for data races & overwriting buffer!
             emit frame_ready(frame_buffer.get()); //call me if you find better way of updating GUI thread in Qt
 
             const auto end = std::chrono::high_resolution_clock::now();
