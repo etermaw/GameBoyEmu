@@ -9,22 +9,6 @@
 # given sub-directories
 !auto_tester/
 !GameBoyEmu/
-!GameBoyEmu/core/*
-!GameBoyEmu/pch/*
-!GameBoyEmu/utils/*
-!GameBoyEmu/platform/
-!GameBoyEmu/platform/linux/*
-!GameBoyEmu/platform/sdl/*
-!GameBoyEmu/platform/qt/*
-
-# C++ and shader files
-!*.cpp
-!*.h
-
-# Qt5 UI files and OpenGL shaders (but only in qt platform folder)
-!GameBoyEmu/platform/qt/**/*.ui
-!GameBoyEmu/platform/qt/**/*.vert
-!GameBoyEmu/platform/qt/**/*.frag
 
 # Meson build files
 !meson_options.txt
