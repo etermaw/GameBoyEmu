@@ -23,8 +23,6 @@ class CoreThread : public QThread
 
     signals:
         void frame_ready(u16*);
-        void before_cond();
-        void after_cond();
 
     private:
         //Core emu_core;

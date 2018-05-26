@@ -57,9 +57,9 @@ void CoreThread::run()
         {
             const auto begin = std::chrono::high_resolution_clock::now();
 
-            //waiter_lock.lock();
+            //input_lock.lock();
             //TODO: get input from internal input queue
-            //waiter_lock.unlock();
+            //input_lock.unlock();
 
             //emu_core.run_one_frame();
 
