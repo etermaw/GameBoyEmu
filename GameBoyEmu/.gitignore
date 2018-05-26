@@ -1,0 +1,20 @@
+# ignore all
+*
+
+# except:
+# itself
+!.gitignore
+
+# dir contents
+!*/
+
+# C & C++ files
+!*.c
+!*.cpp
+!*.h
+
+# project subdirs
+!GameBoyEmu/core/
+!GameBoyEmu/pch/
+!GameBoyEmu/utils/
+!GameBoyEmu/platform/
