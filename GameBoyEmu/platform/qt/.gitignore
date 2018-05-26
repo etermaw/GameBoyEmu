@@ -1,0 +1,21 @@
+# ignore all
+*
+
+# except:
+# itself
+!.gitignore
+
+# dir contents
+!*/
+
+# C & C++ files
+!*.c
+!*.cpp
+!*.h
+
+# UI files
+!*.ui
+
+# GLSL files
+!*.vert
+!*.frag
