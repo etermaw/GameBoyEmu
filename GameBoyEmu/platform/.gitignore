@@ -1,0 +1,16 @@
+# ignore all
+*
+
+# except:
+# itself
+!.gitignore
+
+# project subdirs
+!linux/
+!qt/
+!sdl/
+
+# C & C++ files
+!*.c
+!*.cpp
+!*.h
