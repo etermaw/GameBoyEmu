@@ -1,11 +1,18 @@
 #include "corethread.h"
 
+static constexpr u32 BUFFER_SIZE = 1 << 15;
+
 CoreThread::CoreThread(QObject* parent) : QThread(parent)
 {
     frame_buffer = std::make_unique<u16[]>(144*160);
     //emu_core.set_frame_buffer(frame_buffer.get());
 
     std::memset(frame_buffer.get(), 0xFF, sizeof(u16) * 144 * 160);
+
+    internal_buffer = std::make_unique<u8[]>(BUFFER_SIZE * 4);
+
+	for (u32 i = 0; i < 4; ++i)
+		dummy_buffers[i] = &internal_buffer[BUFFER_SIZE * i];
 }
 
 CoreThread::~CoreThread()
@@ -39,6 +46,14 @@ void CoreThread::stop()
     waiter_lock.unlock();
 
     core_waiter.notify_all();
+}
+
+u8** CoreThread::swap_buffers(u8** buffers, u32 count)
+{
+    UNUSED(buffers);
+    UNUSED(count);
+
+    return dummy_buffers;
 }
 
 void CoreThread::run()

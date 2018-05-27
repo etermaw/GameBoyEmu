@@ -25,7 +25,13 @@ class CoreThread : public QThread
         void frame_ready(u16*);
 
     private:
+        u8** swap_buffers(u8** buffers, u32 count);
+		void dummy(bool) {}
+
         //Core emu_core;
+
+        std::unique_ptr<u8[]> internal_buffer;
+        u8* dummy_buffers[4];
 
         std::mutex waiter_lock;
         std::condition_variable core_waiter;
