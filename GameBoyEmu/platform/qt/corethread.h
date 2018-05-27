@@ -22,7 +22,7 @@ class CoreThread : public QThread
         void run() override;
 
     signals:
-        void frame_ready(u16*);
+        void frame_ready(u32*);
 
     private:
         u8** swap_buffers(u8** buffers, u32 count);
@@ -46,7 +46,7 @@ class CoreThread : public QThread
 
         bool wake_up_waiter = false;
 
-        std::unique_ptr<u16[]> frame_buffer;
+        std::unique_ptr<u32[]> frame_buffer;
 };
 
 #endif // CORETHREAD_H

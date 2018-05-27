@@ -4,10 +4,10 @@ static constexpr u32 BUFFER_SIZE = 1 << 15;
 
 CoreThread::CoreThread(QObject* parent) : QThread(parent)
 {
-    frame_buffer = std::make_unique<u16[]>(144*160);
+    frame_buffer = std::make_unique<u32[]>(144*160);
     //emu_core.set_frame_buffer(frame_buffer.get());
 
-    std::memset(frame_buffer.get(), 0xFF, sizeof(u16) * 144 * 160);
+    std::memset(frame_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
 
     internal_buffer = std::make_unique<u8[]>(BUFFER_SIZE * 4);
 

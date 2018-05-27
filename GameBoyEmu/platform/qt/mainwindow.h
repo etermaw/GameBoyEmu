@@ -21,7 +21,7 @@ class MainWindow : public QMainWindow
         void on_actionLoad_ROM_triggered();
         void on_actionKeys_triggered();
 
-        void update_frame(u16* frame);
+        void update_frame(u32* frame);
 
     protected:
         bool eventFilter(QObject* obj, QEvent* event) override;

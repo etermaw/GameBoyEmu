@@ -11,7 +11,7 @@ class RenderWidget : public QOpenGLWidget, protected QOpenGLFunctions
         explicit RenderWidget(QWidget* parent = nullptr);
         ~RenderWidget();
 
-        void update_frame(u16* new_frame);
+        void update_frame(u32* new_frame);
 
     protected:
         void initializeGL() override;

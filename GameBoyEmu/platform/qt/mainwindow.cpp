@@ -57,7 +57,7 @@ void MainWindow::on_actionKeys_triggered()
     keymap_dialog->show();
 }
 
-void MainWindow::update_frame(u16* frame)
+void MainWindow::update_frame(u32* frame)
 {
     ui->openGLWidget->update_frame(frame);
 }

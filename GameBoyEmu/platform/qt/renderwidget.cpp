@@ -37,12 +37,12 @@ RenderWidget::~RenderWidget()
     glDeleteTextures(2, textures);
 }
 
-void RenderWidget::update_frame(u16* new_frame)
+void RenderWidget::update_frame(u32* new_frame)
 {
     current_texture = (current_texture + 1) % 2;
     
     glBindTexture(GL_TEXTURE_2D, textures[current_texture]);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 160, 144, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, new_frame);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 160, 144, GL_RGBA, /*GL_UNSIGNED_SHORT_1_5_5_5_REV*/ GL_UNSIGNED_INT_8_8_8_8, new_frame);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -102,7 +102,7 @@ void RenderWidget::initializeGL()
     for (auto tex : textures)
     {
         glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, /*GL_UNSIGNED_SHORT_1_5_5_5_REV*/ GL_UNSIGNED_INT_8_8_8_8, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
