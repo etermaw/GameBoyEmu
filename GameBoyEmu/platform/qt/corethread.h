@@ -14,12 +14,12 @@ class CoreThread : public QThread
 
         void halt_emulation();
         void start_emulation();
+        void stop();
 
         void push_into_event_queue(int key);
+        void load_rom(const std::string& path);
 
         void run() override;
-
-        void stop();
 
     signals:
         void frame_ready(u16*);
@@ -28,10 +28,16 @@ class CoreThread : public QThread
         u8** swap_buffers(u8** buffers, u32 count);
 		void dummy(bool) {}
 
+        void save_ram(const u8* data, u32 size);
+        void save_rtc(std::chrono::seconds epoch, const u8* data, u32 size);
+
         //Core emu_core;
 
         std::unique_ptr<u8[]> internal_buffer;
         u8* dummy_buffers[4];
+
+        std::ifstream rom, ram, rtc;
+        std::string file_name;
 
         std::mutex waiter_lock;
         std::condition_variable core_waiter;
