@@ -1,5 +1,6 @@
 #include <QFileDialog>
 #include <QKeyEvent>
+#include <QDir>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -45,7 +46,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionLoad_ROM_triggered()
 {
-    const QString rom_name = QFileDialog::getOpenFileName(this, tr("Select ROM to load"), ".", tr("GameBoy ROM (*.gb *.gbc)"));
+    const QString rom_path = QFileDialog::getOpenFileName(this, tr("Select ROM to load"), ".", tr("GameBoy ROM (*.gb *.gbc)"));
+    const auto path_splitted = rom_path.split(QDir::separator());
+
+    setWindowTitle("Emu: " + path_splitted.last());
 }
 
 void MainWindow::on_actionKeys_triggered()
