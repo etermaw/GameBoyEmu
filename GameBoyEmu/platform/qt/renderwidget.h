@@ -4,9 +4,11 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
+#include <QTimer>
 
 class RenderWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
+    Q_OBJECT
     public:
         explicit RenderWidget(QWidget* parent = nullptr);
         ~RenderWidget();
@@ -25,6 +27,8 @@ class RenderWidget : public QOpenGLWidget, protected QOpenGLFunctions
         unsigned current_texture = 0;
         GLuint vbo, ibo;
         GLuint textures[2];
+
+        QTimer* timer;
 };
 
 #endif // RENDERWIDGET_H

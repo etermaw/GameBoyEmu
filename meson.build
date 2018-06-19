@@ -52,7 +52,7 @@ else
         qt5 = import('qt5')
         qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
 
-        moc = qt5.preprocess(moc_headers: ['GameBoyEmu/platform/qt/mainwindow.h', 'GameBoyEmu/platform/qt/keymap.h', 'GameBoyEmu/platform/qt/keycaptureedit.h', 'GameBoyEmu/platform/qt/corethread.h'],
+        moc = qt5.preprocess(moc_headers: ['GameBoyEmu/platform/qt/mainwindow.h', 'GameBoyEmu/platform/qt/keymap.h', 'GameBoyEmu/platform/qt/keycaptureedit.h', 'GameBoyEmu/platform/qt/corethread.h', 'GameBoyEmu/platform/qt/renderwidget.h'],
                             ui_files: ['GameBoyEmu/platform/qt/mainwindow.ui', 'GameBoyEmu/platform/qt/keymap.ui'])
 
         platform_src = ['GameBoyEmu/platform/qt/main.cpp',

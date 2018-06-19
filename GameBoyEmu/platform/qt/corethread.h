@@ -31,7 +31,7 @@ class CoreThread : public QThread
         void save_ram(const u8* data, u32 size);
         void save_rtc(std::chrono::seconds epoch, const u8* data, u32 size);
 
-        //Core emu_core;
+        Core emu_core;
 
         std::unique_ptr<u8[]> internal_buffer;
         u8* dummy_buffers[4];

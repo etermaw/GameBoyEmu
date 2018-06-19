@@ -5,7 +5,7 @@ static constexpr u32 BUFFER_SIZE = 1 << 15;
 CoreThread::CoreThread(QObject* parent) : QThread(parent)
 {
     frame_buffer = std::make_unique<u32[]>(144*160);
-    //emu_core.set_frame_buffer(frame_buffer.get());
+    emu_core.set_frame_buffer(frame_buffer.get());
 
     std::memset(frame_buffer.get(), 0xFF, sizeof(u32) * 144 * 160);
 
@@ -22,7 +22,7 @@ CoreThread::CoreThread(QObject* parent) : QThread(parent)
 	endpoints.audio_control = make_function(&CoreThread::dummy, this);
 	endpoints.swap_sample_buffer = make_function(&CoreThread::swap_buffers, this);
 
-	//emu_core.attach_callbacks(endpoints);
+	emu_core.attach_callbacks(endpoints);
 }
 
 CoreThread::~CoreThread()
@@ -63,7 +63,7 @@ void CoreThread::load_rom(const std::string& path)
     file_name = path;
     rom.open(path, std::ios::binary);
 
-    //emu_core.load_cartrige(rom, ram, rtc);
+    emu_core.load_cartrige(rom, ram, rtc);
 }
 
 u8** CoreThread::swap_buffers(u8** buffers, u32 count)
@@ -107,7 +107,7 @@ void CoreThread::run()
             //TODO: get input from internal input queue
             //input_lock.unlock();
 
-            //emu_core.run_one_frame();
+            emu_core.run_one_frame();
 
             //TODO: it`s async, watch out for data races & overwriting buffer!
             emit frame_ready(frame_buffer.get()); //call me if you find better way of updating GUI thread in Qt

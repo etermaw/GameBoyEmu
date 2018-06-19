@@ -20,14 +20,18 @@ varying vec2 texc;                                                  \
                                                                     \
 void main()                                                         \
 {                                                                   \
-    vec3 current_color = texture2D(samp, texc).rgb;                 \
-    vec3 prev_color = texture2D(samp2, texc).rgb;                   \
+    vec3 current_color = texture2D(samp, texc).bgr;                 \
+    vec3 prev_color = texture2D(samp2, texc).bgr;                   \
                                                                     \
     gl_FragColor = vec4(mix(current_color, prev_color, 0.5), 1);    \
 }";
 
 RenderWidget::RenderWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
+    timer = new QTimer(this);
+
+    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    timer->start(1000.0 / 60.0);
 }
 
 RenderWidget::~RenderWidget()
@@ -42,13 +46,14 @@ void RenderWidget::update_frame(u32* new_frame)
     current_texture = (current_texture + 1) % 2;
     
     glBindTexture(GL_TEXTURE_2D, textures[current_texture]);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 160, 144, GL_RGBA, /*GL_UNSIGNED_SHORT_1_5_5_5_REV*/ GL_UNSIGNED_INT_8_8_8_8, new_frame);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 160, 144, GL_RGBA, /*GL_UNSIGNED_SHORT_1_5_5_5_REV*/ GL_UNSIGNED_INT_8_8_8_8_REV, new_frame);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void RenderWidget::initializeGL()
 {
     initializeOpenGLFunctions();
+    makeCurrent();
 
     glClearColor(0,0,0,1);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -102,7 +107,7 @@ void RenderWidget::initializeGL()
     for (auto tex : textures)
     {
         glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, /*GL_UNSIGNED_SHORT_1_5_5_5_REV*/ GL_UNSIGNED_INT_8_8_8_8, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, /*GL_UNSIGNED_SHORT_1_5_5_5_REV*/ GL_UNSIGNED_INT_8_8_8_8_REV, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
@@ -133,6 +138,8 @@ void RenderWidget::resizeGL(int w, int h)
 
 void RenderWidget::paintGL()
 {
+    makeCurrent();
+
     glClear(GL_COLOR_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);

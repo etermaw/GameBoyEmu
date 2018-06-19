@@ -4,6 +4,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "renderwidget.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -34,7 +35,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(core_thread, &CoreThread::finished, this, &QObject::deleteLater);
     connect(core_thread, &CoreThread::frame_ready, this, &MainWindow::update_frame, Qt::QueuedConnection);
     core_thread->start();
-    core_thread->start_emulation();
+
+    //set up renderer
+    //connect(timer, &QTimer::timeout, ui->openGLWidget, &QWidget::update);
+    //timer->start(1000.0 / 60.0);
 }
 
 MainWindow::~MainWindow()
@@ -50,6 +54,9 @@ void MainWindow::on_actionLoad_ROM_triggered()
     const auto path_splitted = rom_path.split(QDir::separator());
 
     setWindowTitle("Emu: " + path_splitted.last());
+
+    core_thread->load_rom(rom_path.toStdString());
+    core_thread->start_emulation();
 }
 
 void MainWindow::on_actionKeys_triggered()
