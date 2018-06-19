@@ -1,6 +1,12 @@
 #include "audio_postprocess.h"
 #include <SDL.h>
 
+#define NZEROS 2
+#define NPOLES 2
+#define GAIN   1.005049991e+00
+
+static float xv[NZEROS+1], yv[NPOLES+1];
+
 AudioSDL::AudioSDL()
 {
     internal_memory = std::make_unique<u8[]>(BUFFER_SIZE * 4);
@@ -36,8 +42,21 @@ u8** AudioSDL::swap_buffers(u8** buffs, u32 count)
 	{
         const u32 index = i * 48 + offset;
 		u8 total = buffers[0][index] + buffers[1][index] + buffers[2][index] + buffers[3][index];
-		buf[i * 2] = total * 0.025f;
-		buf[i * 2 + 1] = total * 0.025f;
+
+		xv[0] = xv[1]; xv[1] = xv[2]; 
+        xv[2] = total * (1.0 / GAIN);
+        yv[0] = yv[1]; yv[1] = yv[2]; 
+        yv[2] = (xv[0] + xv[2]) - (2 * xv[1]) + (-0.9899760140 * yv[0]) + (1.9899255201 * yv[1]);
+        float out = yv[2];
+
+
+		buf[i * 2] = out * 0.025f;
+		buf[i * 2 + 1] = out * 0.025f;
+	}
+
+	for (u32 i = 0; i < sample_count; ++i)
+	{
+		
 	}
 
     offset = (count + offset) % 48;
