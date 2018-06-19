@@ -52,11 +52,6 @@ u8** AudioSDL::swap_buffers(u8** buffs, u32 count)
 		buf[i * 2 + 1] = out;
 	}
 
-	for (u32 i = 0; i < sample_count; ++i)
-	{
-		
-	}
-
     offset = (count + offset) % 48;
 
 	SDL_QueueAudio(1, buf, sample_count * 2 * sizeof(float));
