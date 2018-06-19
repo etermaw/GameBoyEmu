@@ -47,6 +47,13 @@ void RenderWidget::update_frame(u32* new_frame)
     
     glBindTexture(GL_TEXTURE_2D, textures[current_texture]);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 160, 144, GL_RGBA, /*GL_UNSIGNED_SHORT_1_5_5_5_REV*/ GL_UNSIGNED_INT_8_8_8_8_REV, new_frame);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textures[current_texture]);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textures[(current_texture + 1) % 2]);
+
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -142,15 +149,9 @@ void RenderWidget::paintGL()
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textures[current_texture]);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[(current_texture + 1) % 2]);
-
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 
-    current_texture = (current_texture + 1) % 2;
+    //current_texture = (current_texture + 1) % 2;
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    //glBindTexture(GL_TEXTURE_2D, 0);
 }
