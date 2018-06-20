@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QTimer>
 #include <QMainWindow>
 #include "keymap.h"
 #include "corethread.h"
@@ -32,7 +31,6 @@ class MainWindow : public QMainWindow
         KeyMap* keymap_dialog;
         
         CoreThread* core_thread;
-        QTimer* timer;
 };
 
 #endif // MAINWINDOW_H

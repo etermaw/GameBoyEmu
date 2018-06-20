@@ -35,10 +35,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(core_thread, &CoreThread::finished, this, &QObject::deleteLater);
     connect(core_thread, &CoreThread::frame_ready, this, &MainWindow::update_frame, Qt::QueuedConnection);
     core_thread->start();
-
-    //set up renderer
-    //connect(timer, &QTimer::timeout, ui->openGLWidget, &QWidget::update);
-    //timer->start(1000.0 / 60.0);
 }
 
 MainWindow::~MainWindow()
