@@ -27,6 +27,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     keymap_dialog->reset_keys_to_default();
 
+    //set up keymaps
+    key_map[Qt::Key_Right] = KEYS::K_RIGHT;
+    key_map[Qt::Key_Left] = KEYS::K_LEFT;
+    key_map[Qt::Key_Up] = KEYS::K_UP;
+    key_map[Qt::Key_Down] = KEYS::K_DOWN;
+
+    key_map[Qt::Key_A] = KEYS::K_A;
+    key_map[Qt::Key_B] = KEYS::K_B;
+    key_map[Qt::Key_Z] = KEYS::K_SELECT;
+    key_map[Qt::Key_X] = KEYS::K_START;
+
     //set up input filter
     installEventFilter(this);
 
@@ -58,6 +69,18 @@ void MainWindow::on_actionLoad_ROM_triggered()
 void MainWindow::on_actionKeys_triggered()
 {
     keymap_dialog->show();
+
+    key_map.clear();
+
+    key_map[keymap_dialog->keys[0]] = KEYS::K_A;
+    key_map[keymap_dialog->keys[1]] = KEYS::K_B;
+    key_map[keymap_dialog->keys[2]] = KEYS::K_SELECT;
+    key_map[keymap_dialog->keys[3]] = KEYS::K_START;
+
+    key_map[keymap_dialog->keys[4]] = KEYS::K_UP;
+    key_map[keymap_dialog->keys[5]] = KEYS::K_DOWN;
+    key_map[keymap_dialog->keys[6]] = KEYS::K_RIGHT;
+    key_map[keymap_dialog->keys[7]] = KEYS::K_LEFT;
 }
 
 void MainWindow::update_frame(u32* frame)
@@ -73,7 +96,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
         {
             QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
             const auto key = key_event->key();
-            //TODO: push given key to input queue for emu thread
+            const auto it = key_map.find(key);
+
+            if (it != key_map.end())
+            {
+                //TODO: push given key to input queue for emu thread
+            }
+
             return true;
         }
 
@@ -81,7 +110,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
         {
             QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
             const auto key = key_event->key();
-            //TODO: push given key to input queue for emu thread
+            const auto it = key_map.find(key);
+
+            if (it != key_map.end())
+            {
+                //TODO: push given key to input queue for emu thread
+            }
+
             return true;
         }
 

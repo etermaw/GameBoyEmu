@@ -29,7 +29,8 @@ class MainWindow : public QMainWindow
     private:
         Ui::MainWindow *ui;
         KeyMap* keymap_dialog;
-        
+
+        std::unordered_map<int, KEYS> key_map;
         CoreThread* core_thread;
 };
 
