@@ -115,9 +115,22 @@ void CoreThread::run()
         {
             const auto begin = std::chrono::high_resolution_clock::now();
 
-            //input_lock.lock();
-            //TODO: get input from internal input queue
-            //input_lock.unlock();
+            input_lock.lock();
+
+            for (u32 i = 0; i < 8; ++i)
+            {
+                if (event_tab[i] == 0)
+                    continue;
+
+                else if (event_tab[i] > 0)
+                    emu_core.push_key(static_cast<KEYS>(i));
+
+                else
+                    emu_core.release_key(static_cast<KEYS>(i));
+            }
+
+            std::memset(event_tab, 0, sizeof(event_tab));
+            input_lock.unlock();
 
             emu_core.run_one_frame();
 
