@@ -99,9 +99,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
             const auto it = key_map.find(key);
 
             if (it != key_map.end())
-            {
-                //TODO: push given key to input queue for emu thread
-            }
+                core_thread->press_key(it->second);
 
             return true;
         }
@@ -113,9 +111,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
             const auto it = key_map.find(key);
 
             if (it != key_map.end())
-            {
-                //TODO: push given key to input queue for emu thread
-            }
+                core_thread->release_key(it->second);
 
             return true;
         }

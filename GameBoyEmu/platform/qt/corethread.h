@@ -16,7 +16,8 @@ class CoreThread : public QThread
         void start_emulation();
         void stop();
 
-        void push_into_event_queue(int key);
+        void press_key(int key);
+        void release_key(int key);
         void load_rom(const std::string& path);
 
         void run() override;
@@ -33,12 +34,15 @@ class CoreThread : public QThread
 
         Core emu_core;
 
+        i32 event_tab[8] = {};
+
         std::unique_ptr<u8[]> internal_buffer;
         u8* dummy_buffers[4];
 
         std::ifstream rom, ram, rtc;
         std::string file_name;
 
+        std::mutex input_lock;
         std::mutex waiter_lock;
         std::condition_variable core_waiter;
         std::atomic<bool> core_running{false};

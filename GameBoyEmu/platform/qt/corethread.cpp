@@ -58,6 +58,18 @@ void CoreThread::stop()
     core_waiter.notify_all();
 }
 
+void CoreThread::press_key(int key)
+{
+    std::unique_lock<std::mutex> lock(input_lock);
+    event_tab[key] = std::max(event_tab[key] + 1, 1);
+}
+
+void CoreThread::release_key(int key)
+{
+    std::unique_lock<std::mutex> lock(input_lock);
+    event_tab[key] = std::min(event_tab[key] - 1, -1);
+}
+
 void CoreThread::load_rom(const std::string& path)
 {
     file_name = path;
