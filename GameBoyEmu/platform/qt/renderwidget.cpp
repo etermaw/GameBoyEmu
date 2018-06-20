@@ -60,8 +60,6 @@ void RenderWidget::update_frame(u32* new_frame)
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textures[(current_texture + 1) % 2]);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     doneCurrent();
 }
 
