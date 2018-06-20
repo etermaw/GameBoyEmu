@@ -47,6 +47,8 @@ RenderWidget::~RenderWidget()
 
 void RenderWidget::update_frame(u32* new_frame)
 {
+    makeCurrent();
+
     current_texture = (current_texture + 1) % 2;
     
     glBindTexture(GL_TEXTURE_2D, textures[current_texture]);
@@ -59,6 +61,8 @@ void RenderWidget::update_frame(u32* new_frame)
     glBindTexture(GL_TEXTURE_2D, textures[(current_texture + 1) % 2]);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    doneCurrent();
 }
 
 void RenderWidget::initializeGL()
