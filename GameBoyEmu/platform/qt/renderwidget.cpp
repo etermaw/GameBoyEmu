@@ -36,9 +36,13 @@ RenderWidget::RenderWidget(QWidget* parent) : QOpenGLWidget(parent)
 
 RenderWidget::~RenderWidget()
 {
+    makeCurrent();
+
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ibo);
     glDeleteTextures(2, textures);
+
+    doneCurrent();
 }
 
 void RenderWidget::update_frame(u32* new_frame)
@@ -136,6 +140,8 @@ void RenderWidget::initializeGL()
 
     //enable indexing
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+    doneCurrent();
 }
 
 void RenderWidget::resizeGL(int w, int h)
@@ -148,10 +154,7 @@ void RenderWidget::paintGL()
     makeCurrent();
 
     glClear(GL_COLOR_BUFFER_BIT);
-
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 
-    //current_texture = (current_texture + 1) % 2;
-
-    //glBindTexture(GL_TEXTURE_2D, 0);
+    doneCurrent();
 }
