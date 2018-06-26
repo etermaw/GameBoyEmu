@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //setup key binding ui
     keymap_dialog->keys[0] = Qt::Key_A;
-    keymap_dialog->keys[1] = Qt::Key_B;
+    keymap_dialog->keys[1] = Qt::Key_S;
     keymap_dialog->keys[2] = Qt::Key_Z;
     keymap_dialog->keys[3] = Qt::Key_X;
 
@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     key_map[Qt::Key_Down] = KEYS::K_DOWN;
 
     key_map[Qt::Key_A] = KEYS::K_A;
-    key_map[Qt::Key_B] = KEYS::K_B;
+    key_map[Qt::Key_S] = KEYS::K_B;
     key_map[Qt::Key_Z] = KEYS::K_SELECT;
     key_map[Qt::Key_X] = KEYS::K_START;
 
