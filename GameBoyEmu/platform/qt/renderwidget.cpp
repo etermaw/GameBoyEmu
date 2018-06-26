@@ -87,8 +87,8 @@ void RenderWidget::initializeGL()
 
     shaders.release();
 
-    float vbo_data[] = {
-         //vertex data
+    static const float vbo_data[] = {
+        //vertex data
         -1, 1,  //top left
         1, 1,   //top right
         1, -1,  //bottom right
@@ -101,7 +101,7 @@ void RenderWidget::initializeGL()
         0, 144.0/256.0
     };
 
-    GLubyte indexes[] = {0,1,2, 0,2,3};
+    static const GLubyte indexes[] = {0,1,2, 0,2,3};
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
