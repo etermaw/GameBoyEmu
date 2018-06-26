@@ -38,11 +38,11 @@ void KeyMap::on_buttonBox_accepted()
     keys[6] = ui->right_keycapture->get_key();
     keys[7] = ui->left_keycapture->get_key();
 
-    close();
+    accept();
 }
 
 void KeyMap::on_buttonBox_rejected()
 {
     reset_keys_to_default();
-    close();
+    reject();
 }

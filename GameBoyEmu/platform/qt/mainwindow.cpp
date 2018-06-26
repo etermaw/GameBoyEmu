@@ -38,6 +38,9 @@ MainWindow::MainWindow(QWidget *parent) :
     key_map[Qt::Key_Z] = KEYS::K_SELECT;
     key_map[Qt::Key_X] = KEYS::K_START;
 
+    //setup signal for key change
+    connect(keymap_dialog, &KeyMap::accepted, this, &MainWindow::update_keys);
+
     //set up input filter
     installEventFilter(this);
 
@@ -69,7 +72,10 @@ void MainWindow::on_actionLoad_ROM_triggered()
 void MainWindow::on_actionKeys_triggered()
 {
     keymap_dialog->show();
+}
 
+void MainWindow::update_keys()
+{
     key_map.clear();
 
     key_map[keymap_dialog->keys[0]] = KEYS::K_A;
