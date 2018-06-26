@@ -35,8 +35,8 @@
    <widget class="RenderWidget" name="openGLWidget">
     <property name="geometry">
      <rect>
-      <x>-1</x>
-      <y>-1</y>
+      <x>0</x>
+      <y>0</y>
       <width>480</width>
       <height>432</height>
      </rect>

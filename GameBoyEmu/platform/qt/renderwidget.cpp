@@ -68,7 +68,7 @@ void RenderWidget::initializeGL()
     initializeOpenGLFunctions();
     makeCurrent();
 
-    glClearColor(0,0,0,1);
+    glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     shaders.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader);
@@ -95,10 +95,10 @@ void RenderWidget::initializeGL()
         -1, -1,  //bottom left
 
         //texture coords data
-        0, 1,   //tl
-        1, 1,   //tr
-        1, 0,   //br
-        0, 0    //bl
+        0, 0,
+        160.0/256.0, 0,
+        160.0/256.0, 144.0/256.0,
+        0, 144.0/256.0
     };
 
     GLubyte indexes[] = {0,1,2, 0,2,3};
@@ -123,6 +123,8 @@ void RenderWidget::initializeGL()
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, /*GL_UNSIGNED_SHORT_1_5_5_5_REV*/ GL_UNSIGNED_INT_8_8_8_8_REV, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -133,12 +135,12 @@ void RenderWidget::initializeGL()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     //load vertices
-    glEnableVertexAttribArray(vertex_location);
     glVertexAttribPointer(vertex_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(vertex_location);
 
     //load texture coords
+    glVertexAttribPointer(texc_location, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(sizeof(float) * 8));
     glEnableVertexAttribArray(texc_location);
-    glVertexAttribPointer(texc_location, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(8));
 
     //enable indexing
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
@@ -148,7 +150,7 @@ void RenderWidget::initializeGL()
 
 void RenderWidget::resizeGL(int w, int h)
 {
-
+    glViewport(0, 0, w, h);
 }
 
 void RenderWidget::paintGL()
