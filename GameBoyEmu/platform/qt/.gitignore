@@ -19,3 +19,6 @@
 # GLSL files
 !*.vert
 !*.frag
+
+# resource files
+!*.qrc

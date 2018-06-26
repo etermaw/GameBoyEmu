@@ -1,31 +1,5 @@
 #include "renderwidget.h"
 
-static const char vertex_shader[] = "       \
-attribute vec2 position;                    \
-attribute vec2 tex_coord;                   \
-                                            \
-varying vec2 texc;                          \
-                                            \
-void main()                                 \
-{                                           \
-   texc = tex_coord;                        \
-   gl_Position = vec4(position, 0, 1);      \
-}";
-
-static const char fragment_shader[] = "                             \
-uniform sampler2D samp;                                             \
-uniform sampler2D samp2;                                            \
-                                                                    \
-varying vec2 texc;                                                  \
-                                                                    \
-void main()                                                         \
-{                                                                   \
-    vec3 current_color = texture2D(samp, texc).bgr;                 \
-    vec3 prev_color = texture2D(samp2, texc).bgr;                   \
-                                                                    \
-    gl_FragColor = vec4(mix(current_color, prev_color, 0.5), 1);    \
-}";
-
 RenderWidget::RenderWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     timer = new QTimer(this);
@@ -71,8 +45,9 @@ void RenderWidget::initializeGL()
     glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    shaders.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader);
-    shaders.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader);
+    //get shaders from resource file
+    shaders.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/normal.vert");
+    shaders.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/normal.frag");
 
     shaders.link();
     shaders.bind();
