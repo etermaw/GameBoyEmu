@@ -87,7 +87,7 @@ bool Cartrige::has_rtc() const
 		return false;
 
 	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
-	return in_range(header->cartrige_type, 0x0F, 0x10);
+	return in_range(header->cartrige_type, 0xF, 0x10);
 }
 
 Cartrige::~Cartrige()
@@ -155,9 +155,7 @@ void Cartrige::load_or_create_ram(std::ifstream& ram_file)
 
 void Cartrige::load_rtc(std::ifstream& rtc_file)
 {
-	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
-
-	if (in_range(header->cartrige_type, 0x0F, 0x10) && rtc_file.is_open())
+	if (has_rtc() && rtc_file.is_open())
 	{
 		i64 saved_timestamp;
 		rtc_file >> saved_timestamp;
