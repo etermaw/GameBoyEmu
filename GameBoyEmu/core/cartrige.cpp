@@ -33,6 +33,66 @@ u32 get_ram_size(u8 val)
 	return sizes[val];
 }
 
+void Cartrige::attach_rom(const u8* rom_ptr, u32 size)
+{
+	rom2 = std::make_pair(rom_ptr, size);
+}
+
+void Cartrige::attach_ram(u8* ram_ptr, u32 size)
+{
+	ram2 = std::make_pair(ram_ptr, size);
+}
+
+void Cartrige::attach_rtc(u8* rtc_ptr, u32 size)
+{
+	rtc2 = std::make_pair(rtc_ptr, size);
+}
+
+bool Cartrige::has_battery_ram() const
+{
+	if (std::get<0>(rom2) == nullptr)
+		return false;
+
+	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
+
+	switch (header->cartrige_type)
+	{
+		case 0x03:
+		case 0x06:
+		case 0x09:
+		case 0x0D:
+		case 0x0F:
+		case 0x10:
+		case 0x13:
+		case 0x1B:
+		case 0x1E:
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+u32 Cartrige::get_declared_ram_size() const
+{
+	static const u32 sizes[] = { 0, 0x800, 0x2000, 0x8000, 0x20000, 0x10000 };
+
+	if (std::get<0>(rom2) == nullptr)
+		return 0;
+
+	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
+	return (header->ram_size > 5) ? 0 : sizes[header->ram_size];
+}
+
+bool Cartrige::has_rtc() const
+{
+	if (std::get<0>(rom2) == nullptr)
+		return false;
+
+	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
+	return in_range(header->cartrige_type, 0x0F, 0x10);
+}
+
 Cartrige::~Cartrige()
 {
 	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);

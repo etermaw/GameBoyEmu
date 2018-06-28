@@ -9,6 +9,11 @@ class Cartrige
 		function<void(const u8*, u32)> save_ram_callback;
 		function<void(std::chrono::seconds, const u8*, u32)> save_rtc_callback;
 
+		//[ptr, size of memory]
+		std::pair<const u8*, u32> rom2;
+		std::pair<u8*, u32> ram2;
+		std::pair<u8*, u32> rtc2;
+
 		std::unique_ptr<u8[]> rom;
 		std::unique_ptr<u8[]> ram;
 		std::unique_ptr<IMemory> memory_interface;
@@ -24,6 +29,15 @@ class Cartrige
 
 	public:
 		~Cartrige();
+
+		void attach_rom(const u8* rom_ptr, u32 size);
+		void attach_ram(u8* ram_ptr, u32 size);
+		void attach_rtc(u8* rtc_ptr, u32 size);
+
+		bool has_battery_ram() const;
+		u32 get_declared_ram_size() const;
+
+		bool has_rtc() const;
 
 		bool load_cartrige(std::ifstream& cart, std::ifstream& ram, std::ifstream& rtc);
 		void attach_endpoints(function<void(const u8*, u32)> ram_save, function<void(std::chrono::seconds, const u8*, u32)> rtc_save);
