@@ -144,29 +144,10 @@ void Cartrige::attach_endpoints(function<void(const u8*, u32)> ram_save, functio
 
 void Cartrige::load_or_create_ram(std::ifstream& ram_file)
 {
-	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
-
 	ram_size = get_declared_ram_size();
 	ram = ram_size ? std::make_unique<u8[]>(ram_size) : nullptr;
 
-	switch (header->cartrige_type)
-	{
-		case 0x03:
-		case 0x06:
-		case 0x09:
-		case 0x0D:
-		case 0x0F:
-		case 0x10:
-		case 0x13:
-		case 0x1B:
-		case 0x1E:
-			battery_ram = true;
-			break;
-
-		default:
-			battery_ram = false;
-			break;
-	}
+	battery_ram = has_battery_ram();
 
 	if (battery_ram && ram_file.is_open())
 		ram_file.read(reinterpret_cast<char*>(ram.get()), ram_size);
