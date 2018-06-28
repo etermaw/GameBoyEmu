@@ -81,7 +81,13 @@ u32 Cartrige::get_declared_ram_size() const
 		return 0;
 
 	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
-	return (header->ram_size > 5) ? 0 : sizes[header->ram_size];
+
+	//MBC2 has always header->ram_size == 0, but it has 512 bytes actually!
+	if (in_range(header->cartrige_type, 0x05, 0x06))
+		return 512;
+
+	else
+		return (header->ram_size > 5) ? 0 : sizes[header->ram_size];
 }
 
 bool Cartrige::has_rtc() const
