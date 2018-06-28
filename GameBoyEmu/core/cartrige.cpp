@@ -92,7 +92,7 @@ bool Cartrige::has_rtc() const
 
 Cartrige::~Cartrige()
 {
-	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
+	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
 
 	if (battery_ram)
 		save_ram_callback(ram.get(), ram_size);
@@ -132,7 +132,7 @@ bool Cartrige::load_cartrige(std::ifstream& cart, std::ifstream& ram, std::ifstr
 
 std::string Cartrige::get_name() const
 {
-    const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
+    const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
     return std::string(std::begin(header->game_title), std::end(header->game_title));
 }
 
@@ -194,8 +194,7 @@ IDmaMemory* Cartrige::get_dma_controller() const
 
 bool Cartrige::is_cgb_ready() const
 {
-	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
-
+	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
 	return (header->cgb_flag == 0x80) || (header->cgb_flag == 0xC0);
 }
 
