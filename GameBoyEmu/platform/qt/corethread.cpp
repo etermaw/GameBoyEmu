@@ -72,6 +72,7 @@ void CoreThread::release_key(int key)
 
 void CoreThread::load_rom(const std::string& path)
 {
+    //TODO: make it thread-safe!
     file_name = path;
     rom.open(path, std::ios::binary);
 
@@ -137,6 +138,7 @@ void CoreThread::run()
             //TODO: it`s async, watch out for data races & overwriting buffer!
             emit frame_ready(frame_buffer.get()); //call me if you find better way of updating GUI thread in Qt
 
+            //TODO: find better way of time synchronization (without busy wait!)
             const auto end = std::chrono::high_resolution_clock::now();
             const auto usecs_passed = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
 
