@@ -95,7 +95,7 @@ Cartrige::~Cartrige()
 	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
 
 	if (battery_ram)
-		save_ram_callback(ram.get(), ram_size);
+		save_ram_callback(std::get<0>(ram2), std::get<1>(ram2));
 
 	if (in_range(header->cartrige_type, 0x0F, 0x10))
 	{
@@ -144,8 +144,10 @@ void Cartrige::attach_endpoints(function<void(const u8*, u32)> ram_save, functio
 
 void Cartrige::load_or_create_ram(std::ifstream& ram_file)
 {
-	ram_size = get_declared_ram_size();
+	const u32 ram_size = get_declared_ram_size();
 	ram = ram_size ? std::make_unique<u8[]>(ram_size) : nullptr;
+
+	attach_ram(ram.get(), ram_size); //TODO: tmp solution
 
 	battery_ram = has_battery_ram();
 
@@ -201,15 +203,15 @@ bool Cartrige::is_cgb_ready() const
 void Cartrige::serialize(std::ostream& stream)
 {
 	//TODO: update rtc regs before serialization
-	stream << battery_ram << ram_size;
-	stream.write(reinterpret_cast<char*>(ram.get()), sizeof(u8) * ram_size);
+	stream << battery_ram << std::get<1>(ram2);
+	stream.write(reinterpret_cast<char*>(std::get<0>(ram2)), std::get<1>(ram2));
 	stream.write(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
 }
 
 void Cartrige::deserialize(std::istream & stream)
 {
-	stream >> battery_ram >> ram_size;
-	stream.read(reinterpret_cast<char*>(ram.get()), sizeof(u8) * ram_size);
+	stream >> battery_ram >> std::get<1>(ram2);
+	stream.read(reinterpret_cast<char*>(std::get<0>(ram2)), std::get<1>(ram2));
 	stream.read(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
 }
 
@@ -222,35 +224,35 @@ void Cartrige::dispatch()
 
 	if (type == 0x00 || type == 0x08 || type == 0x09)
 	{
-		auto tmp = std::make_unique<NoMBC>(NoMBC(rom_ptr, ram.get(), ram_size));
+		auto tmp = std::make_unique<NoMBC>(NoMBC(rom_ptr, std::get<0>(ram2), std::get<1>(ram2)));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}
 
 	else if (in_range(type, 0x01, 0x03))
 	{
-		auto tmp = std::make_unique<MBC1>(MBC1(rom_ptr, ram.get(), rom_banks, ram_size));
+		auto tmp = std::make_unique<MBC1>(MBC1(rom_ptr, std::get<0>(ram2), rom_banks, std::get<1>(ram2)));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}
 
 	else if (in_range(type, 0x05, 0x06))
 	{
-		auto tmp = std::make_unique<MBC2>(MBC2(rom_ptr, ram.get(), rom_banks, ram_size));
+		auto tmp = std::make_unique<MBC2>(MBC2(rom_ptr, std::get<0>(ram2), rom_banks, std::get<1>(ram2)));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}
 
 	else if (in_range(type, 0x0F, 0x13))
 	{
-		auto tmp = std::make_unique<MBC3>(MBC3(rom_ptr, ram.get(), (type <= 0x10 ? rtc_regs : nullptr), rom_banks, ram_size));
+		auto tmp = std::make_unique<MBC3>(MBC3(rom_ptr, std::get<0>(ram2), (type <= 0x10 ? rtc_regs : nullptr), rom_banks, std::get<1>(ram2)));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}
 
 	else if (in_range(type, 0x19, 0x1E))
 	{
-		auto tmp = std::make_unique<MBC5>(MBC5(rom_ptr, ram.get(), rom_banks, ram_size));
+		auto tmp = std::make_unique<MBC5>(MBC5(rom_ptr, std::get<0>(ram2), rom_banks, std::get<1>(ram2)));
 		dma_interface = tmp.get();
 		memory_interface = std::move(tmp);
 	}

@@ -19,7 +19,6 @@ class Cartrige
 		std::unique_ptr<IMemory> memory_interface;
 		IDmaMemory* dma_interface;
 
-		size_t ram_size;
 		u8 rtc_regs[5] = {};
 		bool battery_ram;
 
