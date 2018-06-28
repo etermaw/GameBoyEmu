@@ -24,15 +24,6 @@ bool in_range(u32 value, u32 begin, u32 end)
 	return (value >= begin) && (value <= end);
 }
 
-u32 get_ram_size(u8 val)
-{
-	assert(val < 6);
-
-	static const u32 sizes[] = { 0, 0x800, 0x2000, 0x8000, 0x20000, 0x10000 };
-
-	return sizes[val];
-}
-
 void Cartrige::attach_rom(const u8* rom_ptr, u32 size)
 {
 	rom2 = std::make_pair(rom_ptr, size);
@@ -129,6 +120,8 @@ bool Cartrige::load_cartrige(std::ifstream& cart, std::ifstream& ram, std::ifstr
 	rom = std::make_unique<u8[]>(size);
 	cart.read(reinterpret_cast<char*>(rom.get()), size);
 
+	attach_rom(rom.get(), size);
+
 	load_or_create_ram(ram);
 	load_rtc(rtc);
 
@@ -153,13 +146,7 @@ void Cartrige::load_or_create_ram(std::ifstream& ram_file)
 {
 	const rom_header* header = reinterpret_cast<rom_header*>(&rom[0x100]);
 
-	//MBC2 has always header->ram_size == 0, but it has 512 bytes actually!
-	if (in_range(header->cartrige_type, 0x05, 0x06))
-		ram_size = 512;
-
-	else
-		ram_size = get_ram_size(header->ram_size);
-
+	ram_size = get_declared_ram_size();
 	ram = ram_size ? std::make_unique<u8[]>(ram_size) : nullptr;
 
 	switch (header->cartrige_type)
