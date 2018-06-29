@@ -40,8 +40,6 @@ class Cartrige
 		bool has_rtc() const;
 
 		void setup();
-
-		bool load_cartrige(std::ifstream& cart, std::ifstream& ram, std::ifstream& rtc);
 		void attach_endpoints(function<void(const u8*, u32)> ram_save, function<void(std::chrono::seconds, const u8*, u32)> rtc_save);
 		
 		IMemory* get_memory_controller() const;

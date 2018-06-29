@@ -74,25 +74,6 @@ void Core::setup_core()
 	mmu.swap_chunk(0xA000, 0xC000, cart.get_memory_controller());
 }
 
-bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file) 
-{
-	if (!cart.load_cartrige(rom_file, ram_file, rtc_file))
-		return false;
-
-	gpu.attach_dma_ptrs(cart.get_dma_controller(), &ram);
-
-	bool enable_cgb = cart.is_cgb_ready();
-	cpu.enable_cgb_mode(enable_cgb);
-	gpu.enable_cgb_mode(enable_cgb);
-	ram.enable_cgb_mode(enable_cgb);
-	apu.enable_cgb_mode(enable_cgb);
-
-	mmu.swap_chunk(0, 0x8000, cart.get_memory_controller()); //TODO: it`s inconsistent with register_chunk scheme of adressing
-	mmu.swap_chunk(0xA000, 0xC000, cart.get_memory_controller());
-
-	return true;
-}
-
 std::string Core::get_cart_name()
 {
    return cart.get_name(); 

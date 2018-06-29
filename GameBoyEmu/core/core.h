@@ -133,7 +133,6 @@ class Core
 
 		void setup_core();
 
-		bool load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file);
         std::string get_cart_name();
 
 		void load_state(std::istream& load_stream);
