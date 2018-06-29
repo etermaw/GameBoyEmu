@@ -97,20 +97,20 @@ void Cartrige::setup()
 
 Cartrige::~Cartrige()
 {
-	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
+	// const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
 
-	if (battery_ram)
-		save_ram_callback(std::get<0>(ram2), std::get<1>(ram2));
+	// if (battery_ram)
+	// 	save_ram_callback(std::get<0>(ram2), std::get<1>(ram2));
 
-	if (in_range(header->cartrige_type, 0x0F, 0x10))
-	{
-		memory_interface.reset(); //make sure that MBC3 update rtc_regs
+	// if (in_range(header->cartrige_type, 0x0F, 0x10))
+	// {
+	// 	memory_interface.reset(); //make sure that MBC3 update rtc_regs
 
-		auto epoch = std::chrono::system_clock::now().time_since_epoch();
-		auto cur_timestamp = std::chrono::duration_cast<std::chrono::seconds>(epoch);
+	// 	auto epoch = std::chrono::system_clock::now().time_since_epoch();
+	// 	auto cur_timestamp = std::chrono::duration_cast<std::chrono::seconds>(epoch);
 
-		save_rtc_callback(cur_timestamp, rtc_regs, 5);
-	}
+	// 	save_rtc_callback(cur_timestamp, rtc_regs, 5);
+	// }
 }
 
 bool Cartrige::load_cartrige(std::ifstream& cart, std::ifstream& ram, std::ifstream& rtc)

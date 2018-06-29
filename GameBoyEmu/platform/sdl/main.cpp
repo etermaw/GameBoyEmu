@@ -38,6 +38,10 @@ int main(int argc, char *argv[])
 	emu_core.attach_callbacks(endpoints);
 	emu_core.enable_debugger();
 
+	std::unique_ptr<u8[]> rom_mem;
+	std::unique_ptr<u8[]> ram_mem;
+	u8 rtc_mem[5] = {};
+
 	while (true)
 	{
 		std::cout << "Insert cartrige path:\n";
@@ -47,9 +51,43 @@ int main(int argc, char *argv[])
 
 		if (rom.is_open())
 		{
-			std::ifstream ram(file_name + "_ram", std::ios::binary), rtc(file_name + "_rtc", std::ios::binary);
+			//load rom
+			rom.seekg(0, std::ios_base::end);
+			const auto rom_size = rom.tellg();
+			rom.seekg(0, std::ios_base::beg);
 
-			emu_core.load_cartrige(rom, ram, rtc);
+			rom_mem = std::make_unique<u8[]>(rom_size);
+			rom.read(reinterpret_cast<char*>(rom_mem.get()), rom_size);
+
+			//attach rom
+			emu_core.load_rom(rom_mem.get(), rom_size);
+
+			//if cartrige has ram, create it
+			const u32 ram_size = emu_core.get_ram_size();
+
+			if (ram_size > 0)
+			{
+				ram_mem = std::make_unique<u8[]>(ram_size);
+
+				if (emu_core.has_battery_ram())
+				{
+					std::ifstream ram(file_name + "_ram", std::ios::binary);
+					ram.read(reinterpret_cast<char*>(ram_mem.get()), ram_size);
+				}
+
+				emu_core.load_ram(ram_mem.get(), ram_size);
+			}
+
+			if (emu_core.has_rtc())
+			{
+				//TODO: implement RTC (again!)
+				emu_core.load_rtc(rtc_mem, 5);
+
+				//std::ifstream rtc(file_name + "_rtc", std::ios::binary);
+			}
+
+			emu_core.setup_core();
+
 			std::string cart_name = emu_core.get_cart_name();
 			gui.set_window_title(cart_name);
 
@@ -67,6 +105,14 @@ int main(int argc, char *argv[])
 		gui.pump_input(emu_core);
 		emu_core.run_one_frame();
 		emu_core.set_frame_buffer(renderer.draw_frame());
+	}
+
+	//save ram if it has battery
+	if (emu_core.has_battery_ram())
+	{
+		const u32 ram_size = emu_core.get_ram_size();
+		std::ofstream to_save(file_name + "_ram", std::ios::trunc | std::ios::binary);
+		to_save.write(reinterpret_cast<const char*>(ram_mem.get()), ram_size);
 	}
 
 	return 0;
