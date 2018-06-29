@@ -14,13 +14,10 @@ class Cartrige
 		std::pair<u8*, u32> ram2;
 		std::pair<u8*, u32> rtc2;
 
-		std::unique_ptr<u8[]> rom;
-		std::unique_ptr<u8[]> ram;
 		std::unique_ptr<IMemory> memory_interface;
 		IDmaMemory* dma_interface;
 
 		u8 rtc_regs[5] = {};
-		bool battery_ram;
 
 		void load_rtc(std::ifstream& file);
 		void dispatch();

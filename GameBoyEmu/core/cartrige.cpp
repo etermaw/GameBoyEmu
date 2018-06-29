@@ -149,14 +149,14 @@ bool Cartrige::is_cgb_ready() const
 void Cartrige::serialize(std::ostream& stream)
 {
 	//TODO: update rtc regs before serialization
-	stream << battery_ram << std::get<1>(ram2);
+	stream << std::get<1>(ram2);
 	stream.write(reinterpret_cast<char*>(std::get<0>(ram2)), std::get<1>(ram2));
 	stream.write(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
 }
 
 void Cartrige::deserialize(std::istream & stream)
 {
-	stream >> battery_ram >> std::get<1>(ram2);
+	stream >> std::get<1>(ram2);
 	stream.read(reinterpret_cast<char*>(std::get<0>(ram2)), std::get<1>(ram2));
 	stream.read(reinterpret_cast<char*>(rtc_regs), sizeof(u8) * 5);
 }
