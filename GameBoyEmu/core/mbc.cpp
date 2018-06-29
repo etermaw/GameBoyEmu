@@ -289,7 +289,7 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		else if (rtc != nullptr && value >= 0x08 && value <= 0x0C) //TODO: keep an eye on it
 		{
 			reg_used = true;
-			selected_time_reg = value - 0x08;
+			selected_time_reg = std::max(value - 0x08, 5);
 		}
 	}
 
