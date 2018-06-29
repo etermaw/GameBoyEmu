@@ -101,8 +101,6 @@ int main(int argc, char *argv[])
 						rtc_mem[4] = change_bit(rtc_mem[4], (new_days % 512) > 255, 0);
 						rtc_mem[4] = change_bit(rtc_mem[4], new_days > 511, 7);
 					}
-			
-					//TODO: create local current_time for MBC
 				}
 
 				emu_core.load_rtc(rtc_mem.data(), rtc_mem.size());
@@ -140,7 +138,7 @@ int main(int argc, char *argv[])
 	//save rtc if present
 	if (emu_core.has_rtc())
 	{
-		//TODO: if enabled, make last update using var given to mbc
+		//TODO: reset mbc, to force rtc last update
 
 		const auto new_timestamp = std::chrono::system_clock::now();
 

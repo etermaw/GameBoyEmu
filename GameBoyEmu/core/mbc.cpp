@@ -210,6 +210,12 @@ const u8* MBC2::get_dma_ptr(u16 adress)
 		return nullptr;
 }
 
+MBC3::~MBC3()
+{
+	if(rtc && check_bit(rtc[5], 6))
+		update_rtc();
+}
+
 void MBC3::latch_rtc()
 {
 	if (!check_bit(rtc[4], 6)) //if timer is enabled, update time
@@ -311,6 +317,9 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 			{
 				if (prev_enabled_bit && !check_bit(value, 6))
 					update_rtc();
+
+				else if (!prev_enabled_bit && check_bit(value, 6))
+					start_time = std::chrono::system_clock::now();
 
 				prev_enabled_bit = check_bit(value, 6);
 			}

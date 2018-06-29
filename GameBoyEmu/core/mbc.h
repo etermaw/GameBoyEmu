@@ -94,7 +94,7 @@ class MBC3 final : public MBCBase, public IMemory, public IDmaMemory
 		MBC3(const u8* rom, u8* ram, u8* rtc_regs, u32 rom_banks, u32 ram_size) :
 			MBCBase(rom, ram, rom_banks, ram_size), start_time(std::chrono::system_clock::now()), rtc(rtc_regs) {}
 
-		~MBC3() { if(rtc) update_rtc(); }
+		~MBC3();
 
 		u8 read_byte(u16 adress, u32 cycles_passed) override;
 		void write_byte(u16 adress, u8 value, u32 cycles_passed) override;
