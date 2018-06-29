@@ -13,9 +13,6 @@
 
 struct external_callbacks
 {
-	function<void(const u8*, u32)> save_ram;
-	function<void(std::chrono::seconds, const u8*, u32)> save_rtc;
-
 	function<u8**(u8**, u32)> swap_sample_buffer;
 	function<void(bool)> audio_control;
 	function<void()> audio_synchronize; //TODO: reserved for future use

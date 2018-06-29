@@ -95,33 +95,10 @@ void Cartrige::setup()
 	dispatch();
 }
 
-Cartrige::~Cartrige()
-{
-}
-
 std::string Cartrige::get_name() const
 {
     const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);
     return std::string(std::begin(header->game_title), std::end(header->game_title));
-}
-
-void Cartrige::attach_endpoints(function<void(const u8*, u32)> ram_save, function<void(std::chrono::seconds, const u8*, u32)> rtc_save)
-{
-	save_ram_callback = ram_save;
-	save_rtc_callback = rtc_save;
-}
-
-void Cartrige::load_or_create_ram(std::ifstream& ram_file)
-{
-	const u32 ram_size = get_declared_ram_size();
-	ram = ram_size ? std::make_unique<u8[]>(ram_size) : nullptr;
-
-	attach_ram(ram.get(), ram_size); //TODO: tmp solution
-
-	battery_ram = has_battery_ram();
-
-	if (battery_ram && ram_file.is_open())
-		ram_file.read(reinterpret_cast<char*>(ram.get()), ram_size);
 }
 
 void Cartrige::load_rtc(std::ifstream& rtc_file)

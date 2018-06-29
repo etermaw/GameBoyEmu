@@ -159,7 +159,6 @@ void Core::release_key(KEYS key)
 
 void Core::attach_callbacks(const external_callbacks& endpoints)
 {
-	cart.attach_endpoints(endpoints.save_ram, endpoints.save_rtc);
 	apu.attach_endpoints(endpoints.swap_sample_buffer, endpoints.audio_control);
 }
 

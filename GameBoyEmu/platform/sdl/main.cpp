@@ -30,8 +30,6 @@ int main(int argc, char *argv[])
 
 	external_callbacks endpoints;
 
-	endpoints.save_ram = function<void(const u8*, u32)>(ram_saver);
-	endpoints.save_rtc = function<void(std::chrono::seconds, const u8*, u32)>(rtc_saver);
 	endpoints.audio_control = make_function(&AudioSDL::dummy, &audio_post);
 	endpoints.swap_sample_buffer = make_function(&AudioSDL::swap_buffers, &audio_post);
 

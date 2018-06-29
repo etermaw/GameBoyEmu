@@ -22,13 +22,10 @@ class Cartrige
 		u8 rtc_regs[5] = {};
 		bool battery_ram;
 
-		void load_or_create_ram(std::ifstream& file);
 		void load_rtc(std::ifstream& file);
 		void dispatch();
 
 	public:
-		~Cartrige();
-
 		//TODO: add function to validate ROM
 		void attach_rom(const u8* rom_ptr, u32 size);
 		void attach_ram(u8* ram_ptr, u32 size);
@@ -40,7 +37,6 @@ class Cartrige
 		bool has_rtc() const;
 
 		void setup();
-		void attach_endpoints(function<void(const u8*, u32)> ram_save, function<void(std::chrono::seconds, const u8*, u32)> rtc_save);
 		
 		IMemory* get_memory_controller() const;
 		IDmaMemory* get_dma_controller() const;
