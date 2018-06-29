@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 					rtc >> timestamp;
 					rtc.read(reinterpret_cast<char*>(rtc_mem), sizeof(rtc_mem));
 
-					//assumption: it`s UNIX time
+					//assumption: it`s UNIX time (until C++20 it`s implementation defined)
 					const auto current_time = std::chrono::system_clock::now();
 					const auto prev_time = std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(timestamp));
 					const auto passed_time = std::chrono::duration_cast<std::chrono::seconds>(current_time - prev_time);
