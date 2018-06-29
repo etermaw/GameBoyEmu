@@ -10,8 +10,8 @@ class Cartrige
 		function<void(std::chrono::seconds, const u8*, u32)> save_rtc_callback;
 
 		//[ptr, size of memory]
-		std::pair<const u8*, u32> rom2;
-		std::pair<u8*, u32> ram2;
+		std::pair<const u8*, u32> rom;
+		std::pair<u8*, u32> ram;
 		std::pair<u8*, u32> rtc2;
 
 		std::unique_ptr<IMemory> memory_interface;
