@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
 	std::unique_ptr<u8[]> rom_mem;
 	std::unique_ptr<u8[]> ram_mem;
-	u8 rtc_mem[5] = {};
+	std::array<u8, 5> rtc_mem;
 
 	while (true)
 	{
@@ -80,18 +80,32 @@ int main(int argc, char *argv[])
 				{
 					i64 timestamp = 0;
 					rtc >> timestamp;
-					rtc.read(reinterpret_cast<char*>(rtc_mem), sizeof(rtc_mem));
+					rtc.read(reinterpret_cast<char*>(rtc_mem.data()), rtc_mem.size());
 
 					//assumption: it`s UNIX time (until C++20 it`s implementation defined)
 					const auto current_time = std::chrono::system_clock::now();
 					const auto prev_time = std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(timestamp));
 					const auto passed_time = std::chrono::duration_cast<std::chrono::seconds>(current_time - prev_time);
-					
+
+					if (check_bit(rtc_mem[5], 6)) //if clock enabled
+					{
+						auto new_seconds = rtc_mem[0] + passed_time.count();
+						auto new_minutes = rtc_mem[1] + new_seconds / 60;
+						auto new_hours = rtc_mem[2] + new_minutes / 60;
+						auto new_days = (((rtc_mem[4] & 1) << 8) | rtc_mem[3]) + (new_hours / 24);
+
+						rtc_mem[0] = new_seconds % 60;
+						rtc_mem[1] = new_minutes % 60;
+						rtc_mem[2] = new_hours % 24;
+						rtc_mem[3] = (new_days % 512) & 0xFF;
+						rtc_mem[4] = change_bit(rtc_mem[4], (new_days % 512) > 255, 0);
+						rtc_mem[4] = change_bit(rtc_mem[4], new_days > 511, 7);
+					}
+			
 					//TODO: create local current_time for MBC
-					//TODO: update rtc according to enabled flag & passed seconds since last time
 				}
 
-				emu_core.load_rtc(rtc_mem, 5);
+				emu_core.load_rtc(rtc_mem.data(), rtc_mem.size());
 			}
 
 			emu_core.setup_core();
@@ -132,7 +146,7 @@ int main(int argc, char *argv[])
 
 		std::ofstream to_save(file_name + "_rtc", std::ios::trunc | std::ios::binary);
 		to_save << new_timestamp.time_since_epoch().count();
-		to_save.write(reinterpret_cast<const char*>(rtc_mem), sizeof(rtc_mem));
+		to_save.write(reinterpret_cast<const char*>(rtc_mem.data()), rtc_mem.size());
 	}
 
 	return 0;
