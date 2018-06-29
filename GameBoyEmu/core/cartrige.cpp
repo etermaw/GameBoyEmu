@@ -90,6 +90,11 @@ bool Cartrige::has_rtc() const
 	return in_range(header->cartrige_type, 0xF, 0x10);
 }
 
+void Cartrige::setup()
+{
+	dispatch();
+}
+
 Cartrige::~Cartrige()
 {
 	const rom_header* header = reinterpret_cast<const rom_header*>(&std::get<0>(rom2)[0x100]);

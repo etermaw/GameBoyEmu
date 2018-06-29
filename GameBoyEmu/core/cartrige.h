@@ -29,6 +29,7 @@ class Cartrige
 	public:
 		~Cartrige();
 
+		//TODO: add function to validate ROM
 		void attach_rom(const u8* rom_ptr, u32 size);
 		void attach_ram(u8* ram_ptr, u32 size);
 		void attach_rtc(u8* rtc_ptr, u32 size);
@@ -37,6 +38,8 @@ class Cartrige
 		u32 get_declared_ram_size() const;
 
 		bool has_rtc() const;
+
+		void setup();
 
 		bool load_cartrige(std::ifstream& cart, std::ifstream& ram, std::ifstream& rtc);
 		void attach_endpoints(function<void(const u8*, u32)> ram_save, function<void(std::chrono::seconds, const u8*, u32)> rtc_save);
