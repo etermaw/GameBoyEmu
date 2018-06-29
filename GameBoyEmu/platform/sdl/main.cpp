@@ -9,12 +9,6 @@ int main(int argc, char *argv[])
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	std::string file_name;
 
-	auto ram_saver = [&](const u8* data, u32 size)
-	{
-		std::ofstream to_save(file_name + "_ram", std::ios::trunc | std::ios::binary);
-		to_save.write(reinterpret_cast<const char*>(data), size * sizeof(u8));
-	};
-
 	auto rtc_saver = [&](std::chrono::seconds epoch, const u8* data, u32 size)
 	{
 		std::ofstream to_save(file_name + "_rtc", std::ios::trunc | std::ios::binary);
