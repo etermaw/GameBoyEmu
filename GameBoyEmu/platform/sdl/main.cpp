@@ -64,7 +64,9 @@ int main(int argc, char *argv[])
 				if (emu_core.has_battery_ram())
 				{
 					std::ifstream ram(file_name + "_ram", std::ios::binary);
-					ram.read(reinterpret_cast<char*>(ram_mem.get()), ram_size);
+
+					if (ram.is_open())
+						ram.read(reinterpret_cast<char*>(ram_mem.get()), ram_size);
 				}
 
 				emu_core.load_ram(ram_mem.get(), ram_size);
@@ -72,10 +74,24 @@ int main(int argc, char *argv[])
 
 			if (emu_core.has_rtc())
 			{
-				//TODO: implement RTC (again!)
-				emu_core.load_rtc(rtc_mem, 5);
+				std::ifstream rtc(file_name + "_rtc", std::ios::binary);
 
-				//std::ifstream rtc(file_name + "_rtc", std::ios::binary);
+				if (rtc.is_open())
+				{
+					i64 timestamp = 0;
+					rtc >> timestamp;
+					rtc.read(reinterpret_cast<char*>(rtc_mem), sizeof(rtc_mem));
+
+					//assumption: it`s UNIX time
+					const auto current_time = std::chrono::system_clock::now();
+					const auto prev_time = std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(timestamp));
+					const auto passed_time = std::chrono::duration_cast<std::chrono::seconds>(current_time - prev_time);
+					
+					//TODO: create local current_time for MBC
+					//TODO: update rtc according to enabled flag & passed seconds since last time
+				}
+
+				emu_core.load_rtc(rtc_mem, 5);
 			}
 
 			emu_core.setup_core();
@@ -105,6 +121,18 @@ int main(int argc, char *argv[])
 		const u32 ram_size = emu_core.get_ram_size();
 		std::ofstream to_save(file_name + "_ram", std::ios::trunc | std::ios::binary);
 		to_save.write(reinterpret_cast<const char*>(ram_mem.get()), ram_size);
+	}
+
+	//save rtc if present
+	if (emu_core.has_rtc())
+	{
+		//TODO: if enabled, make last update using var given to mbc
+
+		const auto new_timestamp = std::chrono::system_clock::now();
+
+		std::ofstream to_save(file_name + "_rtc", std::ios::trunc | std::ios::binary);
+		to_save << new_timestamp.time_since_epoch().count();
+		to_save.write(reinterpret_cast<const char*>(rtc_mem), sizeof(rtc_mem));
 	}
 
 	return 0;
