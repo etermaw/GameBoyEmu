@@ -16,9 +16,6 @@ CoreThread::CoreThread(QObject* parent) : QThread(parent)
 
 
     external_callbacks endpoints;
-
-	endpoints.save_ram = make_function(&CoreThread::save_ram, this);
-	endpoints.save_rtc = make_function(&CoreThread::save_rtc, this);
 	endpoints.audio_control = make_function(&CoreThread::dummy, this);
 	endpoints.swap_sample_buffer = make_function(&CoreThread::swap_buffers, this);
 
@@ -70,13 +67,54 @@ void CoreThread::release_key(int key)
     event_tab[key] = std::min(event_tab[key] - 1, -1);
 }
 
-void CoreThread::load_rom(const std::string& path)
+void CoreThread::load_rom(const QString& path)
 {
     //TODO: make it thread-safe!
-    file_name = path;
-    rom.open(path, std::ios::binary);
+    if (rom_file.isOpen())
+        rom_file.close();
 
-    emu_core.load_cartrige(rom, ram, rtc);
+    rom_file.setFileName(path);
+
+    if (rom_file.open(QIODevice::ReadOnly))
+    {
+        const i64 rom_size = rom_file.size();
+        const u8* rom_ptr = rom_file.map(0, rom_size);
+
+        if (!rom_ptr)
+            return;
+
+        emu_core.load_rom(rom_ptr, rom_size);
+        
+        const u32 ram_size = emu_core.get_ram_size();
+
+        if (ram_size > 0)
+        {
+            if (emu_core.has_battery_ram())
+            {
+                QFileInfo ram_name(path);
+
+                if (ram_file.isOpen())
+                    ram_file.close();
+
+                ram_file.setFileName(ram_name.baseName() + ".gbram");
+
+                if (ram_file.open(QIODevice::ReadWrite))
+                {
+                    if (ram_file.size() != ram_size)
+                        ram_file.resize(ram_size);
+
+                    u8* ram_ptr = ram_file.map(0, ram_size);
+
+                    if (ram_ptr)
+                        emu_core.load_ram(ram_ptr, ram_size);
+                }
+            }
+        }
+
+        //TODO: add RTC handling!
+
+        emu_core.setup_core();
+    }
 }
 
 u8** CoreThread::swap_buffers(u8** buffers, u32 count)
@@ -85,19 +123,6 @@ u8** CoreThread::swap_buffers(u8** buffers, u32 count)
     UNUSED(count);
 
     return dummy_buffers;
-}
-
-void CoreThread::save_ram(const u8* data, u32 size)
-{
-    std::ofstream to_save(file_name + "_ram", std::ios::trunc | std::ios::binary);
-	to_save.write(reinterpret_cast<const char*>(data), size * sizeof(u8));
-}
-
-void CoreThread::save_rtc(std::chrono::seconds epoch, const u8* data, u32 size)
-{
-    std::ofstream to_save(file_name + "_rtc", std::ios::trunc | std::ios::binary);
-	to_save << epoch.count();
-	to_save.write(reinterpret_cast<const char*>(data), size * sizeof(u8));
 }
 
 void CoreThread::run()

@@ -120,11 +120,8 @@ class Core
 
 	public:
 		Core();
-		//~Core();
 
 		void reset();
-		bool load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file);
-		//void reset();
 
 		void load_rom(const u8* rom, u32 size);
 

@@ -65,7 +65,7 @@ void MainWindow::on_actionLoad_ROM_triggered()
 
     setWindowTitle("Emu: " + path_splitted.last());
 
-    core_thread->load_rom(rom_path.toStdString());
+    core_thread->load_rom(rom_path);
     core_thread->start_emulation();
 }
 

@@ -2,6 +2,9 @@
 #define CORETHREAD_H
 
 #include <QThread>
+#include <QFile>
+#include <QFileInfo>
+#include <QString>
 
 #include "core/core.h"
 
@@ -18,7 +21,7 @@ class CoreThread : public QThread
 
         void press_key(int key);
         void release_key(int key);
-        void load_rom(const std::string& path);
+        void load_rom(const QString& path);
 
         void run() override;
 
@@ -29,8 +32,8 @@ class CoreThread : public QThread
         u8** swap_buffers(u8** buffers, u32 count);
 		void dummy(bool) {}
 
-        void save_ram(const u8* data, u32 size);
-        void save_rtc(std::chrono::seconds epoch, const u8* data, u32 size);
+        QFile rom_file;
+        QFile ram_file;
 
         Core emu_core;
 
