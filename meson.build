@@ -50,11 +50,10 @@ else
 
 
         final_src += core_src + platform_src
-        prog = executable('emu', sources: final_src, dependencies: sdl, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
 
     else
         qt5 = import('qt5')
-        qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
+        deps += dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
 
         moc = qt5.preprocess(moc_headers: ['GameBoyEmu/platform/qt/mainwindow.h', 'GameBoyEmu/platform/qt/keymap.h', 'GameBoyEmu/platform/qt/keycaptureedit.h', 'GameBoyEmu/platform/qt/corethread.h', 'GameBoyEmu/platform/qt/renderwidget.h'],
                             ui_files: ['GameBoyEmu/platform/qt/mainwindow.ui', 'GameBoyEmu/platform/qt/keymap.ui'],
@@ -70,7 +69,7 @@ else
         incdir += include_directories('GameBoyEmu/platform/qt') #it`s required for compiling custom KeyEdit
 
         final_src += moc + core_src + platform_src
-        prog = executable('emu', sources: final_src, dependencies: qt5_dep, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
-
     endif
 endif
+
+prog = executable('emu', sources: final_src, dependencies: deps, cpp_args: args, cpp_pch : ['GameBoyEmu/pch/stdafx.h', 'GameBoyEmu/pch/stdafx.cpp'], include_directories : incdir)
