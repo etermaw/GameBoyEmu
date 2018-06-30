@@ -34,6 +34,7 @@ class CoreThread : public QThread
 
         QFile rom_file;
         QFile ram_file;
+        std::unique_ptr<u8[]> ram_mem;
 
         Core emu_core;
 

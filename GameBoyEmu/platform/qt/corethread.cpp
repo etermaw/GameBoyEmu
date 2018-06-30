@@ -109,6 +109,12 @@ void CoreThread::load_rom(const QString& path)
                         emu_core.load_ram(ram_ptr, ram_size);
                 }
             }
+
+            else
+            {
+                ram_mem = std::make_unique<u8[]>(ram_size);
+                emu_core.load_ram(ram_mem.get(), ram_size);
+            }
         }
 
         //TODO: add RTC handling!
