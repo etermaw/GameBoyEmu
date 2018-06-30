@@ -35,6 +35,7 @@ class CoreThread : public QThread
         QFile rom_file;
         QFile ram_file;
         std::unique_ptr<u8[]> ram_mem;
+        std::array<u8, 5> rtc;
 
         Core emu_core;
 
@@ -42,9 +43,6 @@ class CoreThread : public QThread
 
         std::unique_ptr<u8[]> internal_buffer;
         u8* dummy_buffers[4];
-
-        std::ifstream rom, ram, rtc;
-        std::string file_name;
 
         std::mutex input_lock;
         std::mutex waiter_lock;

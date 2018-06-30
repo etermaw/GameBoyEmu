@@ -117,7 +117,8 @@ void CoreThread::load_rom(const QString& path)
             }
         }
 
-        //TODO: add RTC handling!
+        if (emu_core.has_rtc())
+            emu_core.load_rtc(rtc.data(), rtc.size());
 
         emu_core.setup_core();
     }
