@@ -210,15 +210,21 @@ const u8* MBC2::get_dma_ptr(u16 adress)
 		return nullptr;
 }
 
+MBC3::~MBC3()
+{
+	if(rtc && check_bit(rtc[5], 6))
+		update_rtc();
+}
+
 void MBC3::latch_rtc()
 {
 	if (!check_bit(rtc[4], 6)) //if timer is enabled, update time
-		update_time();
+		update_rtc();
 
 	std::memcpy(latched_rtc, rtc, sizeof(u8) * 5);
 }
 
-void MBC3::update_time()
+void MBC3::update_rtc()
 {
 	auto cur = std::chrono::system_clock::now();
 	auto delta = std::chrono::duration_cast<std::chrono::seconds>(cur - start_time);
@@ -289,7 +295,7 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 		else if (rtc != nullptr && value >= 0x08 && value <= 0x0C) //TODO: keep an eye on it
 		{
 			reg_used = true;
-			selected_time_reg = value - 0x08;
+			selected_time_reg = std::max(value - 0x08, 5);
 		}
 	}
 
@@ -304,7 +310,20 @@ void MBC3::write_byte(u16 adress, u8 value, u32 cycles_passed)
 	else if (adress >= 0xA000 && adress < 0xC000 && ram_enabled)
 	{
 		if (reg_used)
+		{
 			rtc[selected_time_reg] = value;
+
+			if (selected_time_reg == 5)
+			{
+				if (prev_enabled_bit && !check_bit(value, 6))
+					update_rtc();
+
+				else if (!prev_enabled_bit && check_bit(value, 6))
+					start_time = std::chrono::system_clock::now();
+
+				prev_enabled_bit = check_bit(value, 6);
+			}
+		}
 
 		else
 		{

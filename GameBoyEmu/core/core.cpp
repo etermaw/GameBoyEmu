@@ -29,11 +29,39 @@ Core::Core() : cpu(mmu, ints), gpu(ints), timer(ints)
 	mmu.attach_debug_callback(make_function(&Debugger::check_memory_access, &debugger));
 }
 
-bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file) 
+void Core::load_rom(const u8* rom, u32 size)
 {
-	if (!cart.load_cartrige(rom_file, ram_file, rtc_file))
-		return false;
+	cart.attach_rom(rom, size);
+}
 
+void Core::load_ram(u8* ram, u32 size)
+{
+	cart.attach_ram(ram, size);
+}
+
+u32 Core::get_ram_size() const
+{
+	return cart.get_declared_ram_size();
+}
+
+bool Core::has_battery_ram() const
+{
+	return cart.has_battery_ram();
+}
+
+void Core::load_rtc(u8* rtc, u32 size)
+{
+	cart.attach_rtc(rtc, size);
+}
+
+bool Core::has_rtc() const
+{
+	return cart.has_rtc();
+}
+
+void Core::setup_core()
+{
+	cart.setup();
 	gpu.attach_dma_ptrs(cart.get_dma_controller(), &ram);
 
 	bool enable_cgb = cart.is_cgb_ready();
@@ -44,8 +72,6 @@ bool Core::load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::
 
 	mmu.swap_chunk(0, 0x8000, cart.get_memory_controller()); //TODO: it`s inconsistent with register_chunk scheme of adressing
 	mmu.swap_chunk(0xA000, 0xC000, cart.get_memory_controller());
-
-	return true;
 }
 
 std::string Core::get_cart_name()
@@ -133,7 +159,6 @@ void Core::release_key(KEYS key)
 
 void Core::attach_callbacks(const external_callbacks& endpoints)
 {
-	cart.attach_endpoints(endpoints.save_ram, endpoints.save_rtc);
 	apu.attach_endpoints(endpoints.swap_sample_buffer, endpoints.audio_control);
 }
 

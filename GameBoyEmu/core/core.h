@@ -13,9 +13,6 @@
 
 struct external_callbacks
 {
-	function<void(const u8*, u32)> save_ram;
-	function<void(std::chrono::seconds, const u8*, u32)> save_rtc;
-
 	function<u8**(u8**, u32)> swap_sample_buffer;
 	function<void(bool)> audio_control;
 };
@@ -127,6 +124,19 @@ class Core
 
 		void reset();
 		bool load_cartrige(std::ifstream& rom_file, std::ifstream& ram_file, std::ifstream& rtc_file);
+		//void reset();
+
+		void load_rom(const u8* rom, u32 size);
+
+		void load_ram(u8* ram, u32 size);
+		u32 get_ram_size() const;
+		bool has_battery_ram() const;
+
+		void load_rtc(u8* rtc, u32 size);
+		bool has_rtc() const;
+
+		void setup_core();
+
         std::string get_cart_name();
 
 		void load_state(std::istream& load_stream);

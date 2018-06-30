@@ -1,6 +1,6 @@
 project('GBE', 'cpp', version: '0.21', default_options: ['cpp_std=c++14', 'warning_level=3'])
 
-sdl = dependency('sdl2')
+deps = []
 incdir = [include_directories('GameBoyEmu')]
 
 core_src = ['GameBoyEmu/core/apu.cpp',
@@ -34,11 +34,15 @@ if auto_tester_module == 'basic'
     final_src += test_src + utils_src
 
 elif auto_tester_module == 'setup'
+    deps += dependency('sdl2')
+
     final_src += test_src + utils_src + ['GameBoyEmu/platform/sdl/gui.cpp', 'GameBoyEmu/platform/sdl/renderer.cpp']
     args += ['-DENABLE_TEST_DISPLAY']
     
 else
     if get_option('platform_handler') == 'sdl2'
+        deps += dependency('sdl2')
+
         platform_src = ['GameBoyEmu/platform/sdl/audio_postprocess.cpp',
                         'GameBoyEmu/platform/sdl/gui.cpp',
                         'GameBoyEmu/platform/sdl/renderer.cpp',
