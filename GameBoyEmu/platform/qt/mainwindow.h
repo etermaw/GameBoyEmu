@@ -20,6 +20,8 @@ class MainWindow : public QMainWindow
     private slots:
         void on_actionLoad_ROM_triggered();
         void on_actionKeys_triggered();
+        void on_actionPause_triggered();
+        void on_actionReset_triggered();
 
         void update_keys();
         void update_frame(u32* frame);

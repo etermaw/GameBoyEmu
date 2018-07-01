@@ -69,6 +69,9 @@
      <string>File</string>
     </property>
     <addaction name="actionLoad_ROM"/>
+    <addaction name="separator"/>
+    <addaction name="actionPause"/>
+    <addaction name="actionReset"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -86,7 +89,17 @@
   </action>
   <action name="actionKeys">
    <property name="text">
-    <string>Keys</string>
+    <string>Key Bindings</string>
+   </property>
+  </action>
+  <action name="actionPause">
+   <property name="text">
+    <string>Pause</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>Reset</string>
    </property>
   </action>
  </widget>

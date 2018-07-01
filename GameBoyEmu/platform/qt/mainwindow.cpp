@@ -74,6 +74,26 @@ void MainWindow::on_actionKeys_triggered()
     keymap_dialog->show();
 }
 
+void MainWindow::on_actionPause_triggered()
+{
+    /*if (paused)
+    {
+        if (can_pause)
+            core_thread->start_emulation();
+
+        else
+            enque_pause();
+    }
+
+    else
+        core_thread->halt_emulation();*/
+}
+
+void MainWindow::on_actionReset_triggered()
+{
+
+}
+
 void MainWindow::update_keys()
 {
     key_map.clear();
